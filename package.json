@@ -1,0 +1,26 @@
+{
+  "name": "@positionex/matching-engine",
+  "version": "1.0.0",
+  "description": "Position matching engine fully on-chain.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test"
+  },
+  "keywords": [
+    "position exchange",
+    "orderbook",
+    "fully-onchain",
+    "matching engine"
+  ],
+  "author": "position.exchange",
+  "license": "BUSL-1.1",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.11.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts-upgradeable": "^4.8.0-rc.1",
+    "hardhat-contract-sizer": "^2.6.1"
+  }
+}
