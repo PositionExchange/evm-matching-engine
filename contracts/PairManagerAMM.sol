@@ -18,18 +18,18 @@ contract PairManagerAMM is AutoMarketMakerCore, PairManagerCore {
         uint256 size
     ) internal override {}
 
-//    function _onCrossPipHook(uint128 pipNext)
-//        internal
-//        view
-//        override(PairManagerCore)
-//        returns (
-//            uint256 _hookBaseOut,
-//            uint256 _hookQuoteOut,
-//            uint256 _pipRangeLiquidityIndex
-//        )
-//    {
-//        return (0, 0, 0);
-//    }
+    //    function _onCrossPipHook(uint128 pipNext)
+    //        internal
+    //        view
+    //        override(PairManagerCore)
+    //        returns (
+    //            uint256 _hookBaseOut,
+    //            uint256 _hookQuoteOut,
+    //            uint256 _pipRangeLiquidityIndex
+    //        )
+    //    {
+    //        return (0, 0, 0);
+    //    }
 
     function getUnderlyingPriceInPip()
         internal

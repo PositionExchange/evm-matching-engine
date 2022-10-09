@@ -29,6 +29,4 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint256 baseAmount,
         uint256 quoteAmount
     ) external virtual {}
-
-
 }

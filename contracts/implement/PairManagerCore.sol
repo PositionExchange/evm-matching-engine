@@ -374,7 +374,6 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         uint128 lastMatchedPip;
         bool isBuy;
         int8 lastPipRangeLiquidityIndex;
-
     }
 
     struct AmmState {
@@ -408,7 +407,7 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
             isFullBuy: 0,
             isSkipFirstPip: false,
             lastMatchedPip: _initialSingleSlot.pip,
-            lastPipRangeLiquidityIndex : -1,
+            lastPipRangeLiquidityIndex: -1,
             isBuy: _isBuy
         });
         {
@@ -434,7 +433,6 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 !state.isBuy
             );
 
-
             // updated findHasLiquidityInMultipleWords, save more gas
             if (_maxPip != 0) {
                 // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
@@ -445,8 +443,11 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                     break;
                 }
             }
-            CrossPipResult memory crossPipResult = _onCrossPipHook(step.pipNext, state.isBuy);
-            if ( crossPipResult.hookBaseCrossPip > 0 && step.pipNext == 0) {
+            CrossPipResult memory crossPipResult = _onCrossPipHook(
+                step.pipNext,
+                state.isBuy
+            );
+            if (crossPipResult.hookBaseCrossPip > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
             /// In this line, step.pipNext still is 0, that means no liquidity for this order
@@ -461,34 +462,48 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 }
                 break;
             } else {
-                uint256 _remainingBase = _isBase ? state.remainingSize : TradeConvert.quoteToBase(state.remainingSize, step.pipNext, state.basisPoint);
+                uint256 _remainingBase = _isBase
+                    ? state.remainingSize
+                    : TradeConvert.quoteToBase(
+                        state.remainingSize,
+                        step.pipNext,
+                        state.basisPoint
+                    );
                 if (crossPipResult.hookBaseCrossPip > 0) {
-                    if(state.lastPipRangeLiquidityIndex != int8(crossPipResult.pipRangeLiquidityIndex)) {
-                        if(state.lastPipRangeLiquidityIndex != int8(-1)){
+                    if (
+                        state.lastPipRangeLiquidityIndex !=
+                        int8(crossPipResult.pipRangeLiquidityIndex)
+                    ) {
+                        if (state.lastPipRangeLiquidityIndex != int8(-1)) {
                             _pipRangeLiquidityIndex++;
                         }
-                        if(_pipRangeLiquidityIndex > 5){
+                        if (_pipRangeLiquidityIndex > 5) {
                             revert("Not enough liquidity");
                         }
-                        state.lastPipRangeLiquidityIndex = int8(crossPipResult.pipRangeLiquidityIndex);
+                        state.lastPipRangeLiquidityIndex = int8(
+                            crossPipResult.pipRangeLiquidityIndex
+                        );
                         // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-                        _pipRanges[_pipRangeLiquidityIndex] = crossPipResult.pipRangeLiquidityIndex;
+                        _pipRanges[_pipRangeLiquidityIndex] = crossPipResult
+                            .pipRangeLiquidityIndex;
                     }
 
-                    _ammState[_pipRangeLiquidityIndex].deltaBase += crossPipResult.hookBaseCrossPip;
-                    _ammState[_pipRangeLiquidityIndex].deltaQuote += crossPipResult.hookQuoteCrossPip;
+                    _ammState[_pipRangeLiquidityIndex]
+                        .deltaBase += crossPipResult.hookBaseCrossPip;
+                    _ammState[_pipRangeLiquidityIndex]
+                        .deltaQuote += crossPipResult.hookQuoteCrossPip;
 
-
-                    if (crossPipResult.hookBaseCrossPip >= int256(state.remainingSize)) {
+                    if (
+                        crossPipResult.hookBaseCrossPip >=
+                        int256(state.remainingSize)
+                    ) {
                         // Break the loop
-
-                    }else {
+                    } else {
                         // minus the remaining size
                     }
                 }
 
-
-            if (!state.isSkipFirstPip) {
+                if (!state.isSkipFirstPip) {
                     if (state.startPip == 0) state.startPip = step.pipNext;
 
                     // get liquidity at a tick index
@@ -566,7 +581,9 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                     }
                 } else {
                     state.isSkipFirstPip = false;
-                    state.pip = state.isBuy ? step.pipNext + 1 : step.pipNext - 1;
+                    state.pip = state.isBuy
+                        ? step.pipNext + 1
+                        : step.pipNext - 1;
                 }
             }
         }
@@ -660,8 +677,8 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         int128 hookQuoteCrossPip;
         uint8 pipRangeLiquidityIndex;
         uint128 toPip;
-
     }
+
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
         view
