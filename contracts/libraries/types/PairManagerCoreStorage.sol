@@ -7,28 +7,12 @@ import "../exchange/LiquidityBitmap.sol";
 import "../helper/Timers.sol";
 import "../../interfaces/IPairManager.sol";
 
-contract PairManagerStorage {
+abstract contract PairManagerCoreStorage {
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
 
-    // quote asset token address
-    IERC20 internal quoteAsset;
-
-    // base asset token address
-    IERC20 internal baseAsset;
-
-    // base fee for base asset
-    uint256 internal baseFeeFunding;
-
-    // base fee for quote asset
-    uint256 internal quoteFeeFunding;
-
-    address public owner;
-
-    bool internal _isInitialized;
-
     // the smallest number of the price. Eg. 100 for 0.01
-    uint256 internal basisPoint;
+    uint256 public basisPoint;
 
     // demoninator of the basis point. Eg. 10000 for 0.01
     uint256 public BASE_BASIC_POINT;
@@ -36,13 +20,9 @@ contract PairManagerStorage {
     // Max finding word can be 3500
     uint128 public maxFindingWordsIndex;
 
-    // Counter party address
-    address public counterParty;
+    uint128 public maxWordRangeForLimitOrder;
 
-    // Liquidaity pool
-    address public liquidityPool;
-
-    uint64 public expireTime;
+    uint128 public maxWordRangeForMarketOrder;
 
     // The unit of measurement to express the change in value between two currencies
     struct SingleSlot {
@@ -81,26 +61,4 @@ contract PairManagerStorage {
     mapping(uint128 => uint256) public tickStore;
     // a packed array of bit, where liquidity is filled or not
     mapping(uint128 => uint256) public liquidityBitmap;
-
-    ///////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////// EXTEND VIEWER ///////////////////////////////////
-
-    function balanceBase() public view returns (uint256) {
-        return baseAsset.balanceOf(address(this));
-    }
-
-    function balanceQuote() public view returns (uint256) {
-        return quoteAsset.balanceOf(address(this));
-    }
-
-    uint128 public maxWordRangeForLimitOrder;
-    uint128 public maxWordRangeForMarketOrder;
-
-    /**
-    * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
-    uint256[49] private __gap;
-
 }
