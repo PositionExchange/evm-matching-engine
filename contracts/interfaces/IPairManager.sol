@@ -2,8 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../libraries/types/PairManagerStorage.sol";
-
+import "../libraries/types/PairManagerCoreStorage.sol";
 
 interface IPairManager {
     event MarketFilled(
@@ -109,8 +108,6 @@ interface IPairManager {
         address _liquidityPool
     ) external;
 
-
-
     function openLimit(
         uint128 pip,
         uint128 size,
@@ -180,7 +177,7 @@ interface IPairManager {
     )
         external
         view
-        returns (PairManagerStorage.LiquidityOfEachPip[] memory, uint128);
+        returns (PairManagerCoreStorage.LiquidityOfEachPip[] memory, uint128);
 
     //    function pause() external;
     //
@@ -188,7 +185,6 @@ interface IPairManager {
 
     function updateMaxFindingWordsIndex(uint128 _newMaxFindingWordsIndex)
         external;
-
 
     function openMarket(
         uint256 size,
@@ -222,8 +218,6 @@ interface IPairManager {
         view
         returns (uint256);
 
-
-
     function accumulateClaimableAmount(
         uint128 _pip,
         uint64 _orderId,
@@ -233,8 +227,6 @@ interface IPairManager {
         uint128 feeBasis
     ) external view returns (IPairManager.ExchangedData memory);
 
-
-
     function updateSpotHouse(address _newSpotHouse) external;
 
     function getAmountEstimate(
@@ -242,5 +234,4 @@ interface IPairManager {
         bool isBuy,
         bool isBase
     ) external view returns (uint256 sizeOut, uint256 openOtherSide);
-
 }
