@@ -148,7 +148,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
         uint256 size,
         bool isBuy,
         address trader
-    ) external virtual returns (uint256 sizeOut, uint256 quoteAmount) {
+    ) external virtual returns (uint256 baseOut, uint256 quoteOut) {
         return
             _internalOpenMarketOrder(
                 size,
@@ -346,7 +346,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
         bool isBuy,
         uint128 maxPip,
         address _trader
-    ) internal returns (uint256 sizeOut, uint256 quoteAmount) {
+    ) internal returns (uint256 baseOut, uint256 quoteOut) {
         // plus 1 avoid  (singleSlot.pip - maxPip)/250 = 0
         uint128 _maxFindingWordsIndex = ((
             isBuy ? maxPip - singleSlot.pip : singleSlot.pip - maxPip
@@ -389,7 +389,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
         address _trader,
         bool _isBase,
         uint128 _maxFindingWordsIndex
-    ) internal virtual returns (uint256 sizeOut, uint256 openOtherSide) {
+    ) internal virtual returns (uint256 baseOut, uint256 quoteOut) {
         uint8 _pipRangeLiquidityIndex = 0;
         // only support up to 5 pip ranges
         uint8[] memory _pipRanges = new uint8[](5);
@@ -525,12 +525,12 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                             baseAmount.Uint256ToUint128()
                         );
                         if (_isBase)
-                            openOtherSide += TradeConvert.baseToQuote(
+                            quoteOut += TradeConvert.baseToQuote(
                                 state.remainingSize,
                                 step.pipNext,
                                 state.basisPoint
                             );
-                        else openOtherSide += baseAmount;
+                        else quoteOut += baseAmount;
 
                         // remaining liquidity at current pip
                         state.remainingLiquidity =
@@ -547,7 +547,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                         // order in that pip will be fulfilled
                         if (_isBase) {
                             state.remainingSize -= liquidity;
-                            openOtherSide += TradeConvert.baseToQuote(
+                            quoteOut += TradeConvert.baseToQuote(
                                 liquidity,
                                 step.pipNext,
                                 state.basisPoint
@@ -558,7 +558,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                                 step.pipNext,
                                 state.basisPoint
                             );
-                            openOtherSide += liquidity;
+                            quoteOut += liquidity;
                         }
                         state.pip = state.isBuy
                             ? step.pipNext + 1
@@ -568,13 +568,13 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                         // only 1 pip should be toggled, so we call it directly here
                         liquidityBitmap.toggleSingleBit(step.pipNext, false);
                         if (_isBase) {
-                            openOtherSide += TradeConvert.baseToQuote(
+                            quoteOut += TradeConvert.baseToQuote(
                                 state.remainingSize,
                                 step.pipNext,
                                 state.basisPoint
                             );
                         } else {
-                            openOtherSide += liquidity;
+                            quoteOut += liquidity;
                         }
                         state.remainingSize = 0;
                         state.pip = step.pipNext;
@@ -635,14 +635,14 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
             }
         }
 
-        sizeOut = _size - state.remainingSize;
+        baseOut = _size - state.remainingSize;
         _addReserveSnapshot();
 
-        if (sizeOut != 0) {
+        if (baseOut != 0) {
             if (_isBase) {
                 emit MarketFilled(
                     state.isBuy,
-                    sizeOut,
+                    baseOut,
                     singleSlot.pip,
                     state.startPip,
                     state.remainingLiquidity,
@@ -651,7 +651,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
             } else {
                 emit MarketFilled(
                     state.isBuy,
-                    openOtherSide,
+                    quoteOut,
                     singleSlot.pip,
                     state.startPip,
                     state.remainingLiquidity,
@@ -659,7 +659,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                 );
             }
 
-            emitEventSwap(state.isBuy, sizeOut, openOtherSide, _trader);
+            emitEventSwap(state.isBuy, baseOut, quoteOut, _trader);
         }
     }
 
