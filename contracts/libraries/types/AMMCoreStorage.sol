@@ -1,26 +1,19 @@
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.9;
+
+import "../helper/Liquidity.sol";
 
 abstract contract AMMCoreStorage {
-    uint256 pipRange;
+    uint128 public pipRange;
 
-    uint256 liquidity;
+    uint32 public tickSpace;
 
-    uint32 tickSpace;
+    uint32 public currentIndexedPipRange;
 
     struct RealReserve {
         uint256 baseReal;
         uint256 quoteReal;
     }
 
-    struct PipRangeInfo {
-        uint128 sqrtMaxPip;
-        uint128 sqrtMinPip;
-        uint256 quoteVirtual;
-        uint256 baseVirtual;
-        uint32 indexedPipRanger;
-        uint128 feeGrowthBase;
-        uint128 feeGrowthQuote;
-    }
-
-    mapping(uint128 => PipRangeInfo) public pipRangeInfo;
+    mapping(uint64 => Liquidity.Info) public liquidityInfo;
 }
