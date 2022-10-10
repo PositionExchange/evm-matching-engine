@@ -1,9 +1,9 @@
 pragma solidity ^0.8.0;
 
-import "./implement/PairManagerCore.sol";
+import "./implement/MatchingEngineCore.sol";
 import "./implement/AutoMarketMakerCore.sol";
 
-contract PairManagerAMM is AutoMarketMakerCore, PairManagerCore {
+contract MatchingEngineAMM is AutoMarketMakerCore, MatchingEngineCore {
     bool isInitialized;
 
     function initialize() external {

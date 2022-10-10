@@ -12,7 +12,7 @@ import "../interfaces/IPairManager.sol";
 import "./Block.sol";
 import "../libraries/helper/Convert.sol";
 
-abstract contract PairManagerCore is Block, PairManagerCoreStorage {
+abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
     event MarketFilled(
         bool isBuy,
         uint256 indexed amount,
