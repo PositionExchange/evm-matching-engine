@@ -14,32 +14,42 @@ library Liquidity {
         uint128 sqrtBaseReal;
         uint32 indexedPipRanger;
         uint256 feeGrowthBase;
-        uint128 feeGrowthQuote;
+        uint256 feeGrowthQuote;
         uint128 sqrtK;
     }
 
+    function initNewPipRange(
+        Liquidity.Info storage self,
+        uint128 sqrtMaxPip,
+        uint128 sqrtMinPip,
+        uint32 indexedPipRange
+    ) internal {
+        self.sqrtMaxPip = sqrtMaxPip;
+        self.sqrtMinPip = sqrtMinPip;
+        self.indexedPipRanger = indexedPipRange;
+    }
+
     function updateLiquidity(
-        Liquidity.Info storage liquidityInfo,
+        Liquidity.Info storage self,
         uint128 quoteVirtual,
         uint128 baseVirtual,
-        uint128 quoteReal,
-        uint128 baseReal,
+        uint128 sqrtQuoteReal,
+        uint128 sqrtBaseReal,
         uint128 sqrtK
     ) internal {
-        liquidityInfo.quoteVirtual = quoteVirtual;
-        liquidityInfo.baseVirtual = baseVirtual;
-        liquidityInfo.sqrtQuoteReal = sqrtQuoteReal;
-        liquidityInfo.sqrtBaseReal = sqrtBaseReal;
-        liquidityInfo.sqrtK = sqrtK;
+        self.quoteVirtual = quoteVirtual;
+        self.baseVirtual = baseVirtual;
+        self.sqrtQuoteReal = sqrtQuoteReal;
+        self.sqrtBaseReal = sqrtBaseReal;
+        self.sqrtK = sqrtK;
     }
 
     function updateFeeGrowth(
-        Liquidity.Info storage liquidityInfo,
+        Liquidity.Info storage self,
         uint256 feeGrowthBase,
         uint256 feeGrowthQuote
     ) internal {
-        liquidityInfo.feeGrowthBase = feeGrowthBase;
-        liquidityInfo.feeGrowthQuote = feeGrowthQuote;
-
+        self.feeGrowthBase = feeGrowthBase;
+        self.feeGrowthQuote = feeGrowthQuote;
     }
 }

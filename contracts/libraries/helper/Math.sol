@@ -29,14 +29,14 @@ library Math {
     /// @dev Uses the Babylonian method https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method.
     /// @param x The uint256 number for which to calculate the square root.
     /// @return result The result as an uint256.
-    function sqrt(uint256 x) internal pure returns (uint256 result) {
+    function sqrt128(uint128 x) public pure returns (uint128 result) {
         if (x == 0) {
             return 0;
         }
 
         // Calculate the square root of the perfect square of a power of two that is the closest to x.
-        uint256 xAux = uint256(x);
-        result = 1;
+        uint128 xAux = uint128(x);
+        result = uint128(1);
         if (xAux >= 0x100000000000000000000000000000000) {
             xAux >>= 128;
             result <<= 64;
@@ -74,7 +74,7 @@ library Math {
             result = (result + x / result) >> 1;
             result = (result + x / result) >> 1;
             result = (result + x / result) >> 1; // Seven iterations should be enough
-            uint256 roundedDownResult = x / result;
+            uint128 roundedDownResult = x / result;
             return result >= roundedDownResult ? roundedDownResult : result;
         }
     }

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-contract LiquidityMath {
+library LiquidityMath {
     function calculateBaseReal(
         uint128 sqrtMaxPip,
         uint128 xVirtual,
@@ -38,8 +38,7 @@ contract LiquidityMath {
         uint128 sqrtQuoteReal,
         uint128 amountQuote
     ) internal pure returns (uint128) {
-        return
-            (liquidity / (sqrtQuoteReal**2 - amountQuote)) - sqrtBaseReal**2;
+        return (liquidity / (sqrtQuoteReal**2 - amountQuote)) - sqrtBaseReal**2;
     }
 
     function calculateQuoteWithPriceWhenSell(
@@ -88,7 +87,7 @@ contract LiquidityMath {
         uint128 sqrtQuoteReal
     ) internal pure returns (uint128) {
         return
-             sqrtPriceTarget * sqrtBaseReal * sqrtQuoteReal - sqrtQuoteReal**2;
+            sqrtPriceTarget * sqrtBaseReal * sqrtQuoteReal - sqrtQuoteReal**2;
     }
 
     function calculateQuoteWithoutPriceWhenBuy(

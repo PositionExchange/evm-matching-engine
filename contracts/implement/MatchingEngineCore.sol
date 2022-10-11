@@ -448,7 +448,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                 step.pipNext,
                 state.isBuy
             );
-            if (crossPipResult.hookBaseCrossPip > 0 && step.pipNext == 0) {
+            if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
             /// In this line, step.pipNext still is 0, that means no liquidity for this order
@@ -470,7 +470,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                         step.pipNext,
                         state.basisPoint
                     );
-                if (crossPipResult.hookBaseCrossPip > 0) {
+                if (crossPipResult.baseCrossPipOut > 0) {
                     if (
                         state.lastPipRangeLiquidityIndex !=
                         int8(crossPipResult.pipRangeLiquidityIndex)
@@ -490,12 +490,12 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                     }
 
                     _ammState[_pipRangeLiquidityIndex]
-                        .deltaBase += crossPipResult.hookBaseCrossPip;
+                        .deltaBase += crossPipResult.baseCrossPipOut;
                     _ammState[_pipRangeLiquidityIndex]
-                        .deltaQuote += crossPipResult.hookQuoteCrossPip;
+                        .deltaQuote += crossPipResult.quoteCrossPipOut;
 
                     if (
-                        crossPipResult.hookBaseCrossPip >=
+                        crossPipResult.baseCrossPipOut >=
                         int256(state.remainingSize)
                     ) {
                         // Break the loop
@@ -674,11 +674,18 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
     ) internal virtual {}
 
     struct CrossPipResult {
-        int128 hookBaseCrossPip;
-        int128 hookQuoteCrossPip;
+        int128 baseCrossPipOut;
+        int128 quoteCrossPipOut;
         uint8 pipRangeLiquidityIndex;
         uint128 toPip;
     }
+
+    function _onCrossPipHook(
+        uint128 pipNext,
+        bool isBuy,
+        bool isBase,
+        uint128 amount
+    ) internal view virtual returns (CrossPipResult memory crossPipResult);
 
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
