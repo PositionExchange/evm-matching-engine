@@ -16,6 +16,7 @@ library Liquidity {
         uint256 feeGrowthBase;
         uint256 feeGrowthQuote;
         uint128 sqrtK;
+        uint128 liquidity;
     }
 
     function initNewPipRange(
@@ -36,6 +37,7 @@ library Liquidity {
         uint128 sqrtQuoteReal,
         uint128 sqrtBaseReal,
         uint128 sqrtK
+
     ) internal {
         self.quoteVirtual = quoteVirtual;
         self.baseVirtual = baseVirtual;

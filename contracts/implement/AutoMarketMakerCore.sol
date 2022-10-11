@@ -59,16 +59,38 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             _liquidityInfo.quoteVirtual**2 + quoteAmount,
             currentPrice
         );
-        uint128 k = baseReal * quoteReal;
+        uint128 sqrtK = (baseReal * quoteReal).sqrt128();
+
+        uint128 liquidity =
+
+        // TODO calculate liquidity
+        return(0,0,0);
     }
 
-    function removeLiquidity(uint256 liquidityId) external virtual {}
+    function removeLiquidity(uint128 liquidity, uint32 indexedPipRange)
+        external
+        virtual
+        returns (uint128 baseAmount, uint128 quoteAmount)
+    {
+        return (0, 0);
+    }
 
     function modifyLiquidity(
-        uint256 liquidityId,
         uint256 baseAmount,
-        uint256 quoteAmount
-    ) external virtual {}
+        uint256 quoteAmount,
+        uint32 indexedPipRange,
+        uint8 modifyType
+    )
+        external
+        virtual
+        returns (
+            uint128 liquidity,
+            uint256 baseAmount,
+            uint256 quoteAmount
+        )
+    {
+        return (0, 0, 0);
+    }
 
     function getCurrentPrice() internal view virtual returns (uint128) {}
 

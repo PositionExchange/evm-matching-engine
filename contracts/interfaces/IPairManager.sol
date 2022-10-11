@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../libraries/types/PairManagerCoreStorage.sol";
+import "../libraries/types/MatchingEngineCoreStorage.sol";
 
 interface IPairManager {
     event MarketFilled(
@@ -177,7 +177,10 @@ interface IPairManager {
     )
         external
         view
-        returns (PairManagerCoreStorage.LiquidityOfEachPip[] memory, uint128);
+        returns (
+            MatchingEngineCoreStorage.LiquidityOfEachPip[] memory,
+            uint128
+        );
 
     //    function pause() external;
     //

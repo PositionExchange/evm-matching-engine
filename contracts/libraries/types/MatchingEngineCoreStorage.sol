@@ -7,7 +7,7 @@ import "../exchange/LiquidityBitmap.sol";
 import "../helper/Timers.sol";
 import "../../interfaces/IPairManager.sol";
 
-abstract contract PairManagerCoreStorage {
+abstract contract MatchingEngineCoreStorage {
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
 

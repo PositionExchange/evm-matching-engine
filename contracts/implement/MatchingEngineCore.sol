@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 import "../libraries/exchange/LimitOrder.sol";
-import "../libraries/types/PairManagerCoreStorage.sol";
+import "../libraries/types/MatchingEngineCoreStorage.sol";
 import "../libraries/helper/Timers.sol";
 import "../libraries/helper/TradeConvert.sol";
 import "../libraries/exchange/TickPosition.sol";
@@ -12,7 +12,7 @@ import "../interfaces/IPairManager.sol";
 import "./Block.sol";
 import "../libraries/helper/Convert.sol";
 
-abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
+abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
     event MarketFilled(
         bool isBuy,
         uint256 indexed amount,
@@ -189,6 +189,13 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
         }
     }
 
+    function getLiquidityInCurrentPip() public view returns (uint128) {
+        return
+            liquidityBitmap.hasLiquidity(singleSlot.pip)
+                ? tickPosition[singleSlot.pip].liquidity
+                : 0;
+    }
+
     //*
     // Private functions
     //*
@@ -231,7 +238,7 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
     {
         require(_params.size != 0, "VL_INVALID_SIZE");
         SingleSlot memory _singleSlot = singleSlot;
-        uint256 underlyingPip = getUnderlyingPriceInPip();
+        uint256 underlyingPip = uint256(getUnderlyingPriceInPip());
         {
             if (_params.isBuy && _singleSlot.pip != 0) {
                 int256 maxPip = int256(underlyingPip) -
@@ -378,8 +385,8 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
     }
 
     struct AmmState {
-        int128 deltaBase;
-        int128 deltaQuote;
+        uint128 deltaBase;
+        uint128 deltaQuote;
     }
 
     function _internalOpenMarketOrder(
@@ -494,13 +501,21 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
                     _ammState[_pipRangeLiquidityIndex]
                         .deltaQuote += crossPipResult.quoteCrossPipOut;
 
-                    if (
-                        crossPipResult.baseCrossPipOut >=
-                        int256(state.remainingSize)
-                    ) {
-                        // Break the loop
+                    if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
+                        state.pip = step.pipNext;
+                        state.remainingSize = 0;
+                        break;
                     } else {
-                        // minus the remaining size
+                        if (_isBase) {
+                            quoteOut += crossPipResult.quoteCrossPipOut;
+                            state.remainingSize -= crossPipResult
+                                .baseCrossPipOut;
+                        } else {
+                            // TODO handle
+                            quoteOut += crossPipResult.baseCrossPipOut;
+                            state.remainingSize -= crossPipResult
+                                .quoteCrossPipOut;
+                        }
                     }
                 }
 
@@ -674,8 +689,8 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
     ) internal virtual {}
 
     struct CrossPipResult {
-        int128 baseCrossPipOut;
-        int128 quoteCrossPipOut;
+        uint128 baseCrossPipOut;
+        uint128 quoteCrossPipOut;
         uint8 pipRangeLiquidityIndex;
         uint128 toPip;
     }
@@ -685,11 +700,10 @@ abstract contract MatchingEngineCore is Block, PairManagerCoreStorage {
         bool isBuy,
         bool isBase,
         uint128 amount
-    ) internal view virtual returns (CrossPipResult memory crossPipResult);
+    ) internal virtual returns (CrossPipResult memory crossPipResult);
 
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
-        view
         virtual
         returns (CrossPipResult memory crossPipResult)
     {}

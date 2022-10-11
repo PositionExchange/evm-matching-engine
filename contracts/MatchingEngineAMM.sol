@@ -28,7 +28,7 @@ contract MatchingEngineAMM is AutoMarketMakerCore, MatchingEngineCore {
         bool isBuy,
         bool isBase,
         uint128 amount
-    ) internal view override returns (CrossPipResult memory crossPipResult) {
+    ) internal override returns (CrossPipResult memory crossPipResult) {
         (
             uint128 baseCrossPipOut,
             uint128 quoteCrossPipOut,
@@ -36,7 +36,13 @@ contract MatchingEngineAMM is AutoMarketMakerCore, MatchingEngineCore {
             uint128 toPip
         ) = _onCrossPipAMM(pipNext, isBuy, isBase, amount);
 
-        return CrossPipResult(0, 0, pipRangeLiquidityIndex, toPip);
+        return
+            CrossPipResult(
+                baseCrossPipOut,
+                quoteCrossPipOut,
+                pipRangeLiquidityIndex,
+                toPip
+            );
     }
 
     function getUnderlyingPriceInPip()
@@ -45,6 +51,6 @@ contract MatchingEngineAMM is AutoMarketMakerCore, MatchingEngineCore {
         override
         returns (uint256)
     {
-        return 0;
+        return uint256(singleSlot.pip);
     }
 }
