@@ -11,65 +11,13 @@ import "../libraries/exchange/TickPosition.sol";
 import "../interfaces/IPairManager.sol";
 import "./Block.sol";
 import "../libraries/helper/Convert.sol";
+import "../interfaces/IMatchingEngineCore.sol";
 
-abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
-    event MarketFilled(
-        bool isBuy,
-        uint256 indexed amount,
-        uint128 toPip,
-        uint256 startPip,
-        uint128 remainingLiquidity,
-        uint64 filledIndex
-    );
-    event LimitOrderCreated(
-        uint64 orderId,
-        uint128 pip,
-        uint128 size,
-        bool isBuy
-    );
-
-    event PairManagerInitialized(
-        address quoteAsset,
-        address baseAsset,
-        address counterParty,
-        uint256 basisPoint,
-        uint256 BASE_BASIC_POINT,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint64 expireTime,
-        address owner
-    );
-    event LimitOrderCancelled(
-        bool isBuy,
-        uint64 orderId,
-        uint128 pip,
-        uint256 size
-    );
-
-    event UpdateMaxFindingWordsIndex(
-        address spotManager,
-        uint128 newMaxFindingWordsIndex
-    );
-
-    event MaxWordRangeForLimitOrderUpdated(
-        uint128 newMaxWordRangeForLimitOrder
-    );
-    event MaxWordRangeForMarketOrderUpdated(
-        uint128 newMaxWordRangeForMarketOrder
-    );
-    event UpdateBasisPoint(address spotManager, uint256 newBasicPoint);
-    event UpdateBaseBasicPoint(address spotManager, uint256 newBaseBasisPoint);
-    event ReserveSnapshotted(uint128 pip, uint256 timestamp);
-    event LimitOrderUpdated(
-        address spotManager,
-        uint64 orderId,
-        uint128 pip,
-        uint256 size
-    );
-    event UpdateExpireTime(address spotManager, uint64 newExpireTime);
-    event UpdateCounterParty(address spotManager, address newCounterParty);
-    event LiquidityPoolAllowanceUpdate(address liquidityPool, bool value);
-
+abstract contract MatchingEngineCore is
+    IMatchingEngineCore,
+    Block,
+    MatchingEngineCoreStorage
+{
     // Define using library
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
@@ -158,6 +106,21 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
                 true,
                 maxWordRangeForLimitOrder
             );
+    }
+
+    function openMarketWithQuoteAsset(
+        uint256 quoteAmount,
+        bool _isBuy,
+        address _trader
+    ) external virtual returns (uint256 sizeOutQuote, uint256 baseAmount) {
+        (sizeOutQuote, baseAmount) = _internalOpenMarketOrder(
+            quoteAmount,
+            _isBuy,
+            0,
+            _trader,
+            false,
+            maxWordRangeForLimitOrder
+        );
     }
 
     //*

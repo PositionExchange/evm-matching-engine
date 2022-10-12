@@ -6,8 +6,9 @@ pragma solidity ^0.8.9;
 import "../libraries/types/AMMCoreStorage.sol";
 import "../libraries/helper/Math.sol";
 import "../libraries/helper/LiquidityMath.sol";
+import "../interfaces/IAutoMarketMakerCore.sol";
 
-abstract contract AutoMarketMakerCore is AMMCoreStorage {
+abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;
 
@@ -61,10 +62,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         );
         uint128 sqrtK = (baseReal * quoteReal).sqrt128();
 
-        uint128 liquidity =
-
         // TODO calculate liquidity
-        return(0,0,0);
+        return (0, 0, 0);
     }
 
     function removeLiquidity(uint128 liquidity, uint32 indexedPipRange)
@@ -84,9 +83,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         external
         virtual
         returns (
-            uint128 liquidity,
-            uint256 baseAmount,
-            uint256 quoteAmount
+            uint128 newLiquidity,
+            uint256 newBaseAmount,
+            uint256 newQuoteAmount
         )
     {
         return (0, 0, 0);

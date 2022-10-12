@@ -37,7 +37,6 @@ library Liquidity {
         uint128 sqrtQuoteReal,
         uint128 sqrtBaseReal,
         uint128 sqrtK
-
     ) internal {
         self.quoteVirtual = quoteVirtual;
         self.baseVirtual = baseVirtual;
