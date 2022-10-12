@@ -359,7 +359,7 @@ abstract contract MatchingEngineCore is
         address _trader,
         bool _isBase,
         uint128 _maxFindingWordsIndex
-    ) internal virtual returns (uint256 baseOut, uint256 quoteOut) {
+    ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
         uint8 _pipRangeLiquidityIndex = 0;
         // only support up to 5 pip ranges
         uint8[] memory _pipRanges = new uint8[](5);
@@ -470,12 +470,12 @@ abstract contract MatchingEngineCore is
                         break;
                     } else {
                         if (_isBase) {
-                            quoteOut += crossPipResult.quoteCrossPipOut;
+                            flipSideOut += crossPipResult.quoteCrossPipOut;
                             state.remainingSize -= crossPipResult
                                 .baseCrossPipOut;
                         } else {
                             // TODO handle
-                            quoteOut += crossPipResult.baseCrossPipOut;
+                            flipSideOut += crossPipResult.baseCrossPipOut;
                             state.remainingSize -= crossPipResult
                                 .quoteCrossPipOut;
                         }
@@ -503,12 +503,12 @@ abstract contract MatchingEngineCore is
                             baseAmount.Uint256ToUint128()
                         );
                         if (_isBase)
-                            quoteOut += TradeConvert.baseToQuote(
+                            flipSideOut += TradeConvert.baseToQuote(
                                 state.remainingSize,
                                 step.pipNext,
                                 state.basisPoint
                             );
-                        else quoteOut += baseAmount;
+                        else flipSideOut += baseAmount;
 
                         // remaining liquidity at current pip
                         state.remainingLiquidity =
@@ -525,7 +525,7 @@ abstract contract MatchingEngineCore is
                         // order in that pip will be fulfilled
                         if (_isBase) {
                             state.remainingSize -= liquidity;
-                            quoteOut += TradeConvert.baseToQuote(
+                            flipSideOut += TradeConvert.baseToQuote(
                                 liquidity,
                                 step.pipNext,
                                 state.basisPoint
@@ -536,7 +536,7 @@ abstract contract MatchingEngineCore is
                                 step.pipNext,
                                 state.basisPoint
                             );
-                            quoteOut += liquidity;
+                            flipSideOut += liquidity;
                         }
                         state.pip = state.isBuy
                             ? step.pipNext + 1
@@ -546,13 +546,13 @@ abstract contract MatchingEngineCore is
                         // only 1 pip should be toggled, so we call it directly here
                         liquidityBitmap.toggleSingleBit(step.pipNext, false);
                         if (_isBase) {
-                            quoteOut += TradeConvert.baseToQuote(
+                            flipSideOut += TradeConvert.baseToQuote(
                                 state.remainingSize,
                                 step.pipNext,
                                 state.basisPoint
                             );
                         } else {
-                            quoteOut += liquidity;
+                            flipSideOut += liquidity;
                         }
                         state.remainingSize = 0;
                         state.pip = step.pipNext;
@@ -613,14 +613,14 @@ abstract contract MatchingEngineCore is
             }
         }
 
-        baseOut = _size - state.remainingSize;
+        mainSideOut = _size - state.remainingSize;
         _addReserveSnapshot();
 
-        if (baseOut != 0) {
+        if (mainSideOut != 0) {
             if (_isBase) {
                 emit MarketFilled(
                     state.isBuy,
-                    baseOut,
+                    mainSideOut,
                     singleSlot.pip,
                     state.startPip,
                     state.remainingLiquidity,
@@ -629,7 +629,7 @@ abstract contract MatchingEngineCore is
             } else {
                 emit MarketFilled(
                     state.isBuy,
-                    quoteOut,
+                    flipSideOut,
                     singleSlot.pip,
                     state.startPip,
                     state.remainingLiquidity,
@@ -637,7 +637,7 @@ abstract contract MatchingEngineCore is
                 );
             }
 
-            emitEventSwap(state.isBuy, baseOut, quoteOut, _trader);
+            emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
         }
     }
 
