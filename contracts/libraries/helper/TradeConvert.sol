@@ -7,7 +7,7 @@ library TradeConvert {
         uint256 quantity,
         uint128 pip,
         uint256 basisPoint
-    ) internal view returns (uint256) {
+    ) internal pure returns (uint256) {
         // quantity * pip / baseBasisPoint / basisPoint / baseBasisPoint;
         // shorten => quantity * pip / basisPoint ;
         return (quantity * pip) / basisPoint;
@@ -17,7 +17,7 @@ library TradeConvert {
         uint256 quoteAmount,
         uint128 pip,
         uint256 basisPoint
-    ) public view returns (uint256) {
+    ) public pure returns (uint256) {
         return (quoteAmount * basisPoint) / pip;
     }
 }
