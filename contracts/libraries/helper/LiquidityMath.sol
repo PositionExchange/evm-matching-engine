@@ -24,79 +24,40 @@ library LiquidityMath {
     /// these functions below are used to calculate the amount asset when SELL
     function calculateBaseWithPriceWhenSell(
         uint128 sqrtPriceTarget,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal
+        uint128 quoteReal,
+        uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            ((sqrtPriceTarget * sqrtBaseReal * sqrtQuoteReal) /
-                (sqrtPriceTarget**2)) - (sqrtBaseReal**2);
-    }
-
-    function calculateBaseWithoutPriceWhenSell(
-        uint128 liquidity,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal,
-        uint128 amountQuote
-    ) internal pure returns (uint128) {
-        return (liquidity / (sqrtQuoteReal**2 - amountQuote)) - sqrtBaseReal**2;
+            (quoteReal * (sqrtCurrentPrice - sqrtPriceTarget)) /
+            (sqrtPriceTarget * sqrtCurrentPrice**2);
     }
 
     function calculateQuoteWithPriceWhenSell(
         uint128 sqrtPriceTarget,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal
+        uint128 quoteReal,
+        uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            sqrtQuoteReal**2 - sqrtPriceTarget * sqrtBaseReal * sqrtQuoteReal;
+            (quoteReal * (sqrtCurrentPrice - sqrtPriceTarget)) /
+            sqrtCurrentPrice;
     }
-
-    function calculateQuoteWithoutPriceWhenSell(
-        uint128 liquidity,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal,
-        uint128 amountBase
-    ) internal pure returns (uint128) {
-        return sqrtQuoteReal**2 - (liquidity / (sqrtBaseReal**2 - amountBase));
-    }
-
-    /// these functions below are used to calculate the amount asset when BUY
 
     function calculateBaseWithPriceWhenBuy(
         uint128 sqrtPriceTarget,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal
+        uint128 baseReal,
+        uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            sqrtBaseReal**2 -
-            (sqrtPriceTarget * sqrtBaseReal * sqrtQuoteReal) /
-            sqrtPriceTarget**2;
-    }
-
-    function calculateBaseWithoutPriceWhenBuy(
-        uint128 liquidity,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal,
-        uint128 amountQuote
-    ) internal pure returns (uint128) {
-        return sqrtBaseReal**2 - (liquidity / (sqrtQuoteReal**2 - amountQuote));
+            (baseReal * (sqrtPriceTarget - sqrtCurrentPrice)) / sqrtPriceTarget;
     }
 
     function calculateQuoteWithPriceWhenBuy(
         uint128 sqrtPriceTarget,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal
+        uint128 baseReal,
+        uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            sqrtPriceTarget * sqrtBaseReal * sqrtQuoteReal - sqrtQuoteReal**2;
-    }
-
-    function calculateQuoteWithoutPriceWhenBuy(
-        uint128 liquidity,
-        uint128 sqrtBaseReal,
-        uint128 sqrtQuoteReal,
-        uint128 amountQuote
-    ) internal pure returns (uint128) {
-        return sqrtQuoteReal**2 - (liquidity / (sqrtBaseReal**2 - amountQuote));
+            baseReal * sqrtCurrentPrice * (sqrtPriceTarget - sqrtCurrentPrice);
     }
 
     function calculateIndexPipRange(uint128 pip, uint128 pipRange)

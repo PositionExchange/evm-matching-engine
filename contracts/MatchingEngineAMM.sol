@@ -7,26 +7,17 @@ pragma solidity ^0.8.9;
 import "./implement/MatchingEngineCore.sol";
 import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
+import "./libraries/extensions/Fee.sol";
 
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
+    Fee,
     AutoMarketMakerCore,
     MatchingEngineCore
 {
     using Math for uint128;
     bool isInitialized;
     address public counterParty;
-    // quote asset token address
-    IERC20 internal quoteAsset;
-
-    // base asset token address
-    IERC20 internal baseAsset;
-
-    // base fee for base asset
-    uint256 internal baseFeeFunding;
-
-    // base fee for quote asset
-    uint256 internal quoteFeeFunding;
 
     modifier onlyCounterParty() {
         require(counterParty == _msgSender(), "VL_ONLY_COUNTERPARTY");
@@ -50,7 +41,11 @@ contract MatchingEngineAMM is
         bool isBuy,
         bool isBase,
         uint128 amount
-    ) internal override returns (CrossPipResult memory crossPipResult) {
+    )
+        internal
+        override(MatchingEngineCore)
+        returns (CrossPipResult memory crossPipResult)
+    {
         (
             uint128 baseCrossPipOut,
             uint128 quoteCrossPipOut,
@@ -99,56 +94,27 @@ contract MatchingEngineAMM is
         return exData;
     }
 
-    function decreaseBaseFeeFunding(uint256 baseFee)
-        external
-        override
-        onlyCounterParty
-    {
-        if (baseFee > 0) {
-            baseFeeFunding -= baseFee;
-        }
-    }
-
-    function decreaseQuoteFeeFunding(uint256 quoteFee)
-        external
-        override
-        onlyCounterParty
-    {
-        if (quoteFee > 0) {
-            quoteFeeFunding -= quoteFee;
-        }
-    }
-
-    function increaseBaseFeeFunding(uint256 baseFee)
-        external
-        override
-        onlyCounterParty
-    {
-        if (baseFee > 0) {
-            baseFeeFunding += baseFee;
-        }
-    }
-
-    function increaseQuoteFeeFunding(uint256 quoteFee)
-        external
-        override
-        onlyCounterParty
-    {
-        if (quoteFee > 0) {
-            quoteFeeFunding += quoteFee;
-        }
-    }
-
-    function resetFee(uint256 baseFee, uint256 quoteFee)
-        external
-        override
-        onlyCounterParty
-    {
-        baseFeeFunding -= baseFee;
-        quoteFeeFunding -= quoteFee;
-    }
-
     function _msgSender() internal view returns (address) {
         return msg.sender;
     }
+
+    function _addReserveSnapshot() internal override(MatchingEngineCore) {}
+
+    function emitEventSwap(
+        bool isBuy,
+        uint256 _baseAmount,
+        uint256 _quoteAmount,
+        address _trader
+    ) internal override(MatchingEngineCore) {}
+
+    function getLiquidityInPipRange(
+        uint128 fromPip,
+        uint256 dataLength,
+        bool toHigher
+    )
+        external
+        view
+        override(MatchingEngineCore, IMatchingEngineCore)
+        returns (LiquidityOfEachPip[] memory, uint128)
+    {}
 }

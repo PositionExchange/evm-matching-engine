@@ -10,13 +10,12 @@ library Liquidity {
         uint128 sqrtMinPip;
         uint128 quoteVirtual;
         uint128 baseVirtual;
-        uint128 sqrtQuoteReal;
-        uint128 sqrtBaseReal;
+        uint128 quoteReal;
+        uint128 baseReal;
         uint32 indexedPipRanger;
         uint256 feeGrowthBase;
         uint256 feeGrowthQuote;
         uint128 sqrtK;
-        uint128 liquidity;
     }
 
     function initNewPipRange(
@@ -34,14 +33,14 @@ library Liquidity {
         Liquidity.Info storage self,
         uint128 quoteVirtual,
         uint128 baseVirtual,
-        uint128 sqrtQuoteReal,
-        uint128 sqrtBaseReal,
+        uint128 quoteReal,
+        uint128 baseReal,
         uint128 sqrtK
     ) internal {
         self.quoteVirtual = quoteVirtual;
         self.baseVirtual = baseVirtual;
-        self.sqrtQuoteReal = sqrtQuoteReal;
-        self.sqrtBaseReal = sqrtBaseReal;
+        self.quoteReal = quoteReal;
+        self.baseReal = baseReal;
         self.sqrtK = sqrtK;
     }
 

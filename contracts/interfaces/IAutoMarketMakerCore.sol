@@ -5,6 +5,8 @@
 pragma solidity ^0.8.9;
 
 interface IAutoMarketMakerCore {
+    // TODO add guard
+
     function addLiquidity(
         uint128 baseAmount,
         uint128 quoteAmount,
@@ -17,16 +19,27 @@ interface IAutoMarketMakerCore {
             uint32 liquidity
         );
 
-    function removeLiquidity(uint128 liquidity, uint32 indexedPipRange)
+    struct RemoveLiquidity {
+        uint128 baseVirtual;
+        uint128 quoteVirtual;
+        uint128 liquidity;
+        uint32 indexedPipRange;
+        uint256 feeGrowthBase;
+        uint256 feeGrowthQuote;
+    }
+
+    function removeLiquidity(RemoveLiquidity calldata params)
         external
         returns (uint128 baseAmount, uint128 quoteAmount);
 
-    function modifyLiquidity(
-        uint256 baseAmount,
-        uint256 quoteAmount,
-        uint32 indexedPipRange,
-        uint8 modifyType
-    )
+    struct ModifyLiquidity {
+        uint128 quoteAmount;
+        uint128 baseAmount;
+        uint32 indexedPipRange;
+        uint8 modifyType;
+    }
+
+    function modifyLiquidity(ModifyLiquidity calldata params)
         external
         returns (
             uint128 newLiquidity,

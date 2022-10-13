@@ -8,6 +8,8 @@ import "./IAutoMarketMakerCore.sol";
 import "./IMatchingEngineCore.sol";
 
 interface IMatchingEngineAMM is IAutoMarketMakerCore, IMatchingEngineCore {
+    // TODO add guard
+
     struct ExchangedData {
         uint256 baseAmount;
         uint256 quoteAmount;
@@ -15,15 +17,16 @@ interface IMatchingEngineAMM is IAutoMarketMakerCore, IMatchingEngineCore {
         uint256 feeBaseAmount;
     }
 
-    function decreaseBaseFeeFunding(uint256 baseFee) external;
-
-    function decreaseQuoteFeeFunding(uint256 quoteFee) external;
-
-    function increaseBaseFeeFunding(uint256 baseFee) external;
-
-    function increaseQuoteFeeFunding(uint256 quoteFee) external;
-
-    function resetFee(uint256 baseFee, uint256 quoteFee) external;
+    //
+    //    function decreaseBaseFeeFunding(uint256 baseFee) external;
+    //
+    //    function decreaseQuoteFeeFunding(uint256 quoteFee) external;
+    //
+    //    function increaseBaseFeeFunding(uint256 baseFee) external;
+    //
+    //    function increaseQuoteFeeFunding(uint256 quoteFee) external;
+    //
+    //    function resetFee(uint256 baseFee, uint256 quoteFee) external;
 
     function accumulateClaimableAmount(
         uint128 _pip,

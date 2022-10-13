@@ -333,6 +333,7 @@ abstract contract MatchingEngineCore is
                 _maxFindingWordsIndex
             );
     }
+
     struct AmmState {
         uint128 deltaBase;
         uint128 deltaQuote;
@@ -381,15 +382,15 @@ abstract contract MatchingEngineCore is
             // updated findHasLiquidityInMultipleWords, save more gas
             if (_maxPip != 0) {
                 // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
-                if (
-                    state.isReachedMaxPip(step.pipNext, _maxPip)
-                ) {
+                if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
                     break;
                 }
             }
             CrossPipResult memory crossPipResult = _onCrossPipHook(
                 step.pipNext,
-                state.isBuy
+                state.isBuy,
+                _isBase,
+                uint128(state.remainingSize)
             );
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
@@ -436,10 +437,16 @@ abstract contract MatchingEngineCore is
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
                         state.pip = step.pipNext;
                         state.remainingSize = 0;
+                        if (_isBase)
+                            state.flipSideOut += crossPipResult
+                                .quoteCrossPipOut;
+                        else
+                            state.flipSideOut += crossPipResult.baseCrossPipOut;
                         break;
                     } else {
                         if (_isBase) {
-                            state.flipSideOut += crossPipResult.quoteCrossPipOut;
+                            state.flipSideOut += crossPipResult
+                                .quoteCrossPipOut;
                             state.remainingSize -= crossPipResult
                                 .baseCrossPipOut;
                         } else {
@@ -471,7 +478,10 @@ abstract contract MatchingEngineCore is
                         tickPosition[step.pipNext].partiallyFill(
                             baseAmount.Uint256ToUint128()
                         );
-                        state.updateTradedSize(state.remainingSize, step.pipNext);
+                        state.updateTradedSize(
+                            state.remainingSize,
+                            step.pipNext
+                        );
                         // remaining liquidity at current pip
                         state.remainingLiquidity =
                             liquidity -
@@ -605,12 +615,7 @@ abstract contract MatchingEngineCore is
         bool toHigher
     ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
 
-    function getUnderlyingPriceInPip()
-        internal
-        view
-        virtual
-        returns (uint256)
-    {
+    function getUnderlyingPriceInPip() internal view virtual returns (uint256) {
         return uint256(singleSlot.pip);
     }
 
