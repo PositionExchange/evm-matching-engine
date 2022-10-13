@@ -554,7 +554,7 @@ abstract contract MatchingEngineCore is
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult memory crossPipResult);
 
-    function _updateAMMState(SwapState.AmmState memory ammState) internal virtual;
+    function _updateAMMState(SwapState.AmmState memory ammState) internal virtual {}
 
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
