@@ -568,7 +568,7 @@ abstract contract MatchingEngineCore is
         uint64 orderId,
         uint128 pip,
         uint256 size
-    ) internal virtual;
+    ) internal virtual {}
 
     struct CrossPipResult {
         uint128 baseCrossPipOut;
@@ -587,14 +587,15 @@ abstract contract MatchingEngineCore is
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
         virtual
-        returns (CrossPipResult memory crossPipResult);
+        returns (CrossPipResult memory crossPipResult)
+    {}
 
     function emitEventSwap(
         bool isBuy,
         uint256 _baseAmount,
         uint256 _quoteAmount,
         address _trader
-    ) internal virtual;
+    ) internal virtual {}
 
     function _updateAmmState() external virtual {}
 
@@ -602,7 +603,7 @@ abstract contract MatchingEngineCore is
         uint128 fromPip,
         uint256 dataLength,
         bool toHigher
-    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128);
+    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
 
     function getUnderlyingPriceInPip()
         internal
@@ -613,5 +614,5 @@ abstract contract MatchingEngineCore is
         return uint256(singleSlot.pip);
     }
 
-    function _addReserveSnapshot() internal virtual;
+    function _addReserveSnapshot() internal virtual {}
 }
