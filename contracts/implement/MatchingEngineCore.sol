@@ -617,26 +617,14 @@ abstract contract MatchingEngineCore is
         _addReserveSnapshot();
 
         if (mainSideOut != 0) {
-            if (_isBase) {
-                emit MarketFilled(
-                    state.isBuy,
-                    mainSideOut,
-                    singleSlot.pip,
-                    state.startPip,
-                    state.remainingLiquidity,
-                    tickPosition[singleSlot.pip].calculatingFilledIndex()
-                );
-            } else {
-                emit MarketFilled(
-                    state.isBuy,
-                    flipSideOut,
-                    singleSlot.pip,
-                    state.startPip,
-                    state.remainingLiquidity,
-                    tickPosition[singleSlot.pip].calculatingFilledIndex()
-                );
-            }
-
+            emit MarketFilled(
+                state.isBuy,
+                _isBase ? mainSideOut : flipSideOut,
+                singleSlot.pip,
+                state.startPip,
+                state.remainingLiquidity,
+                tickPosition[singleSlot.pip].calculatingFilledIndex()
+            );
             emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
         }
     }
