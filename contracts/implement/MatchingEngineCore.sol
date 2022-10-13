@@ -691,7 +691,9 @@ abstract contract MatchingEngineCore is
         view
         virtual
         returns (uint256)
-    {}
+    {
+        return uint256(singleSlot.pip);
+    }
 
     function _addReserveSnapshot() internal virtual {}
 }

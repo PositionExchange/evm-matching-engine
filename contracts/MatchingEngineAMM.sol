@@ -67,15 +67,6 @@ contract MatchingEngineAMM is
             );
     }
 
-    function getUnderlyingPriceInPip()
-        internal
-        view
-        override
-        returns (uint256)
-    {
-        return uint256(singleSlot.pip);
-    }
-
     function accumulateClaimableAmount(
         uint128 _pip,
         uint64 _orderId,
