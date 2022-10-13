@@ -365,10 +365,10 @@ abstract contract MatchingEngineCore is
             isFullBuy: _initialSingleSlot.isFullBuy,
             isSkipFirstPip: false,
             lastMatchedPip: _initialSingleSlot.pip,
-            lastPipRangeLiquidityIndex: -1,
             isBuy: _isBuy,
             isBase: _isBase,
-            flipSideOut: 0
+            flipSideOut: 0,
+            ammState: SwapState.newAMMState()
         });
         state.beforeExecute();
         while (state.remainingSize != 0) {
@@ -390,7 +390,8 @@ abstract contract MatchingEngineCore is
                 step.pipNext,
                 state.isBuy,
                 _isBase,
-                uint128(state.remainingSize)
+                uint128(state.remainingSize),
+                state.ammState
             );
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
@@ -403,58 +404,15 @@ abstract contract MatchingEngineCore is
                 state.moveBack1Pip();
                 break;
             } else {
-                uint256 _remainingBase = _isBase
-                    ? state.remainingSize
-                    : TradeConvert.quoteToBase(
-                        state.remainingSize,
-                        step.pipNext,
-                        state.basisPoint
-                    );
-                if (crossPipResult.baseCrossPipOut > 0) {
-                    if (
-                        state.lastPipRangeLiquidityIndex !=
-                        int8(crossPipResult.pipRangeLiquidityIndex)
-                    ) {
-                        if (state.lastPipRangeLiquidityIndex != int8(-1)) {
-                            _pipRangeLiquidityIndex++;
-                        }
-                        if (_pipRangeLiquidityIndex > 5) {
-                            revert("Not enough liquidity");
-                        }
-                        state.lastPipRangeLiquidityIndex = int8(
-                            crossPipResult.pipRangeLiquidityIndex
-                        );
-                        // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-                        _pipRanges[_pipRangeLiquidityIndex] = crossPipResult
-                            .pipRangeLiquidityIndex;
-                    }
-
-                    _ammState[_pipRangeLiquidityIndex]
-                        .deltaBase += crossPipResult.baseCrossPipOut;
-                    _ammState[_pipRangeLiquidityIndex]
-                        .deltaQuote += crossPipResult.quoteCrossPipOut;
-
+                if (crossPipResult.baseCrossPipOut > 0 || crossPipResult.quoteCrossPipOut > 0) {
+                    state.updatePipRangeIndex(crossPipResult.pipRangeLiquidityIndex);
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
-                        state.pip = step.pipNext;
-                        state.remainingSize = 0;
-                        if (_isBase)
-                            state.flipSideOut += crossPipResult
-                                .quoteCrossPipOut;
-                        else
-                            state.flipSideOut += crossPipResult.baseCrossPipOut;
+                        // TODO verify me
+                        state.pip = crossPipResult.toPip;
+                        state.ammFillAll(crossPipResult.baseCrossPipOut, crossPipResult.quoteCrossPipOut);
                         break;
                     } else {
-                        if (_isBase) {
-                            state.flipSideOut += crossPipResult
-                                .quoteCrossPipOut;
-                            state.remainingSize -= crossPipResult
-                                .baseCrossPipOut;
-                        } else {
-                            // TODO handle
-                            state.flipSideOut += crossPipResult.baseCrossPipOut;
-                            state.remainingSize -= crossPipResult
-                                .quoteCrossPipOut;
-                        }
+                        state.updateAMMTradedSize(crossPipResult.baseCrossPipOut, crossPipResult.quoteCrossPipOut);
                     }
                 }
 
@@ -556,6 +514,7 @@ abstract contract MatchingEngineCore is
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
+        _updateAMMState(state.ammState);
 
         if (mainSideOut != 0) {
             emit MarketFilled(
@@ -583,7 +542,7 @@ abstract contract MatchingEngineCore is
     struct CrossPipResult {
         uint128 baseCrossPipOut;
         uint128 quoteCrossPipOut;
-        uint8 pipRangeLiquidityIndex;
+        uint256 pipRangeLiquidityIndex;
         uint128 toPip;
     }
 
@@ -591,8 +550,11 @@ abstract contract MatchingEngineCore is
         uint128 pipNext,
         bool isBuy,
         bool isBase,
-        uint128 amount
+        uint128 amount,
+        SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult memory crossPipResult);
+
+    function _updateAMMState(SwapState.AmmState memory ammState) internal virtual {}
 
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
