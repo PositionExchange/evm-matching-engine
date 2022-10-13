@@ -40,12 +40,19 @@ contract MatchingEngineAMM is
         uint128 pipNext,
         bool isBuy,
         bool isBase,
-        uint128 amount
+        uint128 amount,
+        SwapState.AmmState memory ammState
     )
         internal
         override(MatchingEngineCore)
         returns (CrossPipResult memory crossPipResult)
     {
+        // Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
+        // Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
+        // if you change ammStates[0] = 1
+        // then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
+        // because ammStates is passed by an underlying pointer
+        // let's try it in Remix
         (
             uint128 baseCrossPipOut,
             uint128 quoteCrossPipOut,
