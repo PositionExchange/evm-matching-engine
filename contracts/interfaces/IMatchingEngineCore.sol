@@ -7,6 +7,8 @@ pragma solidity ^0.8.9;
 import "../libraries/types/MatchingEngineCoreStorage.sol";
 
 interface IMatchingEngineCore {
+    // TODO add guard
+
     event MarketFilled(
         bool isBuy,
         uint256 indexed amount,

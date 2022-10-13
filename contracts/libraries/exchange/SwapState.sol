@@ -1,10 +1,9 @@
-
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
 import "../helper/TradeConvert.sol";
-library SwapState {
 
+library SwapState {
     enum CurrentLiquiditySide {
         NotSet,
         Buy,
@@ -35,18 +34,24 @@ library SwapState {
         );
         if (currentLiquiditySide != CurrentLiquiditySide.NotSet) {
             if (state.isBuy)
-            // if buy and latest liquidity is buy. skip current pip
+                // if buy and latest liquidity is buy. skip current pip
                 state.isSkipFirstPip =
-                currentLiquiditySide == CurrentLiquiditySide.Buy;
-            // if sell and latest liquidity is sell. skip current pip
+                    currentLiquiditySide == CurrentLiquiditySide.Buy;
+                // if sell and latest liquidity is sell. skip current pip
             else
                 state.isSkipFirstPip =
-                currentLiquiditySide == CurrentLiquiditySide.Sell;
+                    currentLiquiditySide == CurrentLiquiditySide.Sell;
         }
     }
 
-    function isReachedMaxPip(State memory state, uint128 _pipNext, uint128 _maxPip) pure internal returns (bool) {
-        return (state.isBuy && _pipNext > _maxPip) || (!state.isBuy && _pipNext < _maxPip);
+    function isReachedMaxPip(
+        State memory state,
+        uint128 _pipNext,
+        uint128 _maxPip
+    ) internal pure returns (bool) {
+        return
+            (state.isBuy && _pipNext > _maxPip) ||
+            (!state.isBuy && _pipNext < _maxPip);
     }
 
     function moveBack1Pip(State memory state) internal pure {
@@ -65,31 +70,41 @@ library SwapState {
         }
     }
 
-    function updateTradedSize(State memory state, uint256 tradedQuantity, uint128 pipNext) internal pure {
-        if(state.remainingSize == tradedQuantity){
+    function updateTradedSize(
+        State memory state,
+        uint256 tradedQuantity,
+        uint128 pipNext
+    ) internal pure {
+        if (state.remainingSize == tradedQuantity) {
             state.remainingSize = 0;
-        }else{
-            state.remainingSize -= state.isBase ? tradedQuantity : TradeConvert.baseToQuote(
+        } else {
+            state.remainingSize -= state.isBase
+                ? tradedQuantity
+                : TradeConvert.baseToQuote(
+                    tradedQuantity,
+                    pipNext,
+                    state.basisPoint
+                );
+        }
+
+        state.flipSideOut += state.isBase
+            ? TradeConvert.baseToQuote(
                 tradedQuantity,
                 pipNext,
                 state.basisPoint
-            );
-        }
-
-        state.flipSideOut += state.isBase ? TradeConvert.baseToQuote(
-            tradedQuantity,
-            pipNext,
-            state.basisPoint
-        ) : tradedQuantity;
+            )
+            : tradedQuantity;
     }
 
-    function reverseIsFullBuy(State memory state) internal pure returns(uint8) {
-        if(state.isFullBuy == 1){
+    function reverseIsFullBuy(State memory state)
+        internal
+        pure
+        returns (uint8)
+    {
+        if (state.isFullBuy == 1) {
             return 2;
-        }else{
+        } else {
             return 1;
         }
     }
-
-
 }

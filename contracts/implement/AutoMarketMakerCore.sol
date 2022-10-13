@@ -12,6 +12,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;
 
+    uint128 public constant CURVE_PIP = 1e36;
+
     function initializeAMM(
         uint128 _pipRange,
         uint128 _liquidity,
@@ -35,38 +37,55 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         )
     {
         Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];
+        uint128 sqrtPipMin;
+        uint128 sqrtPipMax;
 
         uint128 currentPrice = getCurrentPrice();
 
-        if (_liquidityInfo.sqrtMaxPip == 0) {
-            (uint128 pipMin, uint128 pipMax) = LiquidityMath.calculatePipRange(
+        if (_liquidityInfo.sqrtK == 0) {
+            (sqrtPipMin, sqrtPipMax) = LiquidityMath.calculatePipRange(
                 indexedPipRange,
                 pipRange
             );
+            sqrtPipMin = (sqrtPipMin * CURVE_PIP).sqrt128();
+            sqrtPipMax = (sqrtPipMax * CURVE_PIP).sqrt128();
+
+            // TODO init k
             liquidityInfo[indexedPipRange].initNewPipRange(
-                pipMax.sqrt128(),
-                pipMin.sqrt128(),
+                sqrtPipMax,
+                sqrtPipMin,
                 indexedPipRange
             );
+            _liquidityInfo = liquidityInfo[indexedPipRange];
         }
 
-        uint128 baseReal = LiquidityMath.calculateBaseReal(
-            _liquidityInfo.sqrtMaxPip,
-            _liquidityInfo.baseVirtual**2 + baseAmount,
-            currentPrice
-        );
-        uint128 quoteReal = LiquidityMath.calculateQuoteReal(
+        uint128 quoteReal;
+        uint128 baseReal;
+        if (indexedPipRange < currentIndexedPipRange) {
+            currentPrice = sqrtPipMax;
+        } else if (indexedPipRange > currentIndexedPipRange) {
+            currentPrice = sqrtPipMin;
+        }
+        quoteReal = LiquidityMath.calculateQuoteReal(
             _liquidityInfo.sqrtMinPip,
-            _liquidityInfo.quoteVirtual**2 + quoteAmount,
+            quoteAmount,
             currentPrice
         );
+        baseReal = LiquidityMath.calculateBaseReal(
+            _liquidityInfo.sqrtMinPip,
+            quoteAmount,
+            sqrtPipMin
+        );
+
         uint128 sqrtK = (baseReal * quoteReal).sqrt128();
+
+        //        _liquidityInfo.u
 
         // TODO calculate liquidity
         return (0, 0, 0);
     }
 
-    function removeLiquidity(uint128 liquidity, uint32 indexedPipRange)
+    function removeLiquidity(RemoveLiquidity calldata params)
         external
         virtual
         returns (uint128 baseAmount, uint128 quoteAmount)
@@ -74,12 +93,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         return (0, 0);
     }
 
-    function modifyLiquidity(
-        uint256 baseAmount,
-        uint256 quoteAmount,
-        uint32 indexedPipRange,
-        uint8 modifyType
-    )
+    function modifyLiquidity(ModifyLiquidity calldata params)
         external
         virtual
         returns (
@@ -111,42 +125,119 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         uint32 indexedPipRange;
         // Have target price
         if (pipNext != 0) {
-            uint128 sqrtTargetPip = pipNext.sqrt128();
-            indexedPipRange = LiquidityMath.calculateIndexPipRange(
-                pipNext,
-                pipRange
-            );
-            Liquidity.Info memory _liquidityInfo = liquidityInfo[
-                indexedPipRange
-            ];
-            // TODO check cross indexed pip range
-            if (isBuy) {
-                baseCrossPipOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
-                    sqrtTargetPip,
-                    _liquidityInfo.sqrtBaseReal,
-                    _liquidityInfo.sqrtQuoteReal
-                );
-                quoteCrossPipOut = LiquidityMath.calculateQuoteWithPriceWhenBuy(
-                        sqrtTargetPip,
-                        _liquidityInfo.sqrtBaseReal,
-                        _liquidityInfo.sqrtQuoteReal
-                    );
-            } else {
-                baseCrossPipOut = LiquidityMath.calculateBaseWithPriceWhenSell(
-                    sqrtTargetPip,
-                    _liquidityInfo.sqrtBaseReal,
-                    _liquidityInfo.sqrtQuoteReal
-                );
-                quoteCrossPipOut = LiquidityMath
-                    .calculateQuoteWithPriceWhenSell(
-                        sqrtTargetPip,
-                        _liquidityInfo.sqrtBaseReal,
-                        _liquidityInfo.sqrtQuoteReal
-                    );
-            }
-        } else if (pipNext != 0) {
-            if (isBuy) {} else {}
+            //            uint128 sqrtTargetPip = pipNext.sqrt128();
+            //            indexedPipRange = LiquidityMath.calculateIndexPipRange(
+            //                pipNext,
+            //                pipRange
+            //            );
+            //            Liquidity.Info memory _liquidityInfo = liquidityInfo[
+            //                indexedPipRange
+            //            ];
+            //            // TODO check cross indexed pip range
+            //            if (isBuy) {
+            //                baseCrossPipOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
+            //                    sqrtTargetPip,
+            //                    _liquidityInfo.baseReal,
+            //                    _liquidityInfo.quoteReal
+            //                );
+            //                quoteCrossPipOut = LiquidityMath.calculateQuoteWithPriceWhenBuy(
+            //                        sqrtTargetPip,
+            //                        _liquidityInfo.baseReal,
+            //                        _liquidityInfo.quoteReal
+            //                    );
+            //            } else {
+            //                baseCrossPipOut = LiquidityMath.calculateBaseWithPriceWhenSell(
+            //                    sqrtTargetPip,
+            //                    _liquidityInfo.baseReal,
+            //                    _liquidityInfo.quoteReal
+            //                );
+            //                quoteCrossPipOut = LiquidityMath
+            //                    .calculateQuoteWithPriceWhenSell(
+            //                        sqrtTargetPip,
+            //                        _liquidityInfo.baseReal,
+            //                        _liquidityInfo.quoteReal
+            //                    );
+            //            }
+        } else if (pipNext == 0) {
+            //            Liquidity.Info memory _liquidityInfo = liquidityInfo[
+            //                currentIndexedPipRange
+            //            ];
+            //
+            //            if (isBuy) {
+            //                if (isBase) {
+            //                    quoteCrossPipOut = LiquidityMath
+            //                        .calculateQuoteWithoutPriceWhenBuy(
+            //                            _liquidityInfo.sqrtK,
+            //                            _liquidityInfo.baseReal,
+            //                            _liquidityInfo.quoteReal,
+            //                            amount
+            //                        );
+            //                    baseCrossPipOut = amount;
+            //                } else {
+            //                    baseCrossPipOut = LiquidityMath
+            //                        .calculateBaseWithoutPriceWhenBuy(
+            //                            _liquidityInfo.sqrtK,
+            //                            _liquidityInfo.baseReal,
+            //                            _liquidityInfo.quoteReal,
+            //                            amount
+            //                        );
+            //                    quoteCrossPipOut = amount;
+            //                }
+            //            } else {
+            //                if (isBase) {
+            //                    quoteCrossPipOut = LiquidityMath
+            //                        .calculateQuoteWithoutPriceWhenSell(
+            //                            _liquidityInfo.sqrtK,
+            //                            _liquidityInfo.baseReal,
+            //                            _liquidityInfo.quoteReal,
+            //                            amount
+            //                        );
+            //                    baseCrossPipOut = amount;
+            //                } else {
+            //                    baseCrossPipOut = LiquidityMath
+            //                        .calculateBaseWithoutPriceWhenSell(
+            //                            _liquidityInfo.sqrtK,
+            //                            _liquidityInfo.baseReal,
+            //                            _liquidityInfo.quoteReal,
+            //                            amount
+            //                        );
+            //                    quoteCrossPipOut = amount;
+            //                }
+            //            }
         }
         return (0, 0, 0, 0);
+    }
+
+    function _updateAmmState(
+        uint128 baseAmount,
+        uint128 quoteAmount,
+        uint32 indexedPipRange,
+        bool isBuy
+    ) internal {
+        Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];
+        if (isBuy) {
+            _liquidityInfo.baseVirtual =
+                _liquidityInfo.baseVirtual -
+                baseAmount;
+            _liquidityInfo.baseReal = _liquidityInfo.baseReal - baseAmount;
+
+            _liquidityInfo.quoteVirtual =
+                _liquidityInfo.quoteVirtual +
+                quoteAmount;
+            _liquidityInfo.quoteReal = _liquidityInfo.quoteReal + quoteAmount;
+        } else {
+            _liquidityInfo.baseVirtual =
+                _liquidityInfo.baseVirtual +
+                baseAmount;
+            _liquidityInfo.baseReal = _liquidityInfo.baseReal + baseAmount;
+
+            _liquidityInfo.quoteVirtual =
+                _liquidityInfo.quoteVirtual -
+                quoteAmount;
+            _liquidityInfo.quoteReal = _liquidityInfo.quoteReal - quoteAmount;
+        }
+
+        uint128 sqrtK = (_liquidityInfo.baseReal * _liquidityInfo.quoteReal)
+            .sqrt128();
     }
 }
