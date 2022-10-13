@@ -514,6 +514,7 @@ abstract contract MatchingEngineCore is
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
+        _updateAMMState(state.ammState);
 
         if (mainSideOut != 0) {
             emit MarketFilled(
@@ -552,6 +553,8 @@ abstract contract MatchingEngineCore is
         uint128 amount,
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult memory crossPipResult);
+
+    function _updateAMMState(SwapState.AmmState memory ammState) internal virtual;
 
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
