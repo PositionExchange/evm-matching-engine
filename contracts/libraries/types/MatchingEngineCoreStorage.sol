@@ -33,12 +33,6 @@ abstract contract MatchingEngineCoreStorage {
         uint8 isFullBuy;
     }
 
-    enum CurrentLiquiditySide {
-        NotSet,
-        Buy,
-        Sell
-    }
-
     struct LiquidityOfEachPip {
         uint128 pip;
         uint256 liquidity;
