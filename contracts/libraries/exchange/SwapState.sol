@@ -41,11 +41,13 @@ library SwapState {
     }
 
     function newAMMState() internal pure returns (AmmState memory) {
+        AmmReserves[5] memory _ammReserves;
+        uint256[5] memory _pipRangesIndex;
         return AmmState({
             lastPipRangeLiquidityIndex: -1,
             pipRangeLiquidityIndex: 0,
-            pipRangesIndex: new uint256[](5),
-            ammReserves: new SwapState.AmmState[](5)
+            pipRangesIndex: _pipRangesIndex,
+            ammReserves: _ammReserves
         });
     }
 
@@ -141,7 +143,7 @@ library SwapState {
         // then now we can use that range to update reserve to the corresponding range
         if (
             state.ammState.lastPipRangeLiquidityIndex !=
-            int8(_pipRangeLiquidityIndex)
+            int256(_pipRangeLiquidityIndex)
         ) {
             if (state.ammState.lastPipRangeLiquidityIndex != -1) {
                 state.ammState.pipRangeLiquidityIndex++;
