@@ -415,17 +415,17 @@ abstract contract MatchingEngineCore is
                     if (_maxPip != 0) {
                         state.lastMatchedPip = step.pipNext;
                     }
-                    uint256 quantity = state.isBase
+                    uint256 remainingQuantity = state.isBase
                         ? state.remainingSize
                         : TradeConvert.quoteToBase(
                             state.remainingSize,
                             step.pipNext,
                             state.basisPoint
                         );
-                    if (liquidity > quantity) {
+                    if (liquidity > remainingQuantity) {
                         // pip position will partially filled and stop here
                         tickPosition[step.pipNext].partiallyFill(
-                            quantity.Uint256ToUint128()
+                            remainingQuantity.Uint256ToUint128()
                         );
                         state.updateTradedSize(
                             state.remainingSize,
@@ -434,10 +434,10 @@ abstract contract MatchingEngineCore is
                         // remaining liquidity at current pip
                         state.remainingLiquidity =
                             liquidity -
-                            quantity.Uint256ToUint128();
+                            remainingQuantity.Uint256ToUint128();
                         state.pip = step.pipNext;
                         state.reverseIsFullBuy();
-                    } else if (quantity > liquidity) {
+                    } else if (remainingQuantity > liquidity) {
                         // order in that pip will be fulfilled
                         state.updateTradedSize(liquidity, step.pipNext);
                         state.moveForward1Pip();
