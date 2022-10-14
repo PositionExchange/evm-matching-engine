@@ -8,12 +8,12 @@ abstract contract AMMCoreStorage {
 
     uint32 public tickSpace;
 
-    uint32 public currentIndexedPipRange;
+    uint256 public currentIndexedPipRange;
 
     struct RealReserve {
         uint256 baseReal;
         uint256 quoteReal;
     }
 
-    mapping(uint64 => Liquidity.Info) public liquidityInfo;
+    mapping(uint256 => Liquidity.Info) public liquidityInfo;
 }

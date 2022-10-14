@@ -63,12 +63,12 @@ library LiquidityMath {
     function calculateIndexPipRange(uint128 pip, uint128 pipRange)
         internal
         pure
-        returns (uint32)
+        returns (uint256)
     {
         return
             pip % pipRange == 0
-                ? uint32((pip / pipRange) + 1)
-                : uint32(pip / pipRange);
+                ? uint256((pip / pipRange) + 1)
+                : uint256(pip / pipRange);
     }
 
     function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)

@@ -359,7 +359,7 @@ abstract contract MatchingEngineCore is
             isBuy: _isBuy,
             isBase: _isBase,
             flipSideOut: 0,
-            ammState: SwapState.newAMMState()
+            ammState: SwapState.newAMMState(_initialSingleSlot.pip)
         });
         state.beforeExecute();
         while (state.remainingSize != 0) {
@@ -395,15 +395,26 @@ abstract contract MatchingEngineCore is
                 state.moveBack1Pip();
                 break;
             } else {
-                if (crossPipResult.baseCrossPipOut > 0 || crossPipResult.quoteCrossPipOut > 0) {
-                    state.updatePipRangeIndex(crossPipResult.pipRangeLiquidityIndex);
+                if (
+                    crossPipResult.baseCrossPipOut > 0 ||
+                    crossPipResult.quoteCrossPipOut > 0
+                ) {
+                    state.updatePipRangeIndex(
+                        crossPipResult.pipRangeLiquidityIndex
+                    );
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
                         // TODO verify me
                         state.pip = crossPipResult.toPip;
-                        state.ammFillAll(crossPipResult.baseCrossPipOut, crossPipResult.quoteCrossPipOut);
+                        state.ammFillAll(
+                            crossPipResult.baseCrossPipOut,
+                            crossPipResult.quoteCrossPipOut
+                        );
                         break;
                     } else {
-                        state.updateAMMTradedSize(crossPipResult.baseCrossPipOut, crossPipResult.quoteCrossPipOut);
+                        state.updateAMMTradedSize(
+                            crossPipResult.baseCrossPipOut,
+                            crossPipResult.quoteCrossPipOut
+                        );
                     }
                 }
 
@@ -545,7 +556,10 @@ abstract contract MatchingEngineCore is
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult memory crossPipResult);
 
-    function _updateAMMState(SwapState.AmmState memory ammState) internal virtual {}
+    function _updateAMMState(SwapState.AmmState memory ammState)
+        internal
+        virtual
+    {}
 
     function _onCrossPipHook(uint128 pipNext, bool isBuy)
         internal
@@ -559,8 +573,6 @@ abstract contract MatchingEngineCore is
         uint256 _quoteAmount,
         address _trader
     ) internal virtual {}
-
-    function _updateAmmState() external virtual {}
 
     function getLiquidityInPipRange(
         uint128 fromPip,
