@@ -20,6 +20,7 @@ library SwapState {
         uint8 pipRangeLiquidityIndex;
         uint256[5] pipRangesIndex;
         AmmReserves[5] ammReserves;
+        uint128 currentPip;
     }
 
     struct State {
@@ -40,15 +41,21 @@ library SwapState {
         AmmState ammState;
     }
 
-    function newAMMState() internal pure returns (AmmState memory) {
+    function newAMMState(uint128 _currentPip)
+        internal
+        pure
+        returns (AmmState memory)
+    {
         AmmReserves[5] memory _ammReserves;
         uint256[5] memory _pipRangesIndex;
-        return AmmState({
-            lastPipRangeLiquidityIndex: -1,
-            pipRangeLiquidityIndex: 0,
-            pipRangesIndex: _pipRangesIndex,
-            ammReserves: _ammReserves
-        });
+        return
+            AmmState({
+                lastPipRangeLiquidityIndex: -1,
+                pipRangeLiquidityIndex: 0,
+                pipRangesIndex: _pipRangesIndex,
+                ammReserves: _ammReserves,
+                currentPip: _currentPip
+            });
     }
 
     function beforeExecute(State memory state) internal pure {
@@ -132,7 +139,10 @@ library SwapState {
         }
     }
 
-    function updatePipRangeIndex(State memory state, uint256 _pipRangeLiquidityIndex) internal pure {
+    function updatePipRangeIndex(
+        State memory state,
+        uint256 _pipRangeLiquidityIndex
+    ) internal pure {
         // initial lastPipRangeLiquidityIndex = -1
         // so it will update state.pipRangesIndex[0] = _pipRangeLiquidityIndex
         // once _pipRangeLiquidityIndex != the last one (initial one)
@@ -155,11 +165,17 @@ library SwapState {
                 _pipRangeLiquidityIndex
             );
             // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-            state.ammState.pipRangesIndex[state.ammState.pipRangeLiquidityIndex] = _pipRangeLiquidityIndex;
+            state.ammState.pipRangesIndex[
+                state.ammState.pipRangeLiquidityIndex
+            ] = _pipRangeLiquidityIndex;
         }
     }
 
-    function updateAMMTradedSize(State memory state, uint128 baseAmount, uint128 quoteAmount) internal pure {
+    function updateAMMTradedSize(
+        State memory state,
+        uint128 baseAmount,
+        uint128 quoteAmount
+    ) internal pure {
         if (state.isBase) {
             state.flipSideOut += quoteAmount;
             state.remainingSize -= baseAmount;
@@ -169,7 +185,11 @@ library SwapState {
         }
     }
 
-    function ammFillAll(State memory state, uint128 baseAmount, uint128 quoteAmount) internal pure {
+    function ammFillAll(
+        State memory state,
+        uint128 baseAmount,
+        uint128 quoteAmount
+    ) internal pure {
         state.remainingSize = 0;
         state.flipSideOut += state.isBase ? quoteAmount : baseAmount;
     }

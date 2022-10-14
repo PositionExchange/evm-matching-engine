@@ -7,6 +7,7 @@ import "../libraries/types/AMMCoreStorage.sol";
 import "../libraries/helper/Math.sol";
 import "../libraries/helper/LiquidityMath.sol";
 import "../interfaces/IAutoMarketMakerCore.sol";
+import "../libraries/exchange/SwapState.sol";
 
 abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Liquidity for Liquidity.Info;
@@ -107,11 +108,16 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
     function getCurrentPrice() internal view virtual returns (uint128) {}
 
-    function _onCrossPipAMM(
-        uint128 pipNext,
-        bool isBuy,
-        bool isBase,
-        uint128 amount
+    struct OnCrossPipParams {
+        uint128 pipNext;
+        bool isBuy;
+        bool isBase;
+        uint128 amount;
+    }
+
+    function _onCrossPipAMMTargetPrice(
+        OnCrossPipParams memory params,
+        SwapState.AmmState memory ammState
     )
         internal
         view
@@ -122,90 +128,118 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             uint128 toPip
         )
     {
-        uint32 indexedPipRange;
+        int256 indexedPipRange;
+        uint128 pipTargetStep;
         // Have target price
-        if (pipNext != 0) {
-            //            uint128 sqrtTargetPip = pipNext.sqrt128();
-            //            indexedPipRange = LiquidityMath.calculateIndexPipRange(
-            //                pipNext,
-            //                pipRange
-            //            );
-            //            Liquidity.Info memory _liquidityInfo = liquidityInfo[
-            //                indexedPipRange
-            //            ];
-            //            // TODO check cross indexed pip range
-            //            if (isBuy) {
-            //                baseCrossPipOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
-            //                    sqrtTargetPip,
-            //                    _liquidityInfo.baseReal,
-            //                    _liquidityInfo.quoteReal
-            //                );
-            //                quoteCrossPipOut = LiquidityMath.calculateQuoteWithPriceWhenBuy(
-            //                        sqrtTargetPip,
-            //                        _liquidityInfo.baseReal,
-            //                        _liquidityInfo.quoteReal
-            //                    );
-            //            } else {
-            //                baseCrossPipOut = LiquidityMath.calculateBaseWithPriceWhenSell(
-            //                    sqrtTargetPip,
-            //                    _liquidityInfo.baseReal,
-            //                    _liquidityInfo.quoteReal
-            //                );
-            //                quoteCrossPipOut = LiquidityMath
-            //                    .calculateQuoteWithPriceWhenSell(
-            //                        sqrtTargetPip,
-            //                        _liquidityInfo.baseReal,
-            //                        _liquidityInfo.quoteReal
-            //                    );
-            //            }
-        } else if (pipNext == 0) {
-            //            Liquidity.Info memory _liquidityInfo = liquidityInfo[
-            //                currentIndexedPipRange
-            //            ];
-            //
-            //            if (isBuy) {
-            //                if (isBase) {
-            //                    quoteCrossPipOut = LiquidityMath
-            //                        .calculateQuoteWithoutPriceWhenBuy(
-            //                            _liquidityInfo.sqrtK,
-            //                            _liquidityInfo.baseReal,
-            //                            _liquidityInfo.quoteReal,
-            //                            amount
-            //                        );
-            //                    baseCrossPipOut = amount;
-            //                } else {
-            //                    baseCrossPipOut = LiquidityMath
-            //                        .calculateBaseWithoutPriceWhenBuy(
-            //                            _liquidityInfo.sqrtK,
-            //                            _liquidityInfo.baseReal,
-            //                            _liquidityInfo.quoteReal,
-            //                            amount
-            //                        );
-            //                    quoteCrossPipOut = amount;
-            //                }
-            //            } else {
-            //                if (isBase) {
-            //                    quoteCrossPipOut = LiquidityMath
-            //                        .calculateQuoteWithoutPriceWhenSell(
-            //                            _liquidityInfo.sqrtK,
-            //                            _liquidityInfo.baseReal,
-            //                            _liquidityInfo.quoteReal,
-            //                            amount
-            //                        );
-            //                    baseCrossPipOut = amount;
-            //                } else {
-            //                    baseCrossPipOut = LiquidityMath
-            //                        .calculateBaseWithoutPriceWhenSell(
-            //                            _liquidityInfo.sqrtK,
-            //                            _liquidityInfo.baseReal,
-            //                            _liquidityInfo.quoteReal,
-            //                            amount
-            //                        );
-            //                    quoteCrossPipOut = amount;
-            //                }
-            //            }
+        uint128 sqrtTargetPip = (params.pipNext * CURVE_PIP).sqrt128();
+        indexedPipRange = int256(
+            LiquidityMath.calculateIndexPipRange(params.pipNext, pipRange)
+        );
+        for (
+            int256 i = ammState.lastPipRangeLiquidityIndex;
+            i <= indexedPipRange;
+            i++
+        ) {
+            SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
+                ammState.pipRangeLiquidityIndex
+            ];
+            // Init amm state
+            if (ammReserves.baseReserve == 0 && ammReserves.baseReserve == 0) {
+                ammState.ammReserves[
+                    ammState.pipRangeLiquidityIndex
+                ] = SwapState.AmmReserves({
+                    baseReserve: liquidityInfo[uint256(i)].baseReal,
+                    quoteReserve: liquidityInfo[uint256(i)].quoteReal
+                });
+                ammState.pipRangesIndex[
+                    ammState.pipRangeLiquidityIndex
+                ] = uint256(i);
+                ammReserves = ammState.ammReserves[
+                    ammState.pipRangeLiquidityIndex
+                ];
+            }
+
+            if (ammState.lastPipRangeLiquidityIndex != indexedPipRange) {
+                pipTargetStep = params.isBuy
+                    ? liquidityInfo[uint256(i)].sqrtMaxPip
+                    : liquidityInfo[uint256(i)].sqrtMinPip;
+            } else {
+                pipTargetStep = sqrtTargetPip;
+            }
+
+            (uint128 baseOut, uint128 quoteOut) = _calculateAmountOut(
+                ammReserves,
+                params.isBuy,
+                pipTargetStep,
+                (ammState.currentPip * CURVE_PIP).sqrt128()
+            );
+
+            if (params.isBuy) {
+                ammState
+                    .ammReserves[ammState.pipRangeLiquidityIndex]
+                    .baseReserve -= baseOut;
+                ammState
+                    .ammReserves[ammState.pipRangeLiquidityIndex]
+                    .quoteReserve += quoteOut;
+            } else {
+                ammState
+                    .ammReserves[ammState.pipRangeLiquidityIndex]
+                    .baseReserve += baseOut;
+                ammState
+                    .ammReserves[ammState.pipRangeLiquidityIndex]
+                    .quoteReserve -= quoteOut;
+            }
+            if (params.isBase) {} else {}
         }
+
         return (0, 0, 0, 0);
+    }
+
+    function _onCrossPipAMMNoTargetPrice(
+        OnCrossPipParams memory params,
+        SwapState.AmmState memory ammState
+    )
+        internal
+        view
+        returns (
+            uint128 baseCrossPipOut,
+            uint128 quoteCrossPipOut,
+            uint8 pipRangeLiquidityIndex,
+            uint128 toPip
+        )
+    {
+        return (0, 0, 0, 0);
+    }
+
+    function _calculateAmountOut(
+        SwapState.AmmReserves memory ammReserves,
+        bool isBuy,
+        uint128 sqrtCurrentPrice,
+        uint128 sqrtPriceTarget
+    ) internal pure returns (uint128 baseOut, uint128 quoteOut) {
+        if (isBuy) {
+            baseOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
+                sqrtPriceTarget,
+                ammReserves.baseReserve,
+                sqrtCurrentPrice
+            );
+            quoteOut = LiquidityMath.calculateQuoteWithPriceWhenBuy(
+                sqrtPriceTarget,
+                ammReserves.baseReserve,
+                sqrtCurrentPrice
+            );
+        } else {
+            baseOut = LiquidityMath.calculateBaseWithPriceWhenSell(
+                sqrtPriceTarget,
+                ammReserves.quoteReserve,
+                sqrtCurrentPrice
+            );
+            quoteOut = LiquidityMath.calculateQuoteWithPriceWhenSell(
+                sqrtPriceTarget,
+                ammReserves.quoteReserve,
+                sqrtCurrentPrice
+            );
+        }
     }
 
     function _updateAmmState(
