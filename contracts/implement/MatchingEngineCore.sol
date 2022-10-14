@@ -334,11 +334,6 @@ abstract contract MatchingEngineCore is
             );
     }
 
-    struct AmmState {
-        uint128 deltaBase;
-        uint128 deltaQuote;
-    }
-
     function _internalOpenMarketOrder(
         uint256 _size,
         bool _isBuy,
