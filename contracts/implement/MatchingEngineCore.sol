@@ -347,10 +347,6 @@ abstract contract MatchingEngineCore is
         bool _isBase,
         uint128 _maxFindingWordsIndex
     ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
-        uint8 _pipRangeLiquidityIndex = 0;
-        // only support up to 5 pip ranges
-        uint8[] memory _pipRanges = new uint8[](5);
-        AmmState[] memory _ammState = new AmmState[](5);
 
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
