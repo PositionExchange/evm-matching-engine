@@ -99,12 +99,11 @@ library SwapState {
     function reverseIsFullBuy(State memory state)
         internal
         pure
-        returns (uint8)
     {
         if (state.isFullBuy == 1) {
-            return 2;
+            state.isFullBuy = 2;
         } else {
-            return 1;
+            state.isFullBuy = 1;
         }
     }
 }

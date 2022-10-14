@@ -487,7 +487,7 @@ abstract contract MatchingEngineCore is
                             liquidity -
                             baseAmount.Uint256ToUint128();
                         state.pip = step.pipNext;
-                        state.isFullBuy = state.reverseIsFullBuy();
+                        state.reverseIsFullBuy();
                     } else if (baseAmount > liquidity) {
                         // order in that pip will be fulfilled
                         state.updateTradedSize(liquidity, step.pipNext);
