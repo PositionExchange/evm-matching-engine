@@ -71,6 +71,44 @@ library LiquidityMath {
                 : uint256(pip / pipRange);
     }
 
+    function calculatePriceTargetWithBaseWhenBuy(
+        uint128 sqrtCurrentPrice,
+        uint128 baseReal,
+        uint128 baseVirtual
+    ) internal pure returns (uint128) {
+        return (baseReal * sqrtCurrentPrice) / (baseReal - baseVirtual);
+    }
+
+    function calculatePriceTargetWithQuoteWhenBuy(
+        uint128 sqrtCurrentPrice,
+        uint128 baseReal,
+        uint128 quoteVirtual
+    ) internal pure returns (uint128) {
+        return
+            (quoteVirtual + baseReal * sqrtCurrentPrice**2) /
+            (baseReal * sqrtCurrentPrice);
+    }
+
+    function calculatePriceTargetWithBaseWhenSell(
+        uint128 sqrtCurrentPrice,
+        uint128 quoteReal,
+        uint128 baseVirtual
+    ) internal pure returns (uint128) {
+        return
+            (quoteReal * sqrtCurrentPrice) /
+            (baseVirtual * sqrtCurrentPrice**2 + quoteReal);
+    }
+
+    function calculatePriceTargetWithQuoteWhenSell(
+        uint128 sqrtCurrentPrice,
+        uint128 quoteReal,
+        uint128 quoteVirtual
+    ) internal pure returns (uint128) {
+        return
+            (quoteReal * sqrtCurrentPrice - quoteVirtual * sqrtCurrentPrice) /
+            (quoteReal);
+    }
+
     function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)
         internal
         pure

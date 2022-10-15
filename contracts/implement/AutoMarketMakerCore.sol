@@ -114,6 +114,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         bool isBase;
         uint128 amount;
     }
+    struct CrossPipState {
+        int256 indexedPipRange;
+        uint128 pipTargetStep;
+        uint128 sqrtTargetPip;
+    }
 
     function _onCrossPipAMMTargetPrice(
         OnCrossPipParams memory params,
@@ -128,16 +133,15 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             uint128 toPip
         )
     {
-        int256 indexedPipRange;
-        uint128 pipTargetStep;
+        CrossPipState memory crossPipState;
         // Have target price
-        uint128 sqrtTargetPip = (params.pipNext * CURVE_PIP).sqrt128();
-        indexedPipRange = int256(
+        crossPipState.sqrtTargetPip = (params.pipNext * CURVE_PIP).sqrt128();
+        crossPipState.indexedPipRange = int256(
             LiquidityMath.calculateIndexPipRange(params.pipNext, pipRange)
         );
         for (
             int256 i = ammState.lastPipRangeLiquidityIndex;
-            i <= indexedPipRange;
+            i <= crossPipState.indexedPipRange;
             i++
         ) {
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -159,20 +163,34 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 ];
             }
 
-            if (ammState.lastPipRangeLiquidityIndex != indexedPipRange) {
-                pipTargetStep = params.isBuy
+            if (
+                ammState.lastPipRangeLiquidityIndex !=
+                crossPipState.indexedPipRange
+            ) {
+                crossPipState.pipTargetStep = params.isBuy
                     ? liquidityInfo[uint256(i)].sqrtMaxPip
                     : liquidityInfo[uint256(i)].sqrtMinPip;
             } else {
-                pipTargetStep = sqrtTargetPip;
+                crossPipState.pipTargetStep = crossPipState.sqrtTargetPip;
             }
 
             (uint128 baseOut, uint128 quoteOut) = _calculateAmountOut(
                 ammReserves,
                 params.isBuy,
-                pipTargetStep,
+                crossPipState.pipTargetStep,
                 (ammState.currentPip * CURVE_PIP).sqrt128()
             );
+
+            /// This case for amount no reach pip
+            /// Need find price stop
+            if ((params.isBase && params.amount < baseOut) || (!params.isBase && params.amount < quoteOut)) {
+                baseCrossPipOut += baseOut;
+                quoteCrossPipOut += quoteOut;
+                //update state
+                break;
+            }
+
+
 
             if (params.isBuy) {
                 ammState
