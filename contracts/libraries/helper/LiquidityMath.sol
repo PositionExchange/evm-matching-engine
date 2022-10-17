@@ -63,12 +63,50 @@ library LiquidityMath {
     function calculateIndexPipRange(uint128 pip, uint128 pipRange)
         internal
         pure
-        returns (uint32)
+        returns (uint256)
     {
         return
             pip % pipRange == 0
-                ? uint32((pip / pipRange) + 1)
-                : uint32(pip / pipRange);
+                ? uint256((pip / pipRange) + 1)
+                : uint256(pip / pipRange);
+    }
+
+    function calculatePriceTargetWithBaseWhenBuy(
+        uint128 sqrtCurrentPrice,
+        uint128 baseReal,
+        uint128 baseVirtual
+    ) internal pure returns (uint128) {
+        return (baseReal * sqrtCurrentPrice) / (baseReal - baseVirtual);
+    }
+
+    function calculatePriceTargetWithQuoteWhenBuy(
+        uint128 sqrtCurrentPrice,
+        uint128 baseReal,
+        uint128 quoteVirtual
+    ) internal pure returns (uint128) {
+        return
+            (quoteVirtual + baseReal * sqrtCurrentPrice**2) /
+            (baseReal * sqrtCurrentPrice);
+    }
+
+    function calculatePriceTargetWithBaseWhenSell(
+        uint128 sqrtCurrentPrice,
+        uint128 quoteReal,
+        uint128 baseVirtual
+    ) internal pure returns (uint128) {
+        return
+            (quoteReal * sqrtCurrentPrice) /
+            (baseVirtual * sqrtCurrentPrice**2 + quoteReal);
+    }
+
+    function calculatePriceTargetWithQuoteWhenSell(
+        uint128 sqrtCurrentPrice,
+        uint128 quoteReal,
+        uint128 quoteVirtual
+    ) internal pure returns (uint128) {
+        return
+            (quoteReal * sqrtCurrentPrice - quoteVirtual * sqrtCurrentPrice) /
+            (quoteReal);
     }
 
     function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)
@@ -78,5 +116,45 @@ library LiquidityMath {
     {
         pipMin = indexedPipRange * pipRange;
         pipMax = pipMin + pipRange - 1;
+    }
+
+    function calculateBaseBuyAndQuoteSellWithoutTargetPrice(
+        uint128 sqrtK,
+        uint128 amountReal,
+        uint128 amount
+    ) internal pure returns (uint128) {
+        return (amount * amountReal**2) / (sqrtK**2 + sqrtK**2 * amountReal);
+    }
+
+    function calculateQuoteBuyAndBaseSellWithoutTargetPrice(
+        uint128 sqrtK,
+        uint128 amountReal,
+        uint128 amount
+    ) internal pure returns (uint128) {
+        return (amount * sqrtK**2) / (amountReal * (amountReal - amount));
+    }
+
+    function calculateKWithQuote(uint128 quoteReal, uint128 priceMax)
+        internal
+        pure
+        returns (uint128)
+    {
+        return quoteReal**2 / priceMax;
+    }
+
+    function calculateKWithBase(uint128 baseReal, uint128 priceMin)
+        internal
+        pure
+        returns (uint128)
+    {
+        return baseReal**2 * priceMin;
+    }
+
+    function calculateKWithBaseAndQuote(uint128 quoteReal, uint128 baseReal)
+        internal
+        pure
+        returns (uint128)
+    {
+        return quoteReal * baseReal;
     }
 }

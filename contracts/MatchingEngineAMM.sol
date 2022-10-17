@@ -47,6 +47,11 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore)
         returns (CrossPipResult memory crossPipResult)
     {
+        if (ammState.lastPipRangeLiquidityIndex == -1) {
+            ammState.lastPipRangeLiquidityIndex = int256(
+                currentIndexedPipRange
+            );
+        }
         // Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
         // Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
         // if you change ammStates[0] = 1
@@ -56,9 +61,17 @@ contract MatchingEngineAMM is
         (
             uint128 baseCrossPipOut,
             uint128 quoteCrossPipOut,
-            uint8 pipRangeLiquidityIndex,
+            uint256 pipRangeLiquidityIndex,
             uint128 toPip
-        ) = _onCrossPipAMM(pipNext, isBuy, isBase, amount);
+        ) = pipNext != 0
+                ? _onCrossPipAMMTargetPrice(
+                    OnCrossPipParams(pipNext, isBuy, isBase, amount),
+                    ammState
+                )
+                : _onCrossPipAMMNoTargetPrice(
+                    OnCrossPipParams(pipNext, isBuy, isBase, amount),
+                    ammState
+                );
 
         return
             CrossPipResult(
@@ -67,6 +80,13 @@ contract MatchingEngineAMM is
                 pipRangeLiquidityIndex,
                 toPip
             );
+    }
+
+    function _updateAMMState(SwapState.AmmState memory ammState)
+        internal
+        override(MatchingEngineCore)
+    {
+        _updateAMMStateAfterTrade(ammState);
     }
 
     function accumulateClaimableAmount(
