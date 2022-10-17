@@ -4,7 +4,6 @@ pragma solidity ^0.8.9;
 import "../exchange/TickPosition.sol";
 import "../exchange/LiquidityBitmap.sol";
 import "../helper/Timers.sol";
-import "../../interfaces/IPairManager.sol";
 
 abstract contract MatchingEngineCoreStorage {
     using TickPosition for TickPosition.Data;

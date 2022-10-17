@@ -16,7 +16,7 @@ interface IAutoMarketMakerCore {
         returns (
             uint128 baseAmountAdded,
             uint128 quoteAmountAdded,
-            uint32 liquidity
+            uint128 liquidity
         );
 
     struct RemoveLiquidity {

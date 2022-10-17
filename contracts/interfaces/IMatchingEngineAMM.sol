@@ -6,8 +6,13 @@ pragma solidity ^0.8.9;
 
 import "./IAutoMarketMakerCore.sol";
 import "./IMatchingEngineCore.sol";
+import "./IFee.sol";
 
-interface IMatchingEngineAMM is IAutoMarketMakerCore, IMatchingEngineCore {
+interface IMatchingEngineAMM is
+    IFee,
+    IAutoMarketMakerCore,
+    IMatchingEngineCore
+{
     // TODO add guard
 
     struct ExchangedData {
@@ -16,17 +21,6 @@ interface IMatchingEngineAMM is IAutoMarketMakerCore, IMatchingEngineCore {
         uint256 feeQuoteAmount;
         uint256 feeBaseAmount;
     }
-
-    //
-    //    function decreaseBaseFeeFunding(uint256 baseFee) external;
-    //
-    //    function decreaseQuoteFeeFunding(uint256 quoteFee) external;
-    //
-    //    function increaseBaseFeeFunding(uint256 baseFee) external;
-    //
-    //    function increaseQuoteFeeFunding(uint256 quoteFee) external;
-    //
-    //    function resetFee(uint256 baseFee, uint256 quoteFee) external;
 
     function accumulateClaimableAmount(
         uint128 _pip,

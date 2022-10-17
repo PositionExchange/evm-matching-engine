@@ -34,7 +34,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         returns (
             uint128 baseAmountAdded,
             uint128 quoteAmountAdded,
-            uint32 liquidity
+            uint128 liquidity
         )
     {
         Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];

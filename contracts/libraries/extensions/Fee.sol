@@ -5,8 +5,9 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../../interfaces/IFee.sol";
 
-abstract contract Fee {
+abstract contract Fee is IFee {
     // quote asset token address
     IERC20 internal quoteAsset;
 
@@ -48,5 +49,13 @@ abstract contract Fee {
     function resetFee(uint256 baseFee, uint256 quoteFee) external virtual {
         baseFeeFunding -= baseFee;
         quoteFeeFunding -= quoteFee;
+    }
+
+    function getFee()
+        external
+        view
+        returns (uint256 baseFeeFunding, uint256 quoteFeeFunding)
+    {
+        return (baseFeeFunding, quoteFeeFunding);
     }
 }

@@ -124,4 +124,24 @@ interface IMatchingEngineCore {
             MatchingEngineCoreStorage.LiquidityOfEachPip[] memory,
             uint128
         );
+
+    function getAmountEstimate(
+        uint256 size,
+        bool isBuy,
+        bool isBase
+    ) external view returns (uint256 mainSideOut, uint256 flipSideOut);
+
+    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
+        external
+        view
+        returns (uint256);
+
+    function getBasisPoint() external view returns (uint256);
+
+    function getCurrentPip() external view returns (uint128);
+
+    function quoteToBase(uint256 quoteAmount, uint128 pip)
+        external
+        view
+        returns (uint256);
 }

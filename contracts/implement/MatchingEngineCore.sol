@@ -8,7 +8,6 @@ import "../libraries/types/MatchingEngineCoreStorage.sol";
 import "../libraries/helper/Timers.sol";
 import "../libraries/helper/TradeConvert.sol";
 import "../libraries/exchange/TickPosition.sol";
-import "../interfaces/IPairManager.sol";
 import "./Block.sol";
 import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
@@ -578,6 +577,30 @@ abstract contract MatchingEngineCore is
         uint256 dataLength,
         bool toHigher
     ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
+
+    // TODO Must implement this function
+    function getAmountEstimate(
+        uint256 size,
+        bool isBuy,
+        bool isBase
+    ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
+
+    // TODO Must implement this function
+    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
+        external
+        view
+        returns (uint256)
+    {}
+
+    function getBasisPoint() external view returns (uint256) {}
+
+    function getCurrentPip() external view returns (uint128) {}
+
+    function quoteToBase(uint256 quoteAmount, uint128 pip)
+        external
+        view
+        returns (uint256)
+    {}
 
     function getUnderlyingPriceInPip() internal view virtual returns (uint256) {
         return uint256(singleSlot.pip);
