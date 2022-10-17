@@ -13,6 +13,7 @@ library SwapState {
     struct AmmReserves {
         uint128 baseReserve;
         uint128 quoteReserve;
+        uint128 sqrtK;
     }
 
     struct AmmState {
@@ -127,10 +128,7 @@ library SwapState {
             : tradedQuantity;
     }
 
-    function reverseIsFullBuy(State memory state)
-        internal
-        pure
-    {
+    function reverseIsFullBuy(State memory state) internal pure {
         if (state.isFullBuy == 1) {
             state.isFullBuy = 2;
         } else {

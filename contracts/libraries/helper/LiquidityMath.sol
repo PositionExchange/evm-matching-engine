@@ -117,4 +117,28 @@ library LiquidityMath {
         pipMin = indexedPipRange * pipRange;
         pipMax = pipMin + pipRange - 1;
     }
+
+    function calculateKWithQuote(uint128 quoteReal, uint128 priceMax)
+        internal
+        pure
+        returns (uint128)
+    {
+        return quoteReal**2 / priceMax;
+    }
+
+    function calculateKWithBase(uint128 baseReal, uint128 priceMin)
+        internal
+        pure
+        returns (uint128)
+    {
+        return baseReal**2 * priceMin;
+    }
+
+    function calculateKWithBaseAndQuote(uint128 quoteReal, uint128 baseReal)
+        internal
+        pure
+        returns (uint128)
+    {
+        return quoteReal * baseReal;
+    }
 }

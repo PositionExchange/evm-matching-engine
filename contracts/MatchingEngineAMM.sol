@@ -61,7 +61,7 @@ contract MatchingEngineAMM is
         (
             uint128 baseCrossPipOut,
             uint128 quoteCrossPipOut,
-            uint8 pipRangeLiquidityIndex,
+            uint256 pipRangeLiquidityIndex,
             uint128 toPip
         ) = pipNext != 0
                 ? _onCrossPipAMMTargetPrice(

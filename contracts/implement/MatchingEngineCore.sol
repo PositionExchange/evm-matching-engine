@@ -342,7 +342,6 @@ abstract contract MatchingEngineCore is
         bool _isBase,
         uint128 _maxFindingWordsIndex
     ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
-
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
         //save gas
