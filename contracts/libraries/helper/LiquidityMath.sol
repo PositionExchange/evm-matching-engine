@@ -118,6 +118,22 @@ library LiquidityMath {
         pipMax = pipMin + pipRange - 1;
     }
 
+    function calculateBaseBuyAndQuoteSellWithoutTargetPrice(
+        uint128 sqrtK,
+        uint128 amountReal,
+        uint128 amount
+    ) internal pure returns (uint128) {
+        return (amount * amountReal**2) / (sqrtK**2 + sqrtK**2 * amountReal);
+    }
+
+    function calculateQuoteBuyAndBaseSellWithoutTargetPrice(
+        uint128 sqrtK,
+        uint128 amountReal,
+        uint128 amount
+    ) internal pure returns (uint128) {
+        return (amount * sqrtK**2) / (amountReal * (amountReal - amount));
+    }
+
     function calculateKWithQuote(uint128 quoteReal, uint128 priceMax)
         internal
         pure

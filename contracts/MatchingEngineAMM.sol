@@ -82,6 +82,13 @@ contract MatchingEngineAMM is
             );
     }
 
+    function _updateAMMState(SwapState.AmmState memory ammState)
+        internal
+        override(MatchingEngineCore)
+    {
+        _updateAMMStateAfterTrade(ammState);
+    }
+
     function accumulateClaimableAmount(
         uint128 _pip,
         uint64 _orderId,

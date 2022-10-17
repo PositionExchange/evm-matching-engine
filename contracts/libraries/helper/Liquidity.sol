@@ -52,4 +52,13 @@ library Liquidity {
         self.feeGrowthBase = feeGrowthBase;
         self.feeGrowthQuote = feeGrowthQuote;
     }
+
+    function updateAMMReserve(
+        Liquidity.Info storage self,
+        uint128 quoteReserve,
+        uint128 baseReserve
+    ) internal {
+        self.quoteReal = quoteReserve;
+        self.baseReal = baseReserve;
+    }
 }
