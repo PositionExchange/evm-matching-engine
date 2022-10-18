@@ -8,14 +8,13 @@ library Liquidity {
     struct Info {
         uint128 sqrtMaxPip;
         uint128 sqrtMinPip;
-        uint128 quoteVirtual;
-        uint128 baseVirtual;
         uint128 quoteReal;
         uint128 baseReal;
-        uint32 indexedPipRanger;
+        uint32 indexedPipRange;
         uint256 feeGrowthBase;
         uint256 feeGrowthQuote;
         uint128 sqrtK;
+        uint128 liquidity;
     }
 
     function initNewPipRange(
@@ -26,19 +25,30 @@ library Liquidity {
     ) internal {
         self.sqrtMaxPip = sqrtMaxPip;
         self.sqrtMinPip = sqrtMinPip;
-        self.indexedPipRanger = indexedPipRange;
+        self.indexedPipRange = indexedPipRange;
+    }
+
+    function updateAddLiquidity(
+        Liquidity.Info storage self,
+        Liquidity.Info memory updater
+    ) internal {
+        if (updater.sqrtK == 0) {
+            self.sqrtMaxPip = updater.sqrtMaxPip;
+            self.sqrtMinPip = updater.sqrtMinPip;
+            self.indexedPipRange = updater.indexedPipRange;
+        }
+        self.quoteReal = updater.quoteReal;
+        self.baseReal = updater.baseReal;
+        self.sqrtK = updater.sqrtK;
+        self.liquidity = updater.liquidity;
     }
 
     function updateLiquidity(
         Liquidity.Info storage self,
-        uint128 quoteVirtual,
-        uint128 baseVirtual,
         uint128 quoteReal,
         uint128 baseReal,
         uint128 sqrtK
     ) internal {
-        self.quoteVirtual = quoteVirtual;
-        self.baseVirtual = baseVirtual;
         self.quoteReal = quoteReal;
         self.baseReal = baseReal;
         self.sqrtK = sqrtK;

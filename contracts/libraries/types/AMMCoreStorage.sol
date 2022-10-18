@@ -10,10 +10,5 @@ abstract contract AMMCoreStorage {
 
     uint256 public currentIndexedPipRange;
 
-    struct RealReserve {
-        uint256 baseReal;
-        uint256 quoteReal;
-    }
-
     mapping(uint256 => Liquidity.Info) public liquidityInfo;
 }

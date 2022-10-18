@@ -134,20 +134,20 @@ library LiquidityMath {
         return (amount * sqrtK**2) / (amountReal * (amountReal - amount));
     }
 
-    function calculateKWithQuote(uint128 quoteReal, uint128 priceMax)
+    function calculateKWithQuote(uint128 quoteReal, uint128 sqrtPriceMax)
         internal
         pure
         returns (uint128)
     {
-        return quoteReal**2 / priceMax;
+        return quoteReal**2 / sqrtPriceMax**2;
     }
 
-    function calculateKWithBase(uint128 baseReal, uint128 priceMin)
+    function calculateKWithBase(uint128 baseReal, uint128 sqrtPriceMin)
         internal
         pure
         returns (uint128)
     {
-        return baseReal**2 * priceMin;
+        return baseReal**2 * sqrtPriceMin**2;
     }
 
     function calculateKWithBaseAndQuote(uint128 quoteReal, uint128 baseReal)
@@ -156,5 +156,35 @@ library LiquidityMath {
         returns (uint128)
     {
         return quoteReal * baseReal;
+    }
+
+    function calculateLiquidity(
+        uint128 amountReal,
+        uint128 sqrtPrice,
+        bool isBase
+    ) internal pure returns (uint128) {
+        if (isBase) {
+            return amountReal * sqrtPrice;
+        } else {
+            return amountReal / sqrtPrice;
+        }
+    }
+
+    function calculateBaseByLiquidity(
+        uint128 liquidity,
+        uint128 sqrtPriceMax,
+        uint128 sqrtPrice
+    ) internal pure returns (uint128) {
+        return
+            (liquidity * (sqrtPriceMax - sqrtPrice)) /
+            (sqrtPrice * sqrtPriceMax);
+    }
+
+    function calculateQuoteByLiquidity(
+        uint128 liquidity,
+        uint128 sqrtPriceMin,
+        uint128 sqrtPrice
+    ) internal pure returns (uint128) {
+        return liquidity * (sqrtPrice - sqrtPriceMin);
     }
 }

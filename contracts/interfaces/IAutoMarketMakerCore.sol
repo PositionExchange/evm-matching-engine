@@ -16,12 +16,12 @@ interface IAutoMarketMakerCore {
         returns (
             uint128 baseAmountAdded,
             uint128 quoteAmountAdded,
-            uint128 liquidity
+            uint128 liquidity,
+            uint256 feeGrowthBase,
+            uint256 feeGrowthQuote
         );
 
     struct RemoveLiquidity {
-        uint128 baseVirtual;
-        uint128 quoteVirtual;
         uint128 liquidity;
         uint32 indexedPipRange;
         uint256 feeGrowthBase;
@@ -39,11 +39,11 @@ interface IAutoMarketMakerCore {
         uint8 modifyType;
     }
 
-    function modifyLiquidity(ModifyLiquidity calldata params)
-        external
-        returns (
-            uint128 newLiquidity,
-            uint256 newBaseAmount,
-            uint256 newQuoteAmount
-        );
+    //    function modifyLiquidity(ModifyLiquidity calldata params)
+    //        external
+    //        returns (
+    //            uint128 newLiquidity,
+    //            uint256 newBaseAmount,
+    //            uint256 newQuoteAmount
+    //        );
 }
