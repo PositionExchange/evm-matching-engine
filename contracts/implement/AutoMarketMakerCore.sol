@@ -24,6 +24,12 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         tickSpace = _tickSpace;
     }
 
+    struct AddLiquidityState {
+        uint128 currentPrice;
+        uint128 quoteReal;
+        uint128 baseReal;
+    }
+
     function addLiquidity(
         uint128 baseAmount,
         uint128 quoteAmount,
@@ -34,70 +40,82 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         returns (
             uint128 baseAmountAdded,
             uint128 quoteAmountAdded,
-            uint128 liquidity
+            uint128 liquidity,
+            uint256 feeGrowthBase,
+            uint256 feeGrowthQuote
         )
     {
+        AddLiquidityState memory state;
         Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];
-        uint128 sqrtPipMin;
-        uint128 sqrtPipMax;
 
-        uint128 currentPrice = getCurrentPrice();
+        state.currentPrice = getCurrentPrice();
 
         if (_liquidityInfo.sqrtK == 0) {
-            (sqrtPipMin, sqrtPipMax) = LiquidityMath.calculatePipRange(
-                indexedPipRange,
-                pipRange
-            );
-            sqrtPipMin = (sqrtPipMin * CURVE_PIP).sqrt128();
-            sqrtPipMax = (sqrtPipMax * CURVE_PIP).sqrt128();
-
-            // TODO init k
-            liquidityInfo[indexedPipRange].initNewPipRange(
-                sqrtPipMax,
-                sqrtPipMin,
-                indexedPipRange
-            );
-            _liquidityInfo = liquidityInfo[indexedPipRange];
+            (uint128 sqrtPipMin, uint128 sqrtPipMax) = LiquidityMath
+                .calculatePipRange(indexedPipRange, pipRange);
+            _liquidityInfo.sqrtMaxPip = (sqrtPipMax * CURVE_PIP).sqrt128();
+            _liquidityInfo.sqrtMinPip = (sqrtPipMin * CURVE_PIP).sqrt128();
+            _liquidityInfo.indexedPipRange = indexedPipRange;
         }
 
-        uint128 quoteReal;
-        uint128 baseReal;
-        uint128 sqrtK;
         if (indexedPipRange < currentIndexedPipRange) {
-            currentPrice = sqrtPipMax;
+            state.currentPrice = _liquidityInfo.sqrtMaxPip;
         } else if (indexedPipRange > currentIndexedPipRange) {
-            currentPrice = sqrtPipMin;
+            state.currentPrice = _liquidityInfo.sqrtMinPip;
         }
-        quoteReal = LiquidityMath.calculateQuoteReal(
+        state.quoteReal = LiquidityMath.calculateQuoteReal(
             _liquidityInfo.sqrtMinPip,
             quoteAmount,
-            currentPrice
+            state.currentPrice
         );
-        baseReal = LiquidityMath.calculateBaseReal(
-            _liquidityInfo.sqrtMinPip,
+        state.baseReal = LiquidityMath.calculateBaseReal(
+            _liquidityInfo.sqrtMaxPip,
             quoteAmount,
-            sqrtPipMin
+            state.currentPrice
         );
+
+        liquidity = state.baseReal != 0
+            ? LiquidityMath.calculateLiquidity(
+                state.baseReal,
+                state.currentPrice,
+                true
+            )
+            : LiquidityMath.calculateLiquidity(
+                state.quoteReal,
+                state.currentPrice,
+                false
+            );
+
+        _liquidityInfo.baseReal += state.baseReal;
+        _liquidityInfo.quoteReal += state.quoteReal;
+        _liquidityInfo.liquidity += liquidity;
 
         if (_liquidityInfo.sqrtK == 0) {
             if (indexedPipRange < currentIndexedPipRange) {
-                sqrtK = LiquidityMath
-                    .calculateKWithQuote(quoteReal, currentPrice)
+                _liquidityInfo.sqrtK = LiquidityMath
+                    .calculateKWithQuote(state.quoteReal, state.currentPrice)
                     .sqrt128();
             } else if (indexedPipRange > currentIndexedPipRange) {
-                sqrtK = LiquidityMath
-                    .calculateKWithBase(baseReal, currentPrice)
+                _liquidityInfo.sqrtK = LiquidityMath
+                    .calculateKWithBase(state.baseReal, state.currentPrice)
                     .sqrt128();
             }
         } else {
-            sqrtK = LiquidityMath.calculateKWithBaseAndQuote(
-                _liquidityInfo.baseReal + baseReal,
-                _liquidityInfo.quoteReal + quoteAmount
+            _liquidityInfo.sqrtK = LiquidityMath.calculateKWithBaseAndQuote(
+                _liquidityInfo.baseReal,
+                _liquidityInfo.quoteReal
             );
         }
 
-        // TODO calculate liquidity
-        return (0, 0, 0);
+        liquidityInfo[indexedPipRange].updateAddLiquidity(_liquidityInfo);
+
+        return (
+            baseAmountAdded,
+            quoteAmount,
+            liquidity,
+            _liquidityInfo.feeGrowthBase,
+            _liquidityInfo.feeGrowthQuote
+        );
     }
 
     function removeLiquidity(RemoveLiquidity calldata params)
@@ -105,19 +123,69 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         virtual
         returns (uint128 baseAmount, uint128 quoteAmount)
     {
-        return (0, 0);
+        Liquidity.Info memory _liquidityInfo = liquidityInfo[
+            params.indexedPipRange
+        ];
+        require(_liquidityInfo.liquidity >= params.liquidity, "Liquidity");
+        if (params.indexedPipRange < currentIndexedPipRange) {
+            quoteAmount = LiquidityMath.calculateQuoteByLiquidity(
+                params.liquidity,
+                _liquidityInfo.sqrtMinPip,
+                _liquidityInfo.sqrtMaxPip
+            );
+
+            _liquidityInfo.sqrtK = LiquidityMath
+                .calculateKWithQuote(
+                    _liquidityInfo.quoteReal - quoteAmount,
+                    _liquidityInfo.sqrtMaxPip
+                )
+                .sqrt128();
+        } else if (params.indexedPipRange > currentIndexedPipRange) {
+            baseAmount = LiquidityMath.calculateBaseByLiquidity(
+                params.liquidity,
+                _liquidityInfo.sqrtMaxPip,
+                _liquidityInfo.sqrtMinPip
+            );
+            _liquidityInfo.sqrtK = LiquidityMath
+                .calculateKWithBase(
+                    _liquidityInfo.baseReal - baseAmount,
+                    _liquidityInfo.sqrtMinPip
+                )
+                .sqrt128();
+        } else {
+            uint128 currentPrice = getCurrentPrice();
+            baseAmount = LiquidityMath.calculateBaseByLiquidity(
+                params.liquidity,
+                _liquidityInfo.sqrtMaxPip,
+                currentPrice
+            );
+            quoteAmount = LiquidityMath.calculateQuoteByLiquidity(
+                params.liquidity,
+                _liquidityInfo.sqrtMinPip,
+                currentPrice
+            );
+
+            _liquidityInfo.sqrtK = LiquidityMath.calculateKWithBaseAndQuote(
+                _liquidityInfo.baseReal - baseAmount,
+                _liquidityInfo.quoteReal - quoteAmount
+            );
+        }
+
+        _liquidityInfo.baseReal -= baseAmount;
+        _liquidityInfo.quoteReal -= quoteAmount;
+        _liquidityInfo.liquidity -= params.liquidity;
+
+        liquidityInfo[params.indexedPipRange].updateAddLiquidity(
+            _liquidityInfo
+        );
     }
 
-    function modifyLiquidity(ModifyLiquidity calldata params)
+    function collectFee(uint256 feeGrowthBase, uint256 feeGrowthQuote)
         external
         virtual
-        returns (
-            uint128 newLiquidity,
-            uint256 newBaseAmount,
-            uint256 newQuoteAmount
-        )
+        returns (uint256 baseAmount, uint256 quoteAmount)
     {
-        return (0, 0, 0);
+        return (0, 0);
     }
 
     function getCurrentPrice() internal view virtual returns (uint128) {}
@@ -128,6 +196,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         bool isBase;
         uint128 amount;
     }
+
     struct CrossPipState {
         int256 indexedPipRange;
         uint128 pipTargetStep;
@@ -253,12 +322,10 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         )
     {
         CrossPipState memory crossPipState;
-
         while (params.amount != 0) {
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
                 ammState.pipRangeLiquidityIndex
             ];
-
             // Init amm state
             if (ammReserves.baseReserve == 0 && ammReserves.baseReserve == 0) {
                 ammState.ammReserves[
@@ -282,7 +349,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     ammState.pipRangeLiquidityIndex
                 ];
             }
-
             crossPipState.pipTargetStep = params.isBuy
                 ? liquidityInfo[uint256(ammState.pipRangeLiquidityIndex)]
                     .sqrtMaxPip
