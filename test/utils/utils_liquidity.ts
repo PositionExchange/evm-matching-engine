@@ -42,7 +42,6 @@ export async function addLiquidityAndCorrect(
 
 
 
-  console.log(("abc"));
   if (expectNFTs.length > 0 ){
     const tokens = await nftLiquidityPool.tokensOfOwner(user.address);
 
