@@ -1,9 +1,8 @@
 import dayjs from "dayjs";
 import {ethers} from "hardhat";
 import {expect, use} from "chai";
-import {waffle} from "hardhat";
 const {solidity} = waffle
-import {IERC20, MockToken, SpotHouse, PairManager} from "../../typechain";
+import {IERC20, MockToken} from "../../typechain";
 import {BigNumber} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 // @ts-ignore
