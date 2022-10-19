@@ -1,7 +1,8 @@
 import dayjs from "dayjs";
 import {ethers} from "hardhat";
 import {expect, use} from "chai";
-const {solidity} = waffle
+// import {waffle} from "hardhat";
+// const {solidity} = waffle
 import {IERC20, MockToken} from "../../typechain";
 import {BigNumber} from "ethers";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
@@ -17,7 +18,7 @@ import {
 import {log} from "util";
 import {getAddress, keccak256, solidityPack} from "ethers/lib/utils";
 
-use(solidity);
+// use(solidity);
 
 export interface ExpectErc20Detail {
     user: string;
@@ -474,18 +475,6 @@ export async function openMarketOrderAndExpect(
     }
 }
 
-export async function claimAsset(
-    spotHouse: SpotHouse,
-    user: SignerWithAddress,
-    pairManager: PairManager
-) {
-    const tx = await spotHouse.connect(user).claimAsset(pairManager.address);
-    console.log(
-        "GAS USED OPEN CLAIM ASSET",
-        (await tx.wait()).gasUsed.toString()
-    );
-}
-
 
 export async function openLimitOrderAndExpect(
   { user, contract, side, quantity, pip, pairManager }: OpenLimitOrderParams,
@@ -766,26 +755,7 @@ export async function cancelLimitOrderAndExpect(
   expect(limitOrderData.quoteAmount).to.equal(0);
 }
 
-export async function mockTransferFunding(
-  baseAsset: IERC20,
-  quoteAsset: IERC20,
-  pairManager: PairManager,
-  spotHouse: SpotHouse,
-  user: SignerWithAddress,
-  quoteAmount: number | BigNumber,
-  baseAmount: number | BigNumber) {
-  if (baseAmount > 0) {
-    await baseAsset.connect(user).transfer(pairManager.address, baseAmount);
-    // await baseAsset.transferFrom(user, pairManager.address, baseAmount);
 
-  }
-  if (quoteAmount > 0) {
-    await quoteAsset.connect(user).transfer(pairManager.address, quoteAmount);
-
-    // await quoteAsset.transferFrom(user,pairManager.address, baseAmount);
-
-  }
-}
 
 export function generateRandomAddress(): string {
   return Wallet.generate().getAddressString();
@@ -811,21 +781,6 @@ export function getCreate2Address(
 }
 
 
-export async function expectCanClaimAsset(
-    spotHouse: SpotHouse,
-    user: SignerWithAddress,
-    pairManager: PairManager,
-    quoteExpect: string | number,
-    baseExpect: string | number
-) {
-
-    const {quoteAmount, baseAmount} =
-        await spotHouse.getAmountClaimable(pairManager.address, user.address);
-
-    expect(quoteAmount).to.equal(toWeiWithRound(quoteExpect));
-    expect(baseAmount).to.equal(toWeiWithRound(baseExpect));
-
-}
 
 
 export async function expectBalanceAddress(
@@ -868,40 +823,6 @@ export async function expectBalanceWithSliceAddress(
 }
 
 
-export async  function expectFeeFundingWithSlice(
-  pairManager: PairManager,
-  expectBaseFee : number,
-  expectQuoteFee : number
-){
-
-
-  const [baseFee, quoteFee] = await pairManager.getFee();
-
-  const b = baseFee.toString().slice(0, baseFee.toString().length - 6);
-
-
-  expect(toWeiWithRound(expectBaseFee)).to.equal((Number(b) * 1000000).toString() );
-
-
-  const c = quoteFee.toString().slice(0, quoteFee.toString().length - 6);
-
-  expect(toWeiWithRound(expectQuoteFee)).to.equal((Number(c) * 1000000).toString() );
-
-}
-
-export async  function expectFeeFunding(
-  pairManager: PairManager,
-  expectBaseFee : number,
-  expectQuoteFee : number
-){
-
-
-  const [baseFee, quoteFee] = await pairManager.getFee();
-
-  expect(toWeiWithRound(expectBaseFee)).to.equal(baseFee);
-  expect(toWeiWithRound(expectQuoteFee)).to.equal(quoteFee);
-
-}
 
 
 export function CalcRefundFee(amount : number, fee : number) : number {

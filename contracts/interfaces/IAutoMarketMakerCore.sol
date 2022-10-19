@@ -11,11 +11,9 @@ interface IAutoMarketMakerCore {
         uint128 baseAmount;
         uint128 quoteAmount;
         uint32 indexedPipRange;
-        }
+    }
 
-    function addLiquidity(
-        AddLiquidity calldata params
-    )
+    function addLiquidity(AddLiquidity calldata params)
         external
         returns (
             uint128 baseAmountAdded,

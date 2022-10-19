@@ -41,6 +41,7 @@ contract MatchingEngineAMM is
         bool isBuy,
         bool isBase,
         uint128 amount,
+        uint32 basisPoint,
         SwapState.AmmState memory ammState
     )
         internal
@@ -65,11 +66,23 @@ contract MatchingEngineAMM is
             uint128 toPip
         ) = pipNext != 0
                 ? _onCrossPipAMMTargetPrice(
-                    OnCrossPipParams(pipNext, isBuy, isBase, amount),
+                    OnCrossPipParams(
+                        pipNext,
+                        isBuy,
+                        isBase,
+                        amount,
+                        basisPoint
+                    ),
                     ammState
                 )
                 : _onCrossPipAMMNoTargetPrice(
-                    OnCrossPipParams(pipNext, isBuy, isBase, amount),
+                    OnCrossPipParams(
+                        pipNext,
+                        isBuy,
+                        isBase,
+                        amount,
+                        basisPoint
+                    ),
                     ammState
                 );
 

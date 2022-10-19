@@ -8,7 +8,6 @@ import "../libraries/types/MatchingEngineCoreStorage.sol";
 
 interface IMatchingEngineCore {
     // TODO add guard
-
     event MarketFilled(
         bool isBuy,
         uint256 indexed amount,

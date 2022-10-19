@@ -3,6 +3,7 @@
  */
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
+import "hardhat/console.sol";
 
 library LiquidityMath {
     function calculateBaseReal(
@@ -10,7 +11,11 @@ library LiquidityMath {
         uint128 xVirtual,
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
-        return (sqrtMaxPip * xVirtual) / (sqrtMaxPip - sqrtCurrentPrice);
+        return
+            uint128(
+                (uint256(sqrtMaxPip) * uint256(xVirtual)) /
+                    (uint256(sqrtMaxPip) - uint256(sqrtCurrentPrice))
+            );
     }
 
     function calculateQuoteReal(
@@ -18,7 +23,11 @@ library LiquidityMath {
         uint128 yVirtual,
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
-        return (sqrtCurrentPrice * yVirtual) / (sqrtCurrentPrice - sqrtMinPip);
+        return
+            uint128(
+                (uint256(sqrtCurrentPrice) * uint256(yVirtual)) /
+                    (uint256(sqrtCurrentPrice) - uint256(sqrtMinPip))
+            );
     }
 
     /// these functions below are used to calculate the amount asset when SELL
@@ -28,8 +37,13 @@ library LiquidityMath {
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            (quoteReal * (sqrtCurrentPrice - sqrtPriceTarget)) /
-            (sqrtPriceTarget * sqrtCurrentPrice**2);
+            uint128(
+                (10**18 *
+                    (uint256(quoteReal) *
+                        (uint256(sqrtCurrentPrice) -
+                            uint256(sqrtPriceTarget)))) /
+                    (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2)
+            );
     }
 
     function calculateQuoteWithPriceWhenSell(
@@ -38,8 +52,11 @@ library LiquidityMath {
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            (quoteReal * (sqrtCurrentPrice - sqrtPriceTarget)) /
-            sqrtCurrentPrice;
+            uint128(
+                (uint256(quoteReal) *
+                    (uint256(sqrtCurrentPrice) - uint256(sqrtPriceTarget))) /
+                    uint256(sqrtCurrentPrice)
+            );
     }
 
     function calculateBaseWithPriceWhenBuy(
@@ -48,7 +65,11 @@ library LiquidityMath {
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            (baseReal * (sqrtPriceTarget - sqrtCurrentPrice)) / sqrtPriceTarget;
+            uint128(
+                (uint256(baseReal) *
+                    (uint256(sqrtPriceTarget) - uint256(sqrtCurrentPrice))) /
+                    uint256(sqrtPriceTarget)
+            );
     }
 
     function calculateQuoteWithPriceWhenBuy(
@@ -57,7 +78,12 @@ library LiquidityMath {
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
         return
-            baseReal * sqrtCurrentPrice * (sqrtPriceTarget - sqrtCurrentPrice);
+            uint128(
+                (uint256(baseReal) *
+                    uint256(sqrtCurrentPrice) *
+                    (uint256(sqrtPriceTarget) - uint256(sqrtCurrentPrice))) /
+                    10**18
+            );
     }
 
     function calculateIndexPipRange(uint128 pip, uint128 pipRange)
@@ -69,44 +95,6 @@ library LiquidityMath {
             pip % pipRange == 0
                 ? uint256((pip / pipRange) + 1)
                 : uint256(pip / pipRange);
-    }
-
-    function calculatePriceTargetWithBaseWhenBuy(
-        uint128 sqrtCurrentPrice,
-        uint128 baseReal,
-        uint128 baseVirtual
-    ) internal pure returns (uint128) {
-        return (baseReal * sqrtCurrentPrice) / (baseReal - baseVirtual);
-    }
-
-    function calculatePriceTargetWithQuoteWhenBuy(
-        uint128 sqrtCurrentPrice,
-        uint128 baseReal,
-        uint128 quoteVirtual
-    ) internal pure returns (uint128) {
-        return
-            (quoteVirtual + baseReal * sqrtCurrentPrice**2) /
-            (baseReal * sqrtCurrentPrice);
-    }
-
-    function calculatePriceTargetWithBaseWhenSell(
-        uint128 sqrtCurrentPrice,
-        uint128 quoteReal,
-        uint128 baseVirtual
-    ) internal pure returns (uint128) {
-        return
-            (quoteReal * sqrtCurrentPrice) /
-            (baseVirtual * sqrtCurrentPrice**2 + quoteReal);
-    }
-
-    function calculatePriceTargetWithQuoteWhenSell(
-        uint128 sqrtCurrentPrice,
-        uint128 quoteReal,
-        uint128 quoteVirtual
-    ) internal pure returns (uint128) {
-        return
-            (quoteReal * sqrtCurrentPrice - quoteVirtual * sqrtCurrentPrice) /
-            (quoteReal);
     }
 
     function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)

@@ -380,6 +380,7 @@ abstract contract MatchingEngineCore is
                 state.isBuy,
                 _isBase,
                 uint128(state.remainingSize),
+                state.basisPoint,
                 state.ammState
             );
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
@@ -551,6 +552,7 @@ abstract contract MatchingEngineCore is
         bool isBuy,
         bool isBase,
         uint128 amount,
+        uint32 basisPoint,
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult memory crossPipResult);
 
