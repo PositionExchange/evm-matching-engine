@@ -31,9 +31,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     }
 
     function addLiquidity(
-        uint128 baseAmount,
-        uint128 quoteAmount,
-        uint32 indexedPipRange
+        AddLiquidity calldata params
     )
         external
         virtual
@@ -46,31 +44,31 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         )
     {
         AddLiquidityState memory state;
-        Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];
+        Liquidity.Info memory _liquidityInfo = liquidityInfo[params.indexedPipRange];
 
         state.currentPrice = getCurrentPrice();
 
         if (_liquidityInfo.sqrtK == 0) {
             (uint128 sqrtPipMin, uint128 sqrtPipMax) = LiquidityMath
-                .calculatePipRange(indexedPipRange, pipRange);
+                .calculatePipRange(params.indexedPipRange, pipRange);
             _liquidityInfo.sqrtMaxPip = (sqrtPipMax * CURVE_PIP).sqrt128();
             _liquidityInfo.sqrtMinPip = (sqrtPipMin * CURVE_PIP).sqrt128();
-            _liquidityInfo.indexedPipRange = indexedPipRange;
+            _liquidityInfo.indexedPipRange = params.indexedPipRange;
         }
 
-        if (indexedPipRange < currentIndexedPipRange) {
+        if (params.indexedPipRange < currentIndexedPipRange) {
             state.currentPrice = _liquidityInfo.sqrtMaxPip;
-        } else if (indexedPipRange > currentIndexedPipRange) {
+        } else if (params.indexedPipRange > currentIndexedPipRange) {
             state.currentPrice = _liquidityInfo.sqrtMinPip;
         }
         state.quoteReal = LiquidityMath.calculateQuoteReal(
             _liquidityInfo.sqrtMinPip,
-            quoteAmount,
+            params.quoteAmount,
             state.currentPrice
         );
         state.baseReal = LiquidityMath.calculateBaseReal(
             _liquidityInfo.sqrtMaxPip,
-            quoteAmount,
+            params.baseAmount,
             state.currentPrice
         );
 
@@ -91,11 +89,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         _liquidityInfo.liquidity += liquidity;
 
         if (_liquidityInfo.sqrtK == 0) {
-            if (indexedPipRange < currentIndexedPipRange) {
+            if (params.indexedPipRange < currentIndexedPipRange) {
                 _liquidityInfo.sqrtK = LiquidityMath
                     .calculateKWithQuote(state.quoteReal, state.currentPrice)
                     .sqrt128();
-            } else if (indexedPipRange > currentIndexedPipRange) {
+            } else if (params.indexedPipRange > currentIndexedPipRange) {
                 _liquidityInfo.sqrtK = LiquidityMath
                     .calculateKWithBase(state.baseReal, state.currentPrice)
                     .sqrt128();
@@ -107,11 +105,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             );
         }
 
-        liquidityInfo[indexedPipRange].updateAddLiquidity(_liquidityInfo);
+        liquidityInfo[params.indexedPipRange].updateAddLiquidity(_liquidityInfo);
 
         return (
             baseAmountAdded,
-            quoteAmount,
+            params.quoteAmount,
             liquidity,
             _liquidityInfo.feeGrowthBase,
             _liquidityInfo.feeGrowthQuote
