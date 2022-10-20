@@ -8,12 +8,15 @@ import "../libraries/helper/Math.sol";
 import "../libraries/helper/LiquidityMath.sol";
 import "../interfaces/IAutoMarketMakerCore.sol";
 import "../libraries/exchange/SwapState.sol";
+import "../libraries/helper/Convert.sol";
 
 abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;
+    using Math for uint256;
+    using Convert for uint256;
 
-    uint128 public constant CURVE_PIP = 1e36;
+    uint256 public constant CURVE_PIP = 1 * 18;
 
     function initializeAMM(
         uint128 _pipRange,
@@ -30,9 +33,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         uint128 baseReal;
     }
 
-    function addLiquidity(
-        AddLiquidity calldata params
-    )
+    function addLiquidity(AddLiquidity calldata params)
         external
         virtual
         returns (
@@ -44,15 +45,17 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         )
     {
         AddLiquidityState memory state;
-        Liquidity.Info memory _liquidityInfo = liquidityInfo[params.indexedPipRange];
+        Liquidity.Info memory _liquidityInfo = liquidityInfo[
+            params.indexedPipRange
+        ];
 
         state.currentPrice = getCurrentPrice();
 
         if (_liquidityInfo.sqrtK == 0) {
             (uint128 sqrtPipMin, uint128 sqrtPipMax) = LiquidityMath
                 .calculatePipRange(params.indexedPipRange, pipRange);
-            _liquidityInfo.sqrtMaxPip = (sqrtPipMax * CURVE_PIP).sqrt128();
-            _liquidityInfo.sqrtMinPip = (sqrtPipMin * CURVE_PIP).sqrt128();
+            _liquidityInfo.sqrtMaxPip = _calculateSqrtPrice(sqrtPipMax, 10**18);
+            _liquidityInfo.sqrtMinPip = _calculateSqrtPrice(sqrtPipMin, 10**18);
             _liquidityInfo.indexedPipRange = params.indexedPipRange;
         }
 
@@ -105,7 +108,9 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             );
         }
 
-        liquidityInfo[params.indexedPipRange].updateAddLiquidity(_liquidityInfo);
+        liquidityInfo[params.indexedPipRange].updateAddLiquidity(
+            _liquidityInfo
+        );
 
         return (
             baseAmountAdded,
@@ -193,6 +198,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         bool isBuy;
         bool isBase;
         uint128 amount;
+        uint32 basisPoint;
     }
 
     struct CrossPipState {
@@ -215,7 +221,10 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     {
         CrossPipState memory crossPipState;
         // Have target price
-        crossPipState.sqrtTargetPip = (params.pipNext * CURVE_PIP).sqrt128();
+        crossPipState.sqrtTargetPip = _calculateSqrtPrice(
+            params.pipNext,
+            10**18
+        );
         crossPipState.indexedPipRange = int256(
             LiquidityMath.calculateIndexPipRange(params.pipNext, pipRange)
         );
@@ -259,7 +268,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 ammReserves,
                 params.isBuy,
                 crossPipState.pipTargetStep,
-                (ammState.currentPip * CURVE_PIP).sqrt128()
+                _calculateSqrtPrice(ammState.currentPip, 10**18),
+                params.basisPoint
             );
 
             /// This case for amount no reach pip
@@ -357,7 +367,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 ammReserves,
                 params.isBuy,
                 crossPipState.pipTargetStep,
-                (ammState.currentPip * CURVE_PIP).sqrt128()
+                _calculateSqrtPrice(ammState.currentPip, 10**18),
+                params.basisPoint
             );
             if (
                 (params.isBase && params.amount <= baseOut) ||
@@ -401,7 +412,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         SwapState.AmmReserves memory ammReserves,
         bool isBuy,
         uint128 sqrtCurrentPrice,
-        uint128 sqrtPriceTarget
+        uint128 sqrtPriceTarget,
+        uint32 basisPoint
     ) internal pure returns (uint128 baseOut, uint128 quoteOut) {
         if (isBuy) {
             baseOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
@@ -415,16 +427,20 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 sqrtCurrentPrice
             );
         } else {
-            baseOut = LiquidityMath.calculateBaseWithPriceWhenSell(
-                sqrtPriceTarget,
-                ammReserves.quoteReserve,
-                sqrtCurrentPrice
-            );
-            quoteOut = LiquidityMath.calculateQuoteWithPriceWhenSell(
-                sqrtPriceTarget,
-                ammReserves.quoteReserve,
-                sqrtCurrentPrice
-            );
+            baseOut =
+                LiquidityMath.calculateBaseWithPriceWhenSell(
+                    sqrtPriceTarget,
+                    ammReserves.quoteReserve,
+                    sqrtCurrentPrice
+                ) *
+                uint128(basisPoint);
+            quoteOut =
+                LiquidityMath.calculateQuoteWithPriceWhenSell(
+                    sqrtPriceTarget,
+                    ammReserves.quoteReserve,
+                    sqrtCurrentPrice
+                ) /
+                uint128(basisPoint);
         }
     }
 
@@ -521,5 +537,13 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 ammReserves.baseReserve
             );
         }
+    }
+
+    function _calculateSqrtPrice(uint128 pip, uint256 curve)
+        internal
+        view
+        returns (uint128)
+    {
+        return (uint256(pip) * curve).sqrt().Uint256ToUint128();
     }
 }
