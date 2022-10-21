@@ -18,11 +18,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
     uint256 public constant CURVE_PIP = 1 * 18;
 
-    function initializeAMM(
-        uint128 _pipRange,
-        uint128 _liquidity,
-        uint32 _tickSpace
-    ) internal {
+    function _initializeAMM(uint128 _pipRange, uint32 _tickSpace) internal {
         pipRange = _pipRange;
         tickSpace = _tickSpace;
     }

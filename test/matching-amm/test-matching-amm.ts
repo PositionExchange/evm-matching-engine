@@ -1,11 +1,13 @@
 import {expect} from "chai";
 import YAML from "js-yaml";
-import {MatchingEngineAMM, MockToken} from "../../typeChain";
+import {MatchingEngineAMM, MockMatchingEngineAMM, MockToken} from "../../typeChain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {fromWei, getAccount, SIDE, toWei} from "../utils/utils";
+import {deployContract, fromWei, getAccount, SIDE, toWei} from "../utils/utils";
 import {BigNumber, ethers} from "ethers";
 import {YamlTestProcess} from "./yaml-test-process";
 import Decimal from "decimal.js";
+import {deployMockToken} from "../utils/mock";
+import {EventFragment} from "@ethersproject/abi";
 
 export type SNumber = number | string | BigNumber
 export type StringOrNumber = string | number
@@ -37,38 +39,68 @@ interface ExpectRemoveLiquidity {
 
 
 export interface ExpectedPoolData {
-    quoteLiquidity?: StringOrNumber;
-    baseLiquidity?: StringOrNumber;
-    netAssetValue?: SNumber;
-    totalQuoteDeposited?: SNumber;
-    poolPnL?: SNumber;
-    quoteDeposited?: SNumber;
-    totalFC? : StringOrNumber
+    Liquidity?: SNumber;
+    BaseVirtual?: SNumber;
+    QuoteVirtual?: SNumber;
+    BaseReal?: SNumber;
+    QuoteReal?: SNumber;
+    IndexPipRange? : SNumber;
+    MaxPip? : SNumber;
+    MinPip? : SNumber;
+    FeeGrowthBase?: SNumber;
+    FeeGrowthQuote? : SNumber;
+    K? : SNumber;
 }
 export interface ExpectAddLiquidityResult extends ExpectedPoolData {
     userDebt?: StringOrNumber;
 }
 
+export const BASIS_POINT = 10000;
+
 
 function pipToPrice(currentPip: StringOrNumber) {
-    return Number(currentPip) / 100000;
+    return Number(currentPip) / BASIS_POINT;
 }
 
 function price2Pip(currentPrice: number | string) {
-    return new Decimal(currentPrice).mul(100000).toNumber();
+    return new Decimal(currentPrice).mul(BASIS_POINT).toNumber();
 }
 
 function fromWeiAndFormat(n, decimal = 6): number{
     return new Decimal(fromWei(n).toString()).toDP(decimal).toNumber()
+}
+function sqrt(n: number) :number {
+
+    return Math.sqrt(n);
 }
 
 function roundNumber(n, decimal = 6){
     return new Decimal((n).toString()).toDP(decimal).toNumber()
 }
 
+// useWBNB: 0 is not use, 1 is WBNB Quote, 2 is WBNB Base
+export async function deployAndCreateRouterHelper(useWBNB = 0) {
+    let matching: MockMatchingEngineAMM
+    let testHelper: TestMatchingAmm;
+
+
+    let users  : any[] = [];
+    users = await getAccount() as unknown as any[];
+    const deployer = users[0];
+    matching = await deployContract("MockMatchingEngineAMM", deployer );
+
+    await matching.initialize(BASIS_POINT, BASIS_POINT**2, 10000, 100000, 30_000, 1);
+
+    testHelper = new TestMatchingAmm(matching,deployer  ,{
+        users
+    });
+    return testHelper;
+}
+
+
 
 export class TestMatchingAmm {
-    ins: MatchingEngineAMM;
+    ins: MockMatchingEngineAMM;
     defaultPoolId: string;
     defaultSender: SignerWithAddress;
     nftTokenId: number = 1000000;
@@ -77,18 +109,15 @@ export class TestMatchingAmm {
     // @notice fee in %
     spotFee: number;
     verbose = true;
+    users : SignerWithAddress[]
 
-    constructor(_ins: MatchingEngineAMM, _defaultPoolId: string, _defaultSender: SignerWithAddress, opts: {
-        baseToken: MockToken,
-        quoteToken: MockToken
-        spotFee: number
+
+    constructor(_ins: MockMatchingEngineAMM,  _defaultSender: SignerWithAddress, opts: {
+        users : SignerWithAddress[]
     }) {
         this.ins = _ins;
-        this.defaultPoolId = _defaultPoolId;
         this.defaultSender = _defaultSender;
-        this.baseToken = opts.baseToken;
-        this.quoteToken = opts.quoteToken;
-        this.spotFee = opts.spotFee ?? 0;
+        this.users = opts.users;
     }
 
     async printPoolData(poolId) {
@@ -113,16 +142,6 @@ export class TestMatchingAmm {
         // }
     }
 
-    async expectPoolData(poolId, expectData: ExpectedPoolData) {
-        console.group(`Expect Pool Data`);
-        let { quoteLiquidity, baseLiquidity, netAssetValue, totalQuoteDeposited, poolPnL : pollPnLExpect, totalFC } = expectData;
-        // check pool data
-        this.log("before getPoolLiquidity ", poolId, expectData);
-        await this.printPoolData(poolId)
-        // const poolData = await this.getPoolData(poolId);
-
-        console.groupEnd();
-    }
 
     async expectDataInRange(_expect: number, _actual: number, _percentage: number): Promise<boolean> {
         if (_actual > 0) {
@@ -132,41 +151,49 @@ export class TestMatchingAmm {
 
     }
 
-    async addLiquidityAndExpect(_baseAmount: StringOrNumber, _quoteAmount: StringOrNumber, expectData: ExpectAddLiquidityResult, opts: CallOptions = {}): Promise<number> {
+    async setCurrentPrice(price : StringOrNumber) {
+        await this.ins.setCurrentPip(price2Pip(price));
+    }
 
+    async addLiquidity(baseVirtual: StringOrNumber, quoteVirtual: StringOrNumber, indexPip : StringOrNumber, opts: CallOptions = {}): Promise<number> {
+
+        console.group(`AddLiquidity`);
+
+        await this.ins.addLiquidity({baseAmount: toWei(baseVirtual), quoteAmount: toWei(quoteVirtual), indexedPipRange: indexPip});
         return 0;
     }
 
-    async removeLiquidityThenExpect(tokenId: SNumber, expectResult: ExpectRemoveLiquidity, opts: CallOptions = {}) {
+
+    async removeLiquidity(indexPip: SNumber, liquidity : SNumber, opts: CallOptions = {}) {
         console.group(`RemoveLiquidity`);
+
+        await this.ins.removeLiquidity({
+            indexedPipRange: indexPip,
+            liquidity: toWei(liquidity),
+            feeGrowthBase:0,
+            feeGrowthQuote: 0
+        });
+
         console.groupEnd();
     }
 
-    async  takeOrderThenExpect(expectPrice: StringOrNumber ,expectPool: ExpectedPoolData,  opts?: CallOptions, filledBase = 0, filledQuote =0 , orderId? : number) {
-
-        console.group("Take order")
-        const poolId = this.poolId(opts?.poolId);
-
-        if (filledQuote != 0){
-
-            // sell
-            await this.takeOrder(expectPrice, 0, filledQuote, 1, orderId );
-        }
-        if (filledBase != 0) {
-            // buy
-            await this.takeOrder(expectPrice, filledBase,0 , 0, orderId);
-        }
-
-        const currentPip = await this.ins.getCurrentPip();
 
 
+    async expectPool( expectData: ExpectedPoolData) {
 
+        const poolData = await this.ins.liquidityInfo(expectData.IndexPipRange);
 
+        if (expectData.Liquidity) expect(this.expectDataInRange(Number(expectData.Liquidity),fromWeiAndFormat(poolData.liquidity), 0.01)).to.equal(true, "Liquidity");
+        if (expectData.MaxPip) expect(this.expectDataInRange(sqrt(Number(expectData.MaxPip)),fromWeiAndFormat(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
+        if (expectData.MinPip) expect(this.expectDataInRange(Number(expectData.MinPip),fromWeiAndFormat(poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
+        if (expectData.FeeGrowthBase) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase),fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
+        if (expectData.FeeGrowthQuote) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote),fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
 
-        await this.expectPoolData(poolId, expectPool);
+        if (expectData.BaseReal) expect(this.expectDataInRange(Number(expectData.BaseReal),fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
+        if (expectData.QuoteReal) expect(this.expectDataInRange(Number(expectData.QuoteReal),fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
+        if (expectData.K) expect(this.expectDataInRange(sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "K");
 
     }
-
 
 
 
@@ -182,8 +209,6 @@ export class TestMatchingAmm {
         const processor = new YamlTestProcess(this);
         let i = 0;
         for (const steps of docs) {
-            const startPrice = steps[0].getProp("price") || 1;
-            await this.setPrice(startPrice);
             i++;
             console.group(`------------- Run case #${i}`);
             for (let step of steps) {
@@ -209,55 +234,41 @@ export class TestMatchingAmm {
 
 
 
-    async openLimitOrder(price: number, side: string, size: number, opts: CallOptions) {
+    async openLimitOrder(price: number, side: number, size: number,id : number, opts?: CallOptions) {
         const pip = price2Pip(price)
-        const orderSide = side == "Buy";
+        const isBuy = side == 0;
         const orderQuantity = toWei(size);
 
-        // await this.ins.connect(opts.sender).openLimit(
-        //     pip,
-        //     orderQuantity,
-        //     orderSide,
-        //     opts.sender.address,
-        //     this.quoteToken.address,
-        //     this.baseToken.address
-        // )
+        await  this.ins.openLimit(pip,orderQuantity, isBuy, this.users[id].address, 0);
+
     }
 
-    async openMarketOrder(price: number, side: string, size: number, opts: CallOptions) {
-        const pip = price2Pip(price)
-        const orderSide = side == "Buy";
+    async openMarketOrder( side: number, size: number, asset : String, opts?: CallOptions) {
+        const isBuy = side == 0;
         const orderQuantity = toWei(size);
-        //
-        // await this.pairManager.connect(opts.sender).openMarketMock(
-        //     orderQuantity,
-        //     orderSide,
-        //     opts.sender.address,
-        //     this.quoteToken.address,
-        //     this.baseToken.address
-        // )
-    }
 
+        if (asset === "Base") {
+            await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
 
-    async takeOrder(expectPrice: StringOrNumber, deltaBase: number, deltaQuote: number, side? : number, orderId? : number) {
-        console.group("\x1b[5m", `Take Order`);
-        console.log("start take");
-
-        const currentPip = await this.ins.getCurrentPip();
-        const currentPrice = pipToPrice(currentPip.toNumber());
-        console.log("takerOrder  currentPrice, expectPrice: ",currentPrice,  expectPrice);
-        let orderSide = side
-        // if(typeof side == 'undefined'){
-        //
-        //   orderSide = expectPrice < 0 ?  SIDE.SELL : expectPrice >= currentPrice ? SIDE.BUY : SIDE.SELL;
-        // }
-        if (orderSide == SIDE.SELL) {
-            console.log("takeOrder SELL");
-
-
-        }else {
-            console.log("takeOrder BUY");
+        }else if (asset === "Quote"){
+            await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
         }
+
+
+    }
+
+    async  expectPending(orderId : number, price : number, side : any, _size : number){
+
+        console.log("price: ", price);
+
+        const  {isFilled, isBuy, size} =  await this.ins
+            .getPendingOrderDetail(price2Pip(price), orderId)
+
+        expect( this.expectDataInRange(fromWeiAndFormat(size), Number(_size), 0.01))
+            .to
+            .eq(true, `pending base is not correct, expect ${fromWei(size)} in range of to ${_size}`);
+
+        await expect( side == SIDE.BUY).to.eq(isBuy);
 
     }
 
