@@ -1,8 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  MockToken,
-  SpotHouse,
-  PairManager
+  MockToken
 } from "../../typechain";
 import { string } from "hardhat/internal/core/params/argumentTypes";
 import { BytesLike } from "@ethersproject/bytes";

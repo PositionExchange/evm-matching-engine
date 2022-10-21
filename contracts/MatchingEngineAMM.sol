@@ -24,9 +24,24 @@ contract MatchingEngineAMM is
         _;
     }
 
-    function initialize() external {
+    function initialize(
+        uint256 basisPoint,
+        uint256 baseBasisPoint,
+        uint128 maxFindingWordsIndex,
+        uint128 initialPip,
+        uint128 pipRange,
+        uint32 tickSpace
+    ) external {
         require(!isInitialized, "Initialized");
         isInitialized = true;
+
+        _initializeAMM(pipRange, tickSpace);
+        _initializeCore(
+            basisPoint,
+            baseBasisPoint,
+            maxFindingWordsIndex,
+            initialPip
+        );
     }
 
     function PairManagerInitialize(

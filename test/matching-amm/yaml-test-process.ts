@@ -5,7 +5,6 @@ import {getAccount, SIDE} from "../utils/utils";
 export class YamlTestProcess {
     testHelper: TestMatchingAmm;
 
-    nftStore: Map<string, number> = new Map<string, number>();
 
     constructor(testHelper: TestMatchingAmm) {
         this.testHelper = testHelper;
@@ -18,28 +17,11 @@ export class YamlTestProcess {
         const side = (action.getProp("Side")) == 0 ? SIDE.BUY : SIDE.SELL
         const quantity = action.getProp("Quantity")
         const price = action.getProp("Price")
-        const orderId = action.getProp("OrderId")
 
         const indexPipRange = action.getProp("IndexPipRange")
         const baseVirtual = action.getProp("BaseVirtual")
         const quoteVirtual = action.getProp("QuoteVirtual")
         const liquidity = action.getProp("Liquidity")
-        const baseReal = action.getProp("BaseReal")
-        const quoteReal = action.getProp("quoteReal")
-
-        const maxPip = action.getProp("MaxPip")
-        const minPip = action.getProp("MinPip")
-        const feeGrowthBase = action.getProp("FeeGrowthBase")
-        const feeGrowthQuote = action.getProp("FeeGrowthQuote")
-
-
-
-
-        // const path = action.getProp("path");
-        // const amount = action.getProp("amount")
-        // const to  = action.getProp("to");
-        // const revert = action.getProp("revert");
-        // const useBNB = action.getProp("useBNB");
 
 
         return {
@@ -51,122 +33,116 @@ export class YamlTestProcess {
             indexPipRange,
             baseVirtual,
             quoteVirtual,
+            liquidity
+        }
+    }
+
+    extractPending(expect) {
+
+        const orderId = expect.getProp("orderId");
+        const size = expect.getProp("size");
+        const side = expect.getProp("side");
+        const price = expect.getProp("price");
+
+        return {
+            orderId,
+            size,
+            side,
+            price
+        }
+
+    }
+    extractPool(expect){
+
+        const liquidity = expect.getProp("Liquidity")
+        const baseVirtual = expect.getProp("BaseVirtual")
+        const quoteVirtual = expect.getProp("QuoteVirtual")
+
+        const baseReal = expect.getProp("BaseReal")
+        const quoteReal = expect.getProp("QuoteReal")
+
+
+        const indexPipRange = expect.getProp("IndexPipRange")
+
+        const maxPip = expect.getProp("MaxPip")
+        const minPip = expect.getProp("MinPip")
+
+        const feeGrowthBase = expect.getProp("FeeGrowthBase")
+        const feeGrowthQuote = expect.getProp("FeeGrowthQuote")
+
+        return{
             liquidity,
+            baseVirtual,
+            quoteVirtual,
             baseReal,
             quoteReal,
+            indexPipRange,
             maxPip,
             minPip,
             feeGrowthBase,
-            feeGrowthQuote,
+            feeGrowthQuote
+        }
+    }
 
 
+    async expectTest(expectData) {
 
+
+        const expectPool= expectData.getProp("Pool");
+        const expectPendingOrder = expectData.getProp("PendingOrder");
+
+
+        if (expectPendingOrder) {
+            console.log("[IT] PendingOrder");
+            const extract = this.extractPending(expectPendingOrder)
+            console.log("extract: ", extract);
+            await this.testHelper.expectPending(extract.orderId, extract.price, extract.side, extract.size);
+        }
+
+        if (expectPool) {
+            await this.testHelper.expectPool(expectPool)
 
         }
     }
 
-    // TODO implement add liquidity
+    async SetCurrentPrice(stepData) {
+        const action = this.extractAction(stepData.getProp("Action"));
+        if (action) { await this.testHelper.addLiquidity(action.baseVirtual, action.quoteVirtual, action.indexPipRange)}
+        const expectData = stepData.getProp("Expect");
+        if (expectData) await this.expectTest(expectData);
+    }
+
     async AddLiquidity(stepData) {
+        const action = this.extractAction(stepData.getProp("Action"));
+        if (action) { await this.testHelper.addLiquidity(action.baseVirtual, action.quoteVirtual, action.indexPipRange)}
+        const expectData = stepData.getProp("Expect");
+        if (expectData) await this.expectTest(expectData);
     }
 
     log(...args){
         console.log(`[YamlTestCaseProcess]: `, ...args)
     }
 
-    // TODO implement remove liquidity
     async RemoveLiquidity(stepData) {
-
+        const action = this.extractAction(stepData.getProp("Action"));
+        if (action) { await this.testHelper.removeLiquidity( action.indexPipRange, action.liquidity)}
+        const expectData = stepData.getProp("Expect");
+        if (expectData) await this.expectTest(expectData);
     }
 
 
-
-    async LimitOrder(stepData) {
-
-    }
-    async TakeOrder(stepData){
-        const price = stepData.getProp("Price") || stepData.getProp("ChangePrice");
-        const filledQuote = stepData.getProp("FilledQuote");
-        const filledBase = stepData.getProp("FilledBase");
-        const poolExpect = stepData.getProp("pool");
-        const orderId = stepData.getProp("OrderId") || 0;
-
-        await this.testHelper.takeOrderThenExpect(price, this.extractPoolExpectData(poolExpect), undefined, filledBase, filledQuote, orderId );
-
-    }
 
     async OpenLimit(stepData) {
-        // this.log("stepData", stepData)
-        //
-        // const price = stepData.getProp("price")
-        // const side = stepData.getProp("side")
-        // const size = stepData.getProp("size")
-        // const userId = stepData.getProp("userId")
-        const accounts = await getAccount();
-        const signer = accounts[0];
-
-        const orders = stepData.getProp("Orders");
-
-
-        const order = orders[0];
-
-        const price = order[0];
-        const size = order[1];
-        const side = order[2] == 0 ? "Buy" : "Sell";
-
-
-        await this.testHelper.openLimitOrder(
-            price,
-            side,
-            size,
-            {
-                // @ts-ignore
-                sender: signer
-            })
+        const action = this.extractAction(stepData.getProp("Action"));
+        if (action) { await this.testHelper.openLimitOrder( action.price, action.side, action.quantity, action.id)}
+        const expectData = stepData.getProp("Expect");
+        if (expectData) await this.expectTest(expectData);
     }
-
     async OpenMarket(stepData) {
 
-        const accounts = await getAccount();
-        const signer = accounts[0];
-
-        const orders = stepData.getProp("Orders");
-
-
-        const order = orders[0];
-
-        const price = order[0];
-        const size = order[1];
-        const side = order[2] == 0 ? "Buy" : "Sell";
-
-
-        await this.testHelper["openMarketOrder(address,uint8,uint256)"](
-            price,
-            side,
-            size,
-            {
-                // @ts-ignore
-                sender: signer
-            })
-
-    }
-
-
-    extractPoolExpectData(poolExpect) {
-        console.log("poolExpect: ", poolExpect);
-        const poolQuote = poolExpect.getProp("Quote");
-        const poolBase = poolExpect.getProp("Base");
-        const netAssetValue = poolExpect.getProp("NetAssetValue");
-        const totalDepositQuote = poolExpect.getProp("TotalDepositQuote");
-        const poolPnL = poolExpect.getProp("pnl");
-        const totalFC = poolExpect.getProp("TotalFC")
-
-        return {
-            quoteLiquidity: poolQuote,
-            baseLiquidity: poolBase,
-            netAssetValue,
-            totalQuoteDeposited: totalDepositQuote,
-            poolPnL,
-            totalFC
-        };
+        const action = this.extractAction(stepData.getProp("Action"));
+        if (action) { await this.testHelper.openMarketOrder(  action.side, action.quantity, action.asset)}
+        const expectData = stepData.getProp("Expect");
+        if (expectData) await this.expectTest(expectData);
     }
 }
