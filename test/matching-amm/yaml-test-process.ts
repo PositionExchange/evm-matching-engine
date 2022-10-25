@@ -1,6 +1,10 @@
-import {expect} from "chai";
+import {expect, use} from "chai";
 import {TestMatchingAmm} from "./test-matching-amm";
 import {getAccount, SIDE} from "../utils/utils";
+//
+// import {waffle} from "hardhat";
+// const {solidity} = waffle
+// use(solidity);
 
 export class YamlTestProcess {
     testHelper: TestMatchingAmm;
@@ -69,6 +73,7 @@ export class YamlTestProcess {
 
         const feeGrowthBase = expect.getProp("FeeGrowthBase")
         const feeGrowthQuote = expect.getProp("FeeGrowthQuote")
+        const k = expect.getProp("K")
 
         return{
             liquidity,
@@ -80,7 +85,8 @@ export class YamlTestProcess {
             maxPip,
             minPip,
             feeGrowthBase,
-            feeGrowthQuote
+            feeGrowthQuote,
+            k
         }
     }
 
@@ -100,14 +106,29 @@ export class YamlTestProcess {
         }
 
         if (expectPool) {
-            await this.testHelper.expectPool(expectPool)
+            const extract = this.extractPool(expectPool)
+
+            await this.testHelper.expectPool({
+                Liquidity: extract.liquidity,
+                BaseVirtual: extract.baseVirtual,
+                QuoteVirtual: extract.quoteVirtual,
+                BaseReal: extract.baseReal,
+                QuoteReal: extract.quoteReal,
+                IndexPipRange: extract.indexPipRange,
+                MaxPip: extract.maxPip,
+                MinPip: extract.minPip,
+                FeeGrowthBase: extract.feeGrowthBase,
+                FeeGrowthQuote: extract.feeGrowthQuote,
+                K : extract.k
+            })
 
         }
     }
 
     async SetCurrentPrice(stepData) {
+        console.log("[IT] SetCurrentPrice: ",stepData );
         const action = this.extractAction(stepData.getProp("Action"));
-        if (action) { await this.testHelper.addLiquidity(action.baseVirtual, action.quoteVirtual, action.indexPipRange)}
+        if (action) { await this.testHelper.setCurrentPrice(action.price)}
         const expectData = stepData.getProp("Expect");
         if (expectData) await this.expectTest(expectData);
     }
@@ -133,6 +154,8 @@ export class YamlTestProcess {
 
 
     async OpenLimit(stepData) {
+
+        console.log("stepData: ", stepData);
         const action = this.extractAction(stepData.getProp("Action"));
         if (action) { await this.testHelper.openLimitOrder( action.price, action.side, action.quantity, action.id)}
         const expectData = stepData.getProp("Expect");

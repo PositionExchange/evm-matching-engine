@@ -70,6 +70,7 @@ library LiquidityBitmap {
     ) internal view returns (uint128 next) {
         uint128 startWord = pip >> 8;
         if (lte) {
+            console.log("startWord: ", startWord);
             if (startWord != 0) {
                 uint128 i = startWord;
                 for (
@@ -78,6 +79,7 @@ library LiquidityBitmap {
                     i--
                 ) {
                     if (self[i] != 0) {
+                        console.log("has liquidity in word: ", i);
                         next = findHasLiquidityInOneWords(
                             self,
                             i < startWord ? 256 * i + 255 : pip,
@@ -279,6 +281,7 @@ library LiquidityBitmap {
         bool isSet
     ) internal {
         (uint128 mapIndex, uint8 bitPos) = position(pip);
+        console.log("mapIndex: ", mapIndex, pip);
         if (isSet) {
             self[mapIndex] |= 1 << bitPos;
         } else {

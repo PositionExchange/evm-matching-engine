@@ -94,11 +94,14 @@ library SwapState {
         }
     }
 
-    function moveForward1Pip(State memory state) internal pure {
+    function moveForward1Pip(State memory state, uint128 pipNext)
+        internal
+        pure
+    {
         if (state.isBuy) {
-            state.pip++;
+            state.pip = pipNext + 1;
         } else {
-            state.pip--;
+            state.pip = pipNext - 1;
         }
     }
 
@@ -148,13 +151,14 @@ library SwapState {
         // next until 5
         // finally we have an arrays of range liquidity index eg [1301, 1302, 1303, 1304]
         // then now we can use that range to update reserve to the corresponding range
+        //        if (state.ammState.lastPipRangeLiquidityIndex != -1) {
+        //            state.ammState.pipRangeLiquidityIndex++;
+        //        }
         if (
             state.ammState.lastPipRangeLiquidityIndex !=
             int256(_pipRangeLiquidityIndex)
         ) {
-            if (state.ammState.lastPipRangeLiquidityIndex != -1) {
-                state.ammState.pipRangeLiquidityIndex++;
-            }
+            state.ammState.pipRangeLiquidityIndex++;
             if (state.ammState.pipRangeLiquidityIndex > 5) {
                 revert("Not enough liquidity");
             }

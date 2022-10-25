@@ -1,4 +1,4 @@
-import {expect} from "chai";
+import {expect, use} from "chai";
 import YAML from "js-yaml";
 import {MatchingEngineAMM, MockMatchingEngineAMM, MockToken} from "../../typeChain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
@@ -8,6 +8,10 @@ import {YamlTestProcess} from "./yaml-test-process";
 import Decimal from "decimal.js";
 import {deployMockToken} from "../utils/mock";
 import {EventFragment} from "@ethersproject/abi";
+
+// import {waffle} from "hardhat";
+// const {solidity} = waffle
+// use(solidity);
 
 export type SNumber = number | string | BigNumber
 export type StringOrNumber = string | number
@@ -79,7 +83,7 @@ function roundNumber(n, decimal = 6){
 }
 
 // useWBNB: 0 is not use, 1 is WBNB Quote, 2 is WBNB Base
-export async function deployAndCreateRouterHelper(useWBNB = 0) {
+export async function deployAndCreateRouterHelper() {
     let matching: MockMatchingEngineAMM
     let testHelper: TestMatchingAmm;
 
@@ -89,7 +93,7 @@ export async function deployAndCreateRouterHelper(useWBNB = 0) {
     const deployer = users[0];
     matching = await deployContract("MockMatchingEngineAMM", deployer );
 
-    await matching.initialize(BASIS_POINT, BASIS_POINT**2, 10000, 100000, 30_000, 1);
+    await matching.initialize(BASIS_POINT, BASIS_POINT**2, 1000, 100000, 30_000, 1);
 
     testHelper = new TestMatchingAmm(matching,deployer  ,{
         users
@@ -143,7 +147,7 @@ export class TestMatchingAmm {
     }
 
 
-    async expectDataInRange(_expect: number, _actual: number, _percentage: number): Promise<boolean> {
+    expectDataInRange(_expect: number, _actual: number, _percentage: number): boolean {
         if (_actual > 0) {
             return _expect >= _actual * (1 - _percentage) && _expect <= _actual * (1 + _percentage);
         }
@@ -152,12 +156,13 @@ export class TestMatchingAmm {
     }
 
     async setCurrentPrice(price : StringOrNumber) {
-        await this.ins.setCurrentPip(price2Pip(price));
+        await this.ins.setCurrentPip(price);
     }
 
     async addLiquidity(baseVirtual: StringOrNumber, quoteVirtual: StringOrNumber, indexPip : StringOrNumber, opts: CallOptions = {}): Promise<number> {
 
         console.group(`AddLiquidity`);
+        // console.l
 
         await this.ins.addLiquidity({baseAmount: toWei(baseVirtual), quoteAmount: toWei(quoteVirtual), indexedPipRange: indexPip});
         return 0;
@@ -183,11 +188,15 @@ export class TestMatchingAmm {
 
         const poolData = await this.ins.liquidityInfo(expectData.IndexPipRange);
 
-        if (expectData.Liquidity) expect(this.expectDataInRange(Number(expectData.Liquidity),fromWeiAndFormat(poolData.liquidity), 0.01)).to.equal(true, "Liquidity");
-        if (expectData.MaxPip) expect(this.expectDataInRange(sqrt(Number(expectData.MaxPip)),fromWeiAndFormat(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
-        if (expectData.MinPip) expect(this.expectDataInRange(Number(expectData.MinPip),fromWeiAndFormat(poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
+        console.log("[expectPool] Expected pool: ", sqrt(Number(expectData.MaxPip))* 10**9, Number(poolData.sqrtMaxPip));
+        console.log("[expectPool] Expected pool: ",Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
+
+        if (expectData.MaxPip) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**9),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
+        if (expectData.MinPip) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**9),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
         if (expectData.FeeGrowthBase) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase),fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
         if (expectData.FeeGrowthQuote) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote),fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
+
+
 
         if (expectData.BaseReal) expect(this.expectDataInRange(Number(expectData.BaseReal),fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
         if (expectData.QuoteReal) expect(this.expectDataInRange(Number(expectData.QuoteReal),fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
@@ -209,7 +218,6 @@ export class TestMatchingAmm {
         const processor = new YamlTestProcess(this);
         let i = 0;
         for (const steps of docs) {
-            i++;
             console.group(`------------- Run case #${i}`);
             for (let step of steps) {
                 const stepIdentityKey = Object.keys(step)[0];
@@ -225,6 +233,7 @@ export class TestMatchingAmm {
                 this.log("\x1b[33m%s\x1b[0m", `--- Processing ${stepIdentityKey} ${stepFnName}`);
                 await processor[stepFnName](step);
             }
+            i++;
             console.groupEnd();
         }
     }
@@ -234,12 +243,19 @@ export class TestMatchingAmm {
 
 
 
-    async openLimitOrder(price: number, side: number, size: number,id : number, opts?: CallOptions) {
-        const pip = price2Pip(price)
+    async openLimitOrder(pip: number, side: number, size: number,id : number, opts?: CallOptions) {
+        // const pip = price2Pip(price)
+        const a = await this.ins.singleSlot()
+
+        console.log("a",a.pip.toString());
         const isBuy = side == 0;
         const orderQuantity = toWei(size);
 
-        await  this.ins.openLimit(pip,orderQuantity, isBuy, this.users[id].address, 0);
+        console.log("pip", pip);
+        console.log("isBuy", isBuy);
+        console.log("orderQuantity", orderQuantity);
+
+        await  this.ins.openLimit(pip ,orderQuantity, isBuy, this.users[id].address, 0);
 
     }
 
@@ -247,10 +263,10 @@ export class TestMatchingAmm {
         const isBuy = side == 0;
         const orderQuantity = toWei(size);
 
-        if (asset === "Base") {
+        if (asset === "base") {
             await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
 
-        }else if (asset === "Quote"){
+        }else if (asset === "quote"){
             await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
         }
 
@@ -262,7 +278,8 @@ export class TestMatchingAmm {
         console.log("price: ", price);
 
         const  {isFilled, isBuy, size} =  await this.ins
-            .getPendingOrderDetail(price2Pip(price), orderId)
+            .getPendingOrderDetail(price, orderId)
+        console.log("size: ", size,fromWeiAndFormat(size), _size );
 
         expect( this.expectDataInRange(fromWeiAndFormat(size), Number(_size), 0.01))
             .to

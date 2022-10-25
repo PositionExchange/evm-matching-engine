@@ -12,6 +12,7 @@ import "./Block.sol";
 import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
+import "hardhat/console.sol";
 
 abstract contract MatchingEngineCore is
     IMatchingEngineCore,
@@ -26,20 +27,20 @@ abstract contract MatchingEngineCore is
     using SwapState for SwapState.State;
 
     function _initializeCore(
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip
+        uint256 _basisPoint,
+        uint256 _baseBasisPoint,
+        uint128 _maxFindingWordsIndex,
+        uint128 _initialPip
     ) internal {
         reserveSnapshots.push(
-            ReserveSnapshot(initialPip, _blockTimestamp(), _blockNumber())
+            ReserveSnapshot(_initialPip, _blockTimestamp(), _blockNumber())
         );
-        singleSlot.pip = initialPip;
-        basisPoint = basisPoint;
-        BASE_BASIC_POINT = baseBasisPoint;
-        maxFindingWordsIndex = maxFindingWordsIndex;
-        maxWordRangeForLimitOrder = maxFindingWordsIndex;
-        maxWordRangeForMarketOrder = maxFindingWordsIndex;
+        singleSlot.pip = _initialPip;
+        basisPoint = _basisPoint;
+        BASE_BASIC_POINT = _baseBasisPoint;
+        maxFindingWordsIndex = _maxFindingWordsIndex;
+        maxWordRangeForLimitOrder = _maxFindingWordsIndex;
+        maxWordRangeForMarketOrder = _maxFindingWordsIndex;
     }
 
     //*
@@ -207,6 +208,7 @@ abstract contract MatchingEngineCore is
             if (_params.isBuy && _singleSlot.pip != 0) {
                 int256 maxPip = int256(underlyingPip) -
                     int128(maxWordRangeForLimitOrder * 250);
+
                 if (maxPip > 0) {
                     require(
                         int128(_params.pip) >= maxPip,
@@ -250,6 +252,7 @@ abstract contract MatchingEngineCore is
                         "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
                     );
                 }
+                console.log("open market");
                 (baseAmountFilled, quoteAmountFilled) = _openMarketWithMaxPip(
                     _params.size,
                     _params.isBuy,
@@ -268,6 +271,7 @@ abstract contract MatchingEngineCore is
                     _params.quoteDeposited > quoteAmountFilled &&
                     _params.quoteDeposited > 0)
             ) {
+                console.log("into if");
                 uint128 remainingSize;
 
                 if (
@@ -299,6 +303,7 @@ abstract contract MatchingEngineCore is
                     _params.isBuy
                 );
                 if (!hasLiquidity) {
+                    console.log("toggleSingleBit");
                     //set the bit to mark it has liquidity
                     liquidityBitmap.toggleSingleBit(_params.pip, true);
                 }
@@ -343,6 +348,12 @@ abstract contract MatchingEngineCore is
     ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
+        console.log(
+            "[MatchingEngineCore][_internalOpenMarketOrder]: ",
+            singleSlot.pip,
+            singleSlot.isFullBuy,
+            _isBuy
+        );
         //save gas
         SwapState.State memory state = SwapState.State({
             remainingSize: _size,
@@ -360,12 +371,23 @@ abstract contract MatchingEngineCore is
             ammState: SwapState.newAMMState(_initialSingleSlot.pip)
         });
         state.beforeExecute();
+        console.log(
+            "[MatchingEngineCore][_internalOpenMarketOrder] state.remainingSize: ",
+            state.remainingSize,
+            state.pip,
+            state.isSkipFirstPip
+        );
+
         while (state.remainingSize != 0) {
             StepComputations memory step;
             (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
                 state.pip,
                 _maxFindingWordsIndex,
                 !state.isBuy
+            );
+            console.log(
+                "hasLiquidity 30000: ",
+                liquidityBitmap.hasLiquidity(30000)
             );
 
             // updated findHasLiquidityInMultipleWords, save more gas
@@ -375,6 +397,11 @@ abstract contract MatchingEngineCore is
                     break;
                 }
             }
+
+            console.log(
+                "[MatchingEngineCore][_internalOpenMarketOrder] step.pipNext: ",
+                step.pipNext
+            );
             CrossPipResult memory crossPipResult = _onCrossPipHook(
                 step.pipNext,
                 state.isBuy,
@@ -382,6 +409,11 @@ abstract contract MatchingEngineCore is
                 uint128(state.remainingSize),
                 state.basisPoint,
                 state.ammState
+            );
+            console.log(
+                "crossPipResult.baseCrossPipOut: ",
+                crossPipResult.baseCrossPipOut,
+                crossPipResult.toPip
             );
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
@@ -398,10 +430,21 @@ abstract contract MatchingEngineCore is
                     crossPipResult.baseCrossPipOut > 0 ||
                     crossPipResult.quoteCrossPipOut > 0
                 ) {
+                    //                    if (state.startPip == 0 && ) state.startPip = state.pip;
+                    console.log(
+                        "crossPipResult.pipRangeLiquidityIndex: ",
+                        crossPipResult.pipRangeLiquidityIndex
+                    );
                     state.updatePipRangeIndex(
                         crossPipResult.pipRangeLiquidityIndex
                     );
+                    console.log(
+                        "updatePipRangeIndex: ",
+                        state.ammState.pipRangeLiquidityIndex
+                    );
+
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
+                        console.log("to break: ");
                         // TODO verify me
                         state.pip = crossPipResult.toPip;
                         state.ammFillAll(
@@ -410,18 +453,33 @@ abstract contract MatchingEngineCore is
                         );
                         break;
                     } else {
+                        console.log(
+                            "updateAMMTradedSize: ",
+                            state.remainingSize
+                        );
                         state.updateAMMTradedSize(
                             crossPipResult.baseCrossPipOut,
                             crossPipResult.quoteCrossPipOut
                         );
+                        console.log(
+                            "after updateAMMTradedSize: ",
+                            state.remainingSize
+                        );
                     }
                 }
+
+                console.log(
+                    "is skip first pip: ",
+                    state.isSkipFirstPip,
+                    step.pipNext
+                );
 
                 if (!state.isSkipFirstPip) {
                     if (state.startPip == 0) state.startPip = step.pipNext;
 
                     // get liquidity at a tick index
                     uint128 liquidity = tickPosition[step.pipNext].liquidity;
+                    console.log("liquidity: ", liquidity);
                     if (_maxPip != 0) {
                         state.lastMatchedPip = step.pipNext;
                     }
@@ -432,6 +490,13 @@ abstract contract MatchingEngineCore is
                             step.pipNext,
                             state.basisPoint
                         );
+
+                    console.log("liquidity: ", liquidity);
+                    console.log(
+                        "remainingQuantity: ",
+                        remainingQuantity,
+                        state.remainingSize
+                    );
                     if (liquidity > remainingQuantity) {
                         // pip position will partially filled and stop here
                         tickPosition[step.pipNext].partiallyFill(
@@ -448,9 +513,22 @@ abstract contract MatchingEngineCore is
                         state.pip = step.pipNext;
                         state.reverseIsFullBuy();
                     } else if (remainingQuantity > liquidity) {
+                        console.log(
+                            "remainingQuantity > liquidity 01: ",
+                            state.pip,
+                            state.remainingSize,
+                            liquidity
+                        );
+
                         // order in that pip will be fulfilled
                         state.updateTradedSize(liquidity, step.pipNext);
-                        state.moveForward1Pip();
+                        state.moveForward1Pip(step.pipNext);
+                        console.log(
+                            "remainingQuantity > liquidity 02: ",
+                            state.pip,
+                            state.remainingSize,
+                            liquidity
+                        );
                     } else {
                         // remaining size = liquidity
                         // only 1 pip should be toggled, so we call it directly here
@@ -461,15 +539,21 @@ abstract contract MatchingEngineCore is
                     }
                 } else {
                     state.isSkipFirstPip = false;
-                    state.moveForward1Pip();
+                    state.moveForward1Pip(step.pipNext);
                 }
             }
         }
+        console.log(
+            "hasLiquidity 30000: ",
+            liquidityBitmap.hasLiquidity(30000)
+        );
+
         {
             if (
                 _initialSingleSlot.pip != state.pip &&
                 state.remainingSize != _size
             ) {
+                console.log("first if");
                 // all ticks in shifted range must be marked as filled
                 if (
                     !(state.remainingLiquidity > 0 &&
@@ -478,6 +562,13 @@ abstract contract MatchingEngineCore is
                     if (_maxPip != 0) {
                         state.pip = state.lastMatchedPip;
                     }
+                    console.log("state.pip: ", state.pip);
+                    console.log(
+                        "state.startPip: ",
+                        state.startPip,
+                        state.remainingLiquidity
+                    );
+
                     liquidityBitmap.unsetBitsRange(
                         state.startPip,
                         state.remainingLiquidity > 0
@@ -492,10 +583,16 @@ abstract contract MatchingEngineCore is
                 state.remainingSize < _size &&
                 state.remainingSize != 0
             ) {
+                console.log("first else");
+
                 // if limit order with max pip filled current pip, toggle current pip to initialized
                 // after that when create new limit order will initialize pip again in `OpenLimitPosition`
                 liquidityBitmap.toggleSingleBit(state.pip, false);
             }
+            console.log(
+                "hasLiquidity 30000: ",
+                liquidityBitmap.hasLiquidity(30000)
+            );
 
             if (state.remainingSize != _size) {
                 // if limit order with max pip filled other order, update isFullBuy

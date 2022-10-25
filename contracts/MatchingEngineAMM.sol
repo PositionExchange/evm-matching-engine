@@ -35,7 +35,7 @@ contract MatchingEngineAMM is
         require(!isInitialized, "Initialized");
         isInitialized = true;
 
-        _initializeAMM(pipRange, tickSpace);
+        _initializeAMM(pipRange, tickSpace, initialPip);
         _initializeCore(
             basisPoint,
             baseBasisPoint,
@@ -115,6 +115,15 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore)
     {
         _updateAMMStateAfterTrade(ammState);
+    }
+
+    function getCurrentPrice()
+        internal
+        view
+        override(AutoMarketMakerCore)
+        returns (uint128)
+    {
+        return uint128(getUnderlyingPriceInPip());
     }
 
     function accumulateClaimableAmount(
