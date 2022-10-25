@@ -138,7 +138,7 @@ contract LiquidityMathTest {
         uint128 amountReal,
         uint128 sqrtPrice,
         bool isBase
-    ) public view returns (uint128) {
+    ) public view returns (uint256) {
         uint128 sqrtPrice = _calculateSqrtPrice(sqrtPrice, CURVE_PIP);
         return LiquidityMath.calculateLiquidity(amountReal, sqrtPrice, isBase);
     }

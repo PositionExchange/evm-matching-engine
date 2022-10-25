@@ -831,4 +831,17 @@ export function CalcRefundFee(amount : number, fee : number) : number {
 }
 
 
+Object.defineProperty(Object.prototype, "getProp", {
+    value: function(prop) {
+        var key, self = this;
+        for (key in self) {
+            if (key.toLowerCase() == prop.toLowerCase()) {
+                return self[key];
+            }
+        }
+    },
+    //this keeps jquery happy
+    enumerable: false
+});
+
 

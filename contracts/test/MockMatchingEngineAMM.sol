@@ -9,5 +9,9 @@ import "../MatchingEngineAMM.sol";
 contract MockMatchingEngineAMM is MatchingEngineAMM {
     function setCurrentPip(uint128 currentPip) public {
         singleSlot.pip = currentPip;
+        currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
+            currentPip,
+            pipRange
+        );
     }
 }
