@@ -175,4 +175,30 @@ library LiquidityMath {
     ) internal pure returns (uint128) {
         return liquidity * (sqrtPrice - sqrtPriceMin);
     }
+
+    function calculateQuoteVirtualAmountFromBaseVirtualAmount(
+        uint128 baseVirtualAmount,
+        uint128 sqrtCurrentPrice,
+        uint128 sqrtMaxPip,
+        uint128 sqrtMinPip
+    ) internal pure returns (uint128 quoteVirtualAmount) {
+        return
+            (baseVirtualAmount *
+                sqrtCurrentPrice *
+                (sqrtCurrentPrice - sqrtMinPip)) /
+            (sqrtMaxPip * sqrtCurrentPrice);
+    }
+
+    function calculateBaseVirtualAmountFromQuoteVirtualAmount(
+        uint128 quoteVirtualAmount,
+        uint128 sqrtCurrentPrice,
+        uint128 sqrtMaxPip,
+        uint128 sqrtMinPip
+    ) internal pure returns (uint128 baseVirtualAmount) {
+        return
+            (quoteVirtualAmount *
+                sqrtCurrentPrice *
+                (sqrtCurrentPrice - sqrtMinPip)) /
+            ((sqrtCurrentPrice - sqrtMinPip) * sqrtCurrentPrice * sqrtMaxPip);
+    }
 }
