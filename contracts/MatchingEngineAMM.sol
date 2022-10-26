@@ -69,16 +69,28 @@ contract MatchingEngineAMM is
         bool isBase,
         uint128 amount,
         uint32 basisPoint,
+        uint128 currentPip,
         SwapState.AmmState memory ammState
     )
         internal
         override(MatchingEngineCore)
         returns (CrossPipResult memory crossPipResult)
     {
-        if (ammState.lastPipRangeLiquidityIndex == -1) {
-            ammState.lastPipRangeLiquidityIndex = int256(
-                currentIndexedPipRange
-            );
+        if (pipNext == currentPip) {
+            return crossPipResult;
+        }
+        //        if (ammState.lastPipRangeLiquidityIndex == -1) {
+        //            ammState.lastPipRangeLiquidityIndex = int256(
+        //                currentIndexedPipRange
+        //            );
+        //        }
+        int256 indexPip = int256(
+            LiquidityMath.calculateIndexPipRange(currentPip, pipRange)
+        );
+        if (ammState.lastPipRangeLiquidityIndex != indexPip) {
+            if (ammState.lastPipRangeLiquidityIndex != -1)
+                ammState.pipRangeLiquidityIndex++;
+            ammState.lastPipRangeLiquidityIndex = indexPip;
         }
         // Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
         // Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
@@ -98,7 +110,8 @@ contract MatchingEngineAMM is
                         isBuy,
                         isBase,
                         amount,
-                        basisPoint
+                        basisPoint,
+                        currentPip
                     ),
                     ammState
                 )
@@ -108,7 +121,8 @@ contract MatchingEngineAMM is
                         isBuy,
                         isBase,
                         amount,
-                        basisPoint
+                        basisPoint,
+                        currentPip
                     ),
                     ammState
                 );
@@ -122,10 +136,14 @@ contract MatchingEngineAMM is
             );
     }
 
-    function _updateAMMState(SwapState.AmmState memory ammState)
-        internal
-        override(MatchingEngineCore)
-    {
+    function _updateAMMState(
+        SwapState.AmmState memory ammState,
+        uint128 currentPip
+    ) internal override(MatchingEngineCore) {
+        currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
+            currentPip,
+            pipRange
+        );
         _updateAMMStateAfterTrade(ammState);
     }
 
@@ -172,6 +190,15 @@ contract MatchingEngineAMM is
 
     function _msgSender() internal view returns (address) {
         return msg.sender;
+    }
+
+    function _basisPoint()
+        internal
+        view
+        override(AutoMarketMakerCore)
+        returns (uint256)
+    {
+        return basisPoint;
     }
 
     function _addReserveSnapshot() internal override(MatchingEngineCore) {}

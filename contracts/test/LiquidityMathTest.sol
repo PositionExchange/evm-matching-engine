@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 import "../libraries/helper/LiquidityMath.sol";
-import "hardhat/console.sol";
 
 contract LiquidityMathTest {
     uint256 public CURVE_PIP = 10**18;
@@ -124,8 +123,6 @@ contract LiquidityMathTest {
             sqrtCurrentPrice,
             CURVE_PIP
         );
-        console.log("sqrtPriceTarget: ", sqrtPriceTarget);
-        console.log("sqrtCurrentPrice: ", sqrtCurrentPrice);
         return
             LiquidityMath.calculateQuoteWithPriceWhenBuy(
                 sqrtPriceTarget,

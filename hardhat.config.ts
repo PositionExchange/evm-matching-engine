@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "hardhat-gas-reporter"
+import 'hardhat-log-remover';
 
 const config: HardhatUserConfig = {
   networks: {

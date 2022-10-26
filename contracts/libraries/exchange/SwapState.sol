@@ -21,7 +21,6 @@ library SwapState {
         uint8 pipRangeLiquidityIndex;
         uint256[5] pipRangesIndex;
         AmmReserves[5] ammReserves;
-        uint128 currentPip;
     }
 
     struct State {
@@ -42,11 +41,7 @@ library SwapState {
         AmmState ammState;
     }
 
-    function newAMMState(uint128 _currentPip)
-        internal
-        pure
-        returns (AmmState memory)
-    {
+    function newAMMState() internal pure returns (AmmState memory) {
         AmmReserves[5] memory _ammReserves;
         uint256[5] memory _pipRangesIndex;
         return
@@ -54,8 +49,7 @@ library SwapState {
                 lastPipRangeLiquidityIndex: -1,
                 pipRangeLiquidityIndex: 0,
                 pipRangesIndex: _pipRangesIndex,
-                ammReserves: _ammReserves,
-                currentPip: _currentPip
+                ammReserves: _ammReserves
             });
     }
 
@@ -131,11 +125,11 @@ library SwapState {
             : tradedQuantity;
     }
 
-    function reverseIsFullBuy(State memory state) internal pure {
-        if (state.isFullBuy == 1) {
-            state.isFullBuy = 2;
+    function reverseIsFullBuy(State memory state) internal {
+        if (!state.isBuy) {
+            state.isFullBuy = uint8(1);
         } else {
-            state.isFullBuy = 1;
+            state.isFullBuy = uint8(2);
         }
     }
 

@@ -168,4 +168,7 @@ export class YamlTestProcess {
         const expectData = stepData.getProp("Expect");
         if (expectData) await this.expectTest(expectData);
     }
+    async Expect(stepData) {
+        if (stepData) await this.expectTest(stepData);
+    }
 }

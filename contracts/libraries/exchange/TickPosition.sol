@@ -4,8 +4,6 @@ pragma solidity ^0.8.9;
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./LimitOrder.sol";
 
-import "hardhat/console.sol";
-
 /*
  * A library storing data and logic at a pip
  */

@@ -188,8 +188,10 @@ export class TestMatchingAmm {
 
         const poolData = await this.ins.liquidityInfo(expectData.IndexPipRange);
 
-        console.log("[expectPool] Expected pool: ", sqrt(Number(expectData.MaxPip))* 10**9, Number(poolData.sqrtMaxPip));
-        console.log("[expectPool] Expected pool: ",Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
+        console.log("[expectPool] Expected pool max pip: ", sqrt(Number(expectData.MaxPip))* 10**9, Number(poolData.sqrtMaxPip));
+        console.log("[expectPool] Expected pool baseReal: ",Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
+        console.log("[expectPool] Expected pool quoteReal: ",Number(expectData.QuoteReal), fromWeiAndFormat(poolData.quoteReal));
+        console.log("[expectPool] Expected pool K: ",sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK));
 
         if (expectData.MaxPip) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**9),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
         if (expectData.MinPip) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**9),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
@@ -262,6 +264,9 @@ export class TestMatchingAmm {
     async openMarketOrder( side: number, size: number, asset : String, opts?: CallOptions) {
         const isBuy = side == 0;
         const orderQuantity = toWei(size);
+
+        const a=await  this.ins.singleSlot();
+        console.log("isFullBuy: ",a.isFullBuy);
 
         if (asset === "base") {
             await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
