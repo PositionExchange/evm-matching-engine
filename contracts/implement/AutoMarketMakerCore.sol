@@ -546,4 +546,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     {
         return (uint256(pip) * curve).sqrt().Uint256ToUint128();
     }
+
+    function getPipRange() external view override returns (uint128) {
+        return pipRange;
+    }
 }

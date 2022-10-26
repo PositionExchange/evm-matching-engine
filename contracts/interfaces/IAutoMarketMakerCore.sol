@@ -33,4 +33,6 @@ interface IAutoMarketMakerCore {
     function removeLiquidity(RemoveLiquidity calldata params)
         external
         returns (uint128 baseAmount, uint128 quoteAmount);
+
+    function getPipRange() external view returns (uint128);
 }
