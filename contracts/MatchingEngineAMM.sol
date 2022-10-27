@@ -161,6 +161,15 @@ contract MatchingEngineAMM is
         return uint128(getUnderlyingPriceInPip());
     }
 
+    function getCurrentPrice()
+        internal
+        view
+        override(AutoMarketMakerCore)
+        returns (uint128)
+    {
+        return uint128(getUnderlyingPriceInPip());
+    }
+
     function accumulateClaimableAmount(
         uint128 _pip,
         uint64 _orderId,
