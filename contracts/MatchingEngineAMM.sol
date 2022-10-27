@@ -9,6 +9,8 @@ import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 
+import "hardhat/console.sol";
+
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
     Fee,
@@ -79,13 +81,17 @@ contract MatchingEngineAMM is
         if (pipNext == currentPip) {
             return crossPipResult;
         }
-        //        if (ammState.lastPipRangeLiquidityIndex == -1) {
-        //            ammState.lastPipRangeLiquidityIndex = int256(
-        //                currentIndexedPipRange
-        //            );
-        //        }
+
         int256 indexPip = int256(
             LiquidityMath.calculateIndexPipRange(currentPip, pipRange)
+        );
+        console.log(
+            "[MatchingEngineAMM][_onCrossPipHook] currentPip",
+            currentPip
+        );
+        console.log(
+            "[MatchingEngineAMM][_onCrossPipHook] indexPip",
+            uint256(indexPip)
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
             if (ammState.lastPipRangeLiquidityIndex != -1)
@@ -101,7 +107,6 @@ contract MatchingEngineAMM is
         (
             uint128 baseCrossPipOut,
             uint128 quoteCrossPipOut,
-            uint256 pipRangeLiquidityIndex,
             uint128 toPip
         ) = pipNext != 0
                 ? _onCrossPipAMMTargetPrice(
@@ -131,7 +136,7 @@ contract MatchingEngineAMM is
             CrossPipResult(
                 baseCrossPipOut,
                 quoteCrossPipOut,
-                pipRangeLiquidityIndex,
+                //                pipRangeLiquidityIndex,
                 toPip
             );
     }

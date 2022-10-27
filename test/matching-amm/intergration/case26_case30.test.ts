@@ -343,11 +343,11 @@ describe("Case26-Case30", async function(){
     Quantity: 266.2796102164
   Expect:
     Pool:
-      K: 4406.4349930015
+      K: 6609.4321677526
       Liquidity: 
       BaseVirtual: 34.3605432859
       QuoteVirtual: 80.4867851648
-      BaseReal: 54.1998462052
+      BaseReal: 81.2970593155
       QuoteReal: 81.2997693078
       IndexPipRange: 0
       MaxPip: 30000
@@ -380,7 +380,7 @@ describe("Case26-Case30", async function(){
     FeeGrowthQuote: 0
     `)
     })
-    it (    "Case #28", async () => {
+    it ("Case #28", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 
@@ -714,33 +714,9 @@ describe("Case26-Case30", async function(){
       MinPip: 1
       FeeGrowthBase: 0
       FeeGrowthQuote: 0
-- S9: Expect
-  Pool:
-    Liquidity: 
-    BaseVirtual: 103.7098588265
-    QuoteVirtual: 0
-    BaseReal: 354.0947304820
-    QuoteReal: 1062.2841914459
-    IndexPipRange: 1
-    MaxPip: 59999
-    MinPip: 30000
-    FeeGrowthBase: 0
-    FeeGrowthQuote: 0
-- S10: Expect
-  Pool:
-    Liquidity: 
-    BaseVirtual: 148.2092081040
-    QuoteVirtual: 0
-    BaseReal: 807.6845249819
-    QuoteReal: 4846.1071498915
-    IndexPipRange: 2
-    MaxPip: 89999
-    MinPip: 60000
-    FeeGrowthBase: 0
-    FeeGrowthQuote: 0
     `)
     })
-    it (    "Case #30", async () => {
+    it ("Case #30", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 

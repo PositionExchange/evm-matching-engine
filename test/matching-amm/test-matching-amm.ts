@@ -187,7 +187,7 @@ export class TestMatchingAmm {
     async expectPool( expectData: ExpectedPoolData) {
 
         const poolData = await this.ins.liquidityInfo(expectData.IndexPipRange);
-
+        //
         console.log("[expectPool] Expected pool max pip: ", sqrt(Number(expectData.MaxPip))* 10**9, Number(poolData.sqrtMaxPip));
         console.log("[expectPool] Expected pool baseReal: ",Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
         console.log("[expectPool] Expected pool quoteReal: ",Number(expectData.QuoteReal), fromWeiAndFormat(poolData.quoteReal));

@@ -238,7 +238,7 @@ describe("Case11-Case15", async function(){
 - S8: AddLiquidity
   Action:
     Id: 3
-    IndexPipRange: 2
+    IndexPipRange: 1
     BaseVirtual: 0
     QuoteVirtual: 15
   Expect:

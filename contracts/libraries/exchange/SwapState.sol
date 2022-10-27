@@ -14,6 +14,8 @@ library SwapState {
         uint128 baseReserve;
         uint128 quoteReserve;
         uint128 sqrtK;
+        uint128 sqrtMaxPip;
+        uint128 sqrtMinPip;
     }
 
     struct AmmState {

@@ -155,7 +155,6 @@ export class YamlTestProcess {
 
     async OpenLimit(stepData) {
 
-        console.log("stepData: ", stepData);
         const action = this.extractAction(stepData.getProp("Action"));
         if (action) { await this.testHelper.openLimitOrder( action.price, action.side, action.quantity, action.id)}
         const expectData = stepData.getProp("Expect");
