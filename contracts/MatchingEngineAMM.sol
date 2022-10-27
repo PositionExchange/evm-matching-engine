@@ -29,6 +29,18 @@ contract MatchingEngineAMM is
         isInitialized = true;
     }
 
+    function PairManagerInitialize(
+        address quoteAsset,
+        address baseAsset,
+        uint256 basisPoint,
+        uint256 baseBasisPoint,
+        uint128 maxFindingWordsIndex,
+        uint128 initialPip,
+        uint128 pipRange,
+        uint32 tickSpace,
+        address owner
+    ) external {}
+
     function _emitLimitOrderUpdatedHook(
         address spotManager,
         uint64 orderId,
