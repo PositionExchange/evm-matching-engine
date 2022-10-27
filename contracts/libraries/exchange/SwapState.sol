@@ -14,6 +14,8 @@ library SwapState {
         uint128 baseReserve;
         uint128 quoteReserve;
         uint128 sqrtK;
+        uint128 sqrtMaxPip;
+        uint128 sqrtMinPip;
     }
 
     struct AmmState {
@@ -21,7 +23,6 @@ library SwapState {
         uint8 pipRangeLiquidityIndex;
         uint256[5] pipRangesIndex;
         AmmReserves[5] ammReserves;
-        uint128 currentPip;
     }
 
     struct State {
@@ -42,11 +43,7 @@ library SwapState {
         AmmState ammState;
     }
 
-    function newAMMState(uint128 _currentPip)
-        internal
-        pure
-        returns (AmmState memory)
-    {
+    function newAMMState() internal pure returns (AmmState memory) {
         AmmReserves[5] memory _ammReserves;
         uint256[5] memory _pipRangesIndex;
         return
@@ -54,8 +51,7 @@ library SwapState {
                 lastPipRangeLiquidityIndex: -1,
                 pipRangeLiquidityIndex: 0,
                 pipRangesIndex: _pipRangesIndex,
-                ammReserves: _ammReserves,
-                currentPip: _currentPip
+                ammReserves: _ammReserves
             });
     }
 
@@ -83,7 +79,8 @@ library SwapState {
     ) internal pure returns (bool) {
         return
             (state.isBuy && _pipNext > _maxPip) ||
-            (!state.isBuy && _pipNext < _maxPip);
+            (!state.isBuy && _pipNext < _maxPip) ||
+            (_maxPip != 0 && _pipNext == 0);
     }
 
     function moveBack1Pip(State memory state) internal pure {
@@ -94,11 +91,14 @@ library SwapState {
         }
     }
 
-    function moveForward1Pip(State memory state) internal pure {
+    function moveForward1Pip(State memory state, uint128 pipNext)
+        internal
+        pure
+    {
         if (state.isBuy) {
-            state.pip++;
+            state.pip = pipNext + 1;
         } else {
-            state.pip--;
+            state.pip = pipNext - 1;
         }
     }
 
@@ -128,11 +128,11 @@ library SwapState {
             : tradedQuantity;
     }
 
-    function reverseIsFullBuy(State memory state) internal pure {
-        if (state.isFullBuy == 1) {
-            state.isFullBuy = 2;
+    function reverseIsFullBuy(State memory state) internal {
+        if (!state.isBuy) {
+            state.isFullBuy = uint8(1);
         } else {
-            state.isFullBuy = 1;
+            state.isFullBuy = uint8(2);
         }
     }
 
@@ -148,24 +148,25 @@ library SwapState {
         // next until 5
         // finally we have an arrays of range liquidity index eg [1301, 1302, 1303, 1304]
         // then now we can use that range to update reserve to the corresponding range
-        if (
-            state.ammState.lastPipRangeLiquidityIndex !=
-            int256(_pipRangeLiquidityIndex)
-        ) {
-            if (state.ammState.lastPipRangeLiquidityIndex != -1) {
-                state.ammState.pipRangeLiquidityIndex++;
-            }
-            if (state.ammState.pipRangeLiquidityIndex > 5) {
-                revert("Not enough liquidity");
-            }
-            state.ammState.lastPipRangeLiquidityIndex = int256(
-                _pipRangeLiquidityIndex
-            );
-            // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-            state.ammState.pipRangesIndex[
-                state.ammState.pipRangeLiquidityIndex
-            ] = _pipRangeLiquidityIndex;
-        }
+        //        if (state.ammState.lastPipRangeLiquidityIndex != -1) {
+        //            state.ammState.pipRangeLiquidityIndex++;
+        //        }
+        //        if (
+        //            state.ammState.lastPipRangeLiquidityIndex !=
+        //            int256(_pipRangeLiquidityIndex)
+        //        ) {
+        //            state.ammState.pipRangeLiquidityIndex++;
+        //            if (state.ammState.pipRangeLiquidityIndex > 5) {
+        //                revert("Not enough liquidity");
+        //            }
+        //            state.ammState.lastPipRangeLiquidityIndex = int256(
+        //                _pipRangeLiquidityIndex
+        //            );
+        //            // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
+        //            state.ammState.pipRangesIndex[
+        //                state.ammState.pipRangeLiquidityIndex
+        //            ] = _pipRangeLiquidityIndex;
+        //        }
     }
 
     function updateAMMTradedSize(

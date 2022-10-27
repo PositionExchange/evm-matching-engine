@@ -14,7 +14,7 @@ export async function initilizeData(){
 
     const [deployer] = await ethers.getSigners();
 
-    pairManager = await deployContract("PairManager", deployer);
+    pairManager = await deployContract("MatchingEngineAMM", deployer);
     await pairManager.initializeFactory(
       quoteAsset.address,
       baseAsset.address,

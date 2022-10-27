@@ -17,7 +17,7 @@ library TradeConvert {
         uint256 quoteAmount,
         uint128 pip,
         uint256 basisPoint
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         return (quoteAmount * basisPoint) / pip;
     }
 }

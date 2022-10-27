@@ -14,7 +14,7 @@ library Liquidity {
         uint256 feeGrowthBase;
         uint256 feeGrowthQuote;
         uint128 sqrtK;
-        uint128 liquidity;
+        uint256 liquidity;
     }
 
     function initNewPipRange(
@@ -32,7 +32,7 @@ library Liquidity {
         Liquidity.Info storage self,
         Liquidity.Info memory updater
     ) internal {
-        if (updater.sqrtK == 0) {
+        if (self.sqrtK == 0) {
             self.sqrtMaxPip = updater.sqrtMaxPip;
             self.sqrtMinPip = updater.sqrtMinPip;
             self.indexedPipRange = updater.indexedPipRange;

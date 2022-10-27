@@ -1,6 +1,9 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-contract-sizer";
+import "@nomicfoundation/hardhat-chai-matchers";
+import "hardhat-gas-reporter"
+import 'hardhat-log-remover';
 
 const config: HardhatUserConfig = {
   networks: {
@@ -69,7 +72,7 @@ const config: HardhatUserConfig = {
   gasReporter: {
     enabled: true,
     currency: "BNB",
-    gasPrice : 20
+    gasPrice : 10
   },
   etherscan: {
     apiKey: "VKPENS57I9DCN68A844N1RUGK1IU42J9UC",

@@ -3,7 +3,6 @@
  */
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
-import "hardhat/console.sol";
 
 library LiquidityMath {
     function calculateBaseReal(
@@ -11,6 +10,9 @@ library LiquidityMath {
         uint128 xVirtual,
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
+        if (sqrtCurrentPrice == sqrtMaxPip) {
+            return 0;
+        }
         return
             uint128(
                 (uint256(sqrtMaxPip) * uint256(xVirtual)) /
@@ -23,6 +25,9 @@ library LiquidityMath {
         uint128 yVirtual,
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
+        if (sqrtCurrentPrice == sqrtMinPip) {
+            return 0;
+        }
         return
             uint128(
                 (uint256(sqrtCurrentPrice) * uint256(yVirtual)) /
@@ -35,15 +40,17 @@ library LiquidityMath {
         uint128 sqrtPriceTarget,
         uint128 quoteReal,
         uint128 sqrtCurrentPrice
-    ) internal pure returns (uint128) {
-        return
-            uint128(
-                (10**18 *
-                    (uint256(quoteReal) *
-                        (uint256(sqrtCurrentPrice) -
-                            uint256(sqrtPriceTarget)))) /
-                    (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2)
-            );
+    ) internal view returns (uint128) {
+        //        return uint128(((10**18 * uint256(quoteReal)) / uint256(sqrtPriceTarget) ) * (10**18 *((uint256(quoteReal) *
+        //        (uint256(sqrtCurrentPrice) -
+        //        uint256(sqrtPriceTarget))))/uint256(sqrtCurrentPrice)**2));
+
+        uint256 a = (10**18 *
+            (uint256(quoteReal) *
+                (uint256(sqrtCurrentPrice) - uint256(sqrtPriceTarget))));
+        uint256 b = (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2);
+
+        return uint128(a / b);
     }
 
     function calculateQuoteWithPriceWhenSell(
@@ -63,7 +70,10 @@ library LiquidityMath {
         uint128 sqrtPriceTarget,
         uint128 baseReal,
         uint128 sqrtCurrentPrice
-    ) internal pure returns (uint128) {
+    ) internal view returns (uint128) {
+        uint256 a = (uint256(baseReal) *
+            (uint256(sqrtPriceTarget) - uint256(sqrtCurrentPrice)));
+        uint256 b = uint256(sqrtPriceTarget);
         return
             uint128(
                 (uint256(baseReal) *
@@ -91,10 +101,10 @@ library LiquidityMath {
         pure
         returns (uint256)
     {
-        return
-            pip % pipRange == 0
-                ? uint256((pip / pipRange) + 1)
-                : uint256(pip / pipRange);
+        return uint256(pip / pipRange);
+        //            pip % pipRange == 0
+        //                ? uint256((pip / pipRange) )
+        //                : uint256(pip / pipRange);
     }
 
     function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)
@@ -102,7 +112,7 @@ library LiquidityMath {
         pure
         returns (uint128 pipMin, uint128 pipMax)
     {
-        pipMin = indexedPipRange * pipRange;
+        pipMin = indexedPipRange == 0 ? 1 : indexedPipRange * pipRange;
         pipMax = pipMin + pipRange - 1;
     }
 
@@ -111,7 +121,11 @@ library LiquidityMath {
         uint128 amountReal,
         uint128 amount
     ) internal pure returns (uint128) {
-        return (amount * amountReal**2) / (sqrtK**2 + sqrtK**2 * amountReal);
+        return
+            uint128(
+                (uint256(amount) * uint256(amountReal)**2) /
+                    (uint256(sqrtK)**2 + amount * uint256(amountReal))
+            );
     }
 
     function calculateQuoteBuyAndBaseSellWithoutTargetPrice(
@@ -119,42 +133,47 @@ library LiquidityMath {
         uint128 amountReal,
         uint128 amount
     ) internal pure returns (uint128) {
-        return (amount * sqrtK**2) / (amountReal * (amountReal - amount));
+        return
+            uint128(
+                (uint256(amount) * uint256(sqrtK)**2) /
+                    (uint256(amountReal) *
+                        (uint256(amountReal) - uint256(amount)))
+            );
     }
 
     function calculateKWithQuote(uint128 quoteReal, uint128 sqrtPriceMax)
         internal
         pure
-        returns (uint128)
+        returns (uint256)
     {
-        return quoteReal**2 / sqrtPriceMax**2;
+        return (uint256(quoteReal)**2 * 10**18) / uint256(sqrtPriceMax)**2;
     }
 
     function calculateKWithBase(uint128 baseReal, uint128 sqrtPriceMin)
         internal
         pure
-        returns (uint128)
+        returns (uint256)
     {
-        return baseReal**2 * sqrtPriceMin**2;
+        return (uint256(baseReal)**2 * uint256(sqrtPriceMin)**2) / 10**18;
     }
 
     function calculateKWithBaseAndQuote(uint128 quoteReal, uint128 baseReal)
         internal
         pure
-        returns (uint128)
+        returns (uint256)
     {
-        return quoteReal * baseReal;
+        return uint256(quoteReal) * uint256(baseReal);
     }
 
     function calculateLiquidity(
         uint128 amountReal,
         uint128 sqrtPrice,
         bool isBase
-    ) internal pure returns (uint128) {
+    ) internal pure returns (uint256) {
         if (isBase) {
-            return amountReal * sqrtPrice;
+            return uint256(amountReal) * uint256(sqrtPrice);
         } else {
-            return amountReal / sqrtPrice;
+            return uint256(amountReal) / uint256(sqrtPrice);
         }
     }
 

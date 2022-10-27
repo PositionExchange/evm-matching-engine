@@ -18,7 +18,7 @@ interface IAutoMarketMakerCore {
         returns (
             uint128 baseAmountAdded,
             uint128 quoteAmountAdded,
-            uint128 liquidity,
+            uint256 liquidity,
             uint256 feeGrowthBase,
             uint256 feeGrowthQuote
         );

@@ -26,20 +26,20 @@ abstract contract MatchingEngineCore is
     using SwapState for SwapState.State;
 
     function _initializeCore(
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip
+        uint256 _basisPoint,
+        uint256 _baseBasisPoint,
+        uint128 _maxFindingWordsIndex,
+        uint128 _initialPip
     ) internal {
         reserveSnapshots.push(
-            ReserveSnapshot(initialPip, _blockTimestamp(), _blockNumber())
+            ReserveSnapshot(_initialPip, _blockTimestamp(), _blockNumber())
         );
-        singleSlot.pip = initialPip;
-        basisPoint = basisPoint;
-        BASE_BASIC_POINT = baseBasisPoint;
-        maxFindingWordsIndex = maxFindingWordsIndex;
-        maxWordRangeForLimitOrder = maxFindingWordsIndex;
-        maxWordRangeForMarketOrder = maxFindingWordsIndex;
+        singleSlot.pip = _initialPip;
+        basisPoint = _basisPoint;
+        BASE_BASIC_POINT = _baseBasisPoint;
+        maxFindingWordsIndex = _maxFindingWordsIndex;
+        maxWordRangeForLimitOrder = _maxFindingWordsIndex;
+        maxWordRangeForMarketOrder = _maxFindingWordsIndex;
     }
 
     //*
@@ -207,6 +207,7 @@ abstract contract MatchingEngineCore is
             if (_params.isBuy && _singleSlot.pip != 0) {
                 int256 maxPip = int256(underlyingPip) -
                     int128(maxWordRangeForLimitOrder * 250);
+
                 if (maxPip > 0) {
                     require(
                         int128(_params.pip) >= maxPip,
@@ -343,6 +344,7 @@ abstract contract MatchingEngineCore is
     ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
+
         //save gas
         SwapState.State memory state = SwapState.State({
             remainingSize: _size,
@@ -357,9 +359,10 @@ abstract contract MatchingEngineCore is
             isBuy: _isBuy,
             isBase: _isBase,
             flipSideOut: 0,
-            ammState: SwapState.newAMMState(_initialSingleSlot.pip)
+            ammState: SwapState.newAMMState()
         });
         state.beforeExecute();
+
         while (state.remainingSize != 0) {
             StepComputations memory step;
             (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
@@ -375,14 +378,23 @@ abstract contract MatchingEngineCore is
                     break;
                 }
             }
+
             CrossPipResult memory crossPipResult = _onCrossPipHook(
                 step.pipNext,
                 state.isBuy,
                 _isBase,
                 uint128(state.remainingSize),
                 state.basisPoint,
+                state.pip,
                 state.ammState
             );
+            if (
+                state.ammState.pipRangeLiquidityIndex >= 5 ||
+                state.ammState.lastPipRangeLiquidityIndex == -2
+            ) {
+                break;
+            }
+            //            require(state.ammState.pipRangeLiquidityIndex < 5, "No liquidity");
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
@@ -399,11 +411,18 @@ abstract contract MatchingEngineCore is
                     crossPipResult.quoteCrossPipOut > 0
                 ) {
                     state.updatePipRangeIndex(
-                        crossPipResult.pipRangeLiquidityIndex
+                        uint256(state.ammState.lastPipRangeLiquidityIndex)
                     );
+
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
                         // TODO verify me
-                        state.pip = crossPipResult.toPip;
+                        if (
+                            (state.isBuy && crossPipResult.toPip > state.pip) ||
+                            (!state.isBuy && crossPipResult.toPip < state.pip)
+                        ) {
+                            state.pip = crossPipResult.toPip;
+                        }
+                        //                        state.pip = crossPipResult.toPip;
                         state.ammFillAll(
                             crossPipResult.baseCrossPipOut,
                             crossPipResult.quoteCrossPipOut
@@ -414,6 +433,7 @@ abstract contract MatchingEngineCore is
                             crossPipResult.baseCrossPipOut,
                             crossPipResult.quoteCrossPipOut
                         );
+                        state.isSkipFirstPip = false;
                     }
                 }
 
@@ -450,7 +470,7 @@ abstract contract MatchingEngineCore is
                     } else if (remainingQuantity > liquidity) {
                         // order in that pip will be fulfilled
                         state.updateTradedSize(liquidity, step.pipNext);
-                        state.moveForward1Pip();
+                        state.moveForward1Pip(step.pipNext);
                     } else {
                         // remaining size = liquidity
                         // only 1 pip should be toggled, so we call it directly here
@@ -461,10 +481,11 @@ abstract contract MatchingEngineCore is
                     }
                 } else {
                     state.isSkipFirstPip = false;
-                    state.moveForward1Pip();
+                    state.moveForward1Pip(step.pipNext);
                 }
             }
         }
+
         {
             if (
                 _initialSingleSlot.pip != state.pip &&
@@ -473,11 +494,12 @@ abstract contract MatchingEngineCore is
                 // all ticks in shifted range must be marked as filled
                 if (
                     !(state.remainingLiquidity > 0 &&
-                        state.startPip == state.pip)
+                        state.startPip == state.pip) && state.startPip != 0
                 ) {
                     if (_maxPip != 0) {
                         state.pip = state.lastMatchedPip;
                     }
+
                     liquidityBitmap.unsetBitsRange(
                         state.startPip,
                         state.remainingLiquidity > 0
@@ -515,7 +537,7 @@ abstract contract MatchingEngineCore is
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
-        _updateAMMState(state.ammState);
+        _updateAMMState(state.ammState, singleSlot.pip);
 
         if (mainSideOut != 0) {
             emit MarketFilled(
@@ -543,7 +565,6 @@ abstract contract MatchingEngineCore is
     struct CrossPipResult {
         uint128 baseCrossPipOut;
         uint128 quoteCrossPipOut;
-        uint256 pipRangeLiquidityIndex;
         uint128 toPip;
     }
 
@@ -553,19 +574,14 @@ abstract contract MatchingEngineCore is
         bool isBase,
         uint128 amount,
         uint32 basisPoint,
+        uint128 currentPip,
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult memory crossPipResult);
 
-    function _updateAMMState(SwapState.AmmState memory ammState)
-        internal
-        virtual
-    {}
-
-    function _onCrossPipHook(uint128 pipNext, bool isBuy)
-        internal
-        virtual
-        returns (CrossPipResult memory crossPipResult)
-    {}
+    function _updateAMMState(
+        SwapState.AmmState memory ammState,
+        uint128 currentPip
+    ) internal virtual {}
 
     function emitEventSwap(
         bool isBuy,

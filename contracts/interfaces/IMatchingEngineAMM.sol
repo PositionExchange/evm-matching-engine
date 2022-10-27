@@ -34,7 +34,7 @@ interface IMatchingEngineAMM is
         address owner
     );
 
-    function PairManagerInitialize(
+    function initialize(
         address quoteAsset,
         address baseAsset,
         uint256 basisPoint,
