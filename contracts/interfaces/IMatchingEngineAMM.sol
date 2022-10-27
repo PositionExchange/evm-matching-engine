@@ -15,7 +15,26 @@ interface IMatchingEngineAMM is
 {
     // TODO add guard
 
-    function initialize(
+    struct ExchangedData {
+        uint256 baseAmount;
+        uint256 quoteAmount;
+        uint256 feeQuoteAmount;
+        uint256 feeBaseAmount;
+    }
+
+    event PairManagerInitialized(
+        address quoteAsset,
+        address baseAsset,
+        address counterParty,
+        uint256 basisPoint,
+        uint256 baseBasisPoint,
+        uint128 maxFindingWordsIndex,
+        uint128 initialPip,
+        uint64 expireTime,
+        address owner
+    );
+
+    function PairManagerInitialize(
         address quoteAsset,
         address baseAsset,
         uint256 basisPoint,
@@ -26,13 +45,6 @@ interface IMatchingEngineAMM is
         uint32 tickSpace,
         address owner
     ) external;
-
-    struct ExchangedData {
-        uint256 baseAmount;
-        uint256 quoteAmount;
-        uint256 feeQuoteAmount;
-        uint256 feeBaseAmount;
-    }
 
     function accumulateClaimableAmount(
         uint128 _pip,

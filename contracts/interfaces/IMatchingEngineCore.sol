@@ -23,17 +23,6 @@ interface IMatchingEngineCore {
         bool isBuy
     );
 
-    event PairManagerInitialized(
-        address quoteAsset,
-        address baseAsset,
-        address counterParty,
-        uint256 basisPoint,
-        uint256 BASE_BASIC_POINT,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint64 expireTime,
-        address owner
-    );
     event LimitOrderCancelled(
         bool isBuy,
         uint64 orderId,
