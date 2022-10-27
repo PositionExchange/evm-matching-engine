@@ -13,8 +13,6 @@ import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 
-import "hardhat/console.sol";
-
 abstract contract MatchingEngineCore is
     IMatchingEngineCore,
     Block,
@@ -346,10 +344,6 @@ abstract contract MatchingEngineCore is
     ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
-        console.log(
-            "[MatchingEngineCore][_internalOpenMarketOrder] _initialSingleSlot.pip: ",
-            _initialSingleSlot.pip
-        );
 
         //save gas
         SwapState.State memory state = SwapState.State({
@@ -379,21 +373,11 @@ abstract contract MatchingEngineCore is
 
             // updated findHasLiquidityInMultipleWords, save more gas
             if (_maxPip != 0) {
-                console.log(
-                    "[MatchingEngineCore][_internalOpenMarketOrder] _maxPip, step.pipNext: ",
-                    _maxPip,
-                    step.pipNext
-                );
-
                 // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
                 if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
                     break;
                 }
             }
-            console.log(
-                "[MatchingEngineCore][_internalOpenMarketOrder] state.pip: ",
-                state.pip
-            );
 
             CrossPipResult memory crossPipResult = _onCrossPipHook(
                 step.pipNext,
@@ -404,6 +388,13 @@ abstract contract MatchingEngineCore is
                 state.pip,
                 state.ammState
             );
+            if (
+                state.ammState.pipRangeLiquidityIndex >= 5 ||
+                state.ammState.lastPipRangeLiquidityIndex == -2
+            ) {
+                break;
+            }
+            //            require(state.ammState.pipRangeLiquidityIndex < 5, "No liquidity");
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
@@ -424,18 +415,6 @@ abstract contract MatchingEngineCore is
                     );
 
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
-                        console.log(
-                            "[MatchingEngineCore][_internalOpenMarketOrder] crossPipResult.baseCrossPipOut: ",
-                            crossPipResult.baseCrossPipOut
-                        );
-                        console.log(
-                            "[MatchingEngineCore][_internalOpenMarketOrder] state.remainingSize: ",
-                            state.remainingSize
-                        );
-                        console.log(
-                            "[MatchingEngineCore][_internalOpenMarketOrder] crossPipResult.toPip: ",
-                            crossPipResult.toPip
-                        );
                         // TODO verify me
                         if (
                             (state.isBuy && crossPipResult.toPip > state.pip) ||
@@ -474,10 +453,6 @@ abstract contract MatchingEngineCore is
                             state.basisPoint
                         );
                     if (liquidity > remainingQuantity) {
-                        console.log(
-                            "[MatchingEngineCore][_internalOpenMarketOrder] Filled limit liquidity > remainingQuantity"
-                        );
-
                         // pip position will partially filled and stop here
                         tickPosition[step.pipNext].partiallyFill(
                             remainingQuantity.Uint256ToUint128()
@@ -493,18 +468,10 @@ abstract contract MatchingEngineCore is
                         state.pip = step.pipNext;
                         state.reverseIsFullBuy();
                     } else if (remainingQuantity > liquidity) {
-                        console.log(
-                            "[MatchingEngineCore][_internalOpenMarketOrder] Filled limit liquidity < remainingQuantity"
-                        );
-
                         // order in that pip will be fulfilled
                         state.updateTradedSize(liquidity, step.pipNext);
                         state.moveForward1Pip(step.pipNext);
                     } else {
-                        console.log(
-                            "[MatchingEngineCore][_internalOpenMarketOrder] Filled limit liquidity == remainingQuantity"
-                        );
-
                         // remaining size = liquidity
                         // only 1 pip should be toggled, so we call it directly here
                         liquidityBitmap.toggleSingleBit(step.pipNext, false);

@@ -966,7 +966,7 @@ describe("Case31-Case35", async function(){
     id: 3
     asset: base
     Side: 1
-    Quantity: 173.7734391935
+    Quantity: 193.7734391935
   Expect:
     Pool:
       Liquidity: 
@@ -1008,8 +1008,8 @@ describe("Case31-Case35", async function(){
     it ("Case #34", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
-  Action:
-    Price: 50000   
+  Action: 
+    Price: 50000
 - S1: AddLiquidity
   Action:
     Id: 1
@@ -1037,7 +1037,7 @@ describe("Case31-Case35", async function(){
     QuoteVirtual: 0
   Expect:
     Pool:
-      K: 65874.8561873859
+      K: 20598814.8896389000
       Liquidity: 
       BaseVirtual: 340
       QuoteVirtual: 0
@@ -1069,7 +1069,7 @@ describe("Case31-Case35", async function(){
     QuoteVirtual: 0
   Expect:
     Pool:
-      K: 285104.7043548640
+      K: 25730699.5680265000
       Liquidity: 
       BaseVirtual: 380
       QuoteVirtual: 0
@@ -1109,20 +1109,20 @@ describe("Case31-Case35", async function(){
 - S7: AddLiquidity
   Action:
     Id: 1
-    IndexPipRange: 2
+    IndexPipRange: 1
     BaseVirtual: 20
     QuoteVirtual: 258.7230767
   Expect:
     Pool:
-      K: 263499.4247495440
+      K: 592873.7056864740
       Liquidity: 
       BaseVirtual: 30
       QuoteVirtual: 388.084615
       BaseReal: 344.3468326227
       QuoteReal: 1721.7341631136
-      IndexPipRange: 2 
-      MaxPip: 89999  
-      MinPip: 60000 
+      IndexPipRange: 1
+      MaxPip: 59999  
+      MinPip: 30000 
       FeeGrowthBase: 0  
       FeeGrowthQuote: 0
 - S8: OpenMarket
@@ -1151,7 +1151,7 @@ describe("Case31-Case35", async function(){
     QuoteVirtual: 100
   Expect:
     Pool:
-      K: 263499.4247495440
+      K: 826956.6640816640
       Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 652.4000129860
@@ -1199,14 +1199,14 @@ describe("Case31-Case35", async function(){
     id: 3
     asset: base
     Side: 1
-    Quantity: 173.7734391935
+    Quantity: 193.7734391935
   Expect:
     Pool:
       Liquidity: 
       BaseVirtual: 153.7734391935
       QuoteVirtual: 0
-      BaseReal: 162.4959486228
-      QuoteReal: 1031.4580406908
+      BaseReal: 525.0259244652
+      QuoteReal: 1575.0777733957
       IndexPipRange: 1  
       MaxPip: 59999  
       MinPip: 30000  
@@ -1346,7 +1346,7 @@ describe("Case31-Case35", async function(){
   Action:
     Id: 1
     Asset: base
-    Side: 0
+    Side: 1
     Quantity: 434
     Price: 50000
   Expect:
@@ -1354,7 +1354,7 @@ describe("Case31-Case35", async function(){
       OrderId: 1
       Price: 50000
       Size : 434
-      Side: 0
+      Side: 1
 - S11: AddLiquidity
   Action:
     Id: 1

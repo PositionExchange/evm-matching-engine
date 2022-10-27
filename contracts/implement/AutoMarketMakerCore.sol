@@ -9,7 +9,6 @@ import "../libraries/helper/LiquidityMath.sol";
 import "../interfaces/IAutoMarketMakerCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/helper/Convert.sol";
-import "hardhat/console.sol";
 
 abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Liquidity for Liquidity.Info;
@@ -235,6 +234,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         int256 indexedPipRange;
         uint128 pipTargetStep;
         uint128 sqrtTargetPip;
+        bool startIntoIndex;
     }
 
     function _onCrossPipAMMTargetPrice(
@@ -248,11 +248,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             uint128 toPip
         )
     {
-        console.log(
-            "[AutoMarketMakerCore][_onCrossPipAMMTargetPrice] amount, target: ",
-            params.amount,
-            params.pipNext
-        );
         CrossPipState memory crossPipState;
         // Have target price
         crossPipState.sqrtTargetPip = _calculateSqrtPrice(
@@ -301,6 +296,13 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     crossPipState.pipTargetStep = crossPipState.sqrtTargetPip;
                 }
 
+                if (crossPipState.startIntoIndex) {
+                    params.currentPip = params.isBuy
+                        ? _ammReserves.sqrtMinPip
+                        : _ammReserves.sqrtMaxPip;
+                    crossPipState.startIntoIndex = false;
+                }
+
                 (uint128 baseOut, uint128 quoteOut) = _calculateAmountOut(
                     _ammReserves,
                     params.isBuy,
@@ -334,14 +336,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
                 baseCrossPipOut += baseOut;
                 quoteCrossPipOut += quoteOut;
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMTargetPrice] baseOut: ",
-                    baseOut
-                );
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMTargetPrice] quoteOut: ",
-                    quoteOut
-                );
 
                 _updateAmmState(
                     params,
@@ -359,12 +353,17 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             if (
                 (params.isBuy && i > crossPipState.indexedPipRange) ||
                 (!params.isBuy && i < crossPipState.indexedPipRange)
+                //                ||(i < 0)
             ) {
+                //                if (i == 0 ){
+                //                    ammState.lastPipRangeLiquidityIndex = -2;
+                //                }
                 toPip = params.pipNext;
                 break;
             }
             ammState.pipRangeLiquidityIndex += 1;
             ammState.lastPipRangeLiquidityIndex = i;
+            crossPipState.startIntoIndex = true;
         }
     }
 
@@ -379,11 +378,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             uint128 toPip
         )
     {
-        console.log(
-            "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] amount: ",
-            params.amount
-        );
-
         CrossPipState memory crossPipState;
         params.currentPip = _calculateSqrtPrice(params.currentPip, 10**18);
 
@@ -395,11 +389,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             if (
                 _ammReserves.baseReserve == 0 && _ammReserves.baseReserve == 0
             ) {
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] init amm state: ",
-                    uint256(ammState.lastPipRangeLiquidityIndex)
-                );
-
                 Liquidity.Info memory _liquidity = liquidityInfo[
                     uint256(ammState.lastPipRangeLiquidityIndex)
                 ];
@@ -431,22 +420,12 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     ? _ammReserves.sqrtMaxPip
                     : _ammReserves.sqrtMinPip;
 
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] crossPipState.pipTargetStep: ",
-                    crossPipState.pipTargetStep
-                );
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] _ammReserves.sqrtMaxPip: ",
-                    _ammReserves.sqrtMaxPip
-                );
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] _ammReserves.sqrtMinPip: ",
-                    _ammReserves.sqrtMinPip
-                );
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] params.currentPip: ",
-                    params.currentPip
-                );
+                if (crossPipState.startIntoIndex) {
+                    params.currentPip = params.isBuy
+                        ? _ammReserves.sqrtMinPip
+                        : _ammReserves.sqrtMaxPip;
+                    crossPipState.startIntoIndex = false;
+                }
 
                 (baseOut, quoteOut) = _calculateAmountOut(
                     _ammReserves,
@@ -455,46 +434,17 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     params.currentPip,
                     params.basisPoint
                 );
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] baseOut: ",
-                    baseOut
-                );
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] quoteOut: ",
-                    quoteOut
-                );
 
                 if (
                     (params.isBase && params.amount <= baseOut) ||
                     (!params.isBase && params.amount <= quoteOut)
                 ) {
-                    console.log(
-                        "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] into break"
-                    );
-
                     (
                         uint128 quoteAmount,
                         uint128 baseAmount
                     ) = _findPriceTarget(params, _ammReserves);
-                    console.log(
-                        "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] quoteAmount: ",
-                        quoteAmount
-                    );
-                    console.log(
-                        "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] baseAmount: ",
-                        baseAmount
-                    );
                     baseCrossPipOut += baseAmount;
                     quoteCrossPipOut += quoteAmount;
-
-                    console.log(
-                        "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] baseCrossPipOut: ",
-                        baseCrossPipOut
-                    );
-                    console.log(
-                        "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] quoteCrossPipOut: ",
-                        quoteCrossPipOut
-                    );
 
                     /// update amm state memory
                     toPip = _updateAmmState(
@@ -509,11 +459,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 params.amount = params.isBase
                     ? params.amount - baseOut
                     : params.amount - quoteOut;
-
-                console.log(
-                    "[AutoMarketMakerCore][_onCrossPipAMMNoTargetPrice] after update params.amount: ",
-                    params.amount
-                );
                 _updateAmmState(
                     params,
                     ammState.ammReserves[ammState.pipRangeLiquidityIndex],
@@ -536,8 +481,10 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 ammState.lastPipRangeLiquidityIndex < 0 ||
                 ammState.pipRangeLiquidityIndex >= 5
             ) {
+                ammState.lastPipRangeLiquidityIndex = -2;
                 return (baseCrossPipOut, quoteCrossPipOut, toPip);
             }
+            crossPipState.startIntoIndex = true;
         }
     }
 
@@ -632,20 +579,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         uint128 baseAmount,
         uint128 quoteAmount
     ) internal returns (uint128 price) {
-        console.log(
-            "[AutoMarketMakerCore][_updateAmmState] input ammReserves.baseReserve: ",
-            ammReserves.baseReserve
-        );
-        console.log(
-            "[AutoMarketMakerCore][_updateAmmState] input  ammReserves.quoteReserve: ",
-            ammReserves.quoteReserve
-        );
-        console.log(
-            "[AutoMarketMakerCore][_updateAmmState] input  params.currentPip, max, min: ",
-            params.currentPip,
-            ammReserves.sqrtMaxPip,
-            ammReserves.sqrtMinPip
-        );
         if (
             (ammReserves.baseReserve == 0) ||
             (params.currentPip == ammReserves.sqrtMaxPip)
@@ -682,58 +615,19 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         } else if (
             ((ammReserves.baseReserve != 0 && ammReserves.quoteReserve != 0))
         ) {
-            console.log(
-                "[AutoMarketMakerCore][_updateAmmState] before ammReserves.baseReserve: ",
-                ammReserves.baseReserve
-            );
-            console.log(
-                "[AutoMarketMakerCore][_updateAmmState] before  ammReserves.quoteReserve: ",
-                ammReserves.quoteReserve
-            );
-            console.log(
-                "[AutoMarketMakerCore][_updateAmmState] before k: ",
-                uint256(ammReserves.sqrtK)**2
-            );
-            console.log(
-                "[AutoMarketMakerCore][_updateAmmState] before  baseAmount: ",
-                baseAmount
-            );
-
             if (params.isBuy) {
                 ammReserves.baseReserve -= baseAmount;
-                console.log(
-                    "[AutoMarketMakerCore][_updateAmmState] before  ammReserves.quoteReserve: ",
-                    uint128(
-                        (uint256(ammReserves.sqrtK)**2) /
-                            uint256(ammReserves.baseReserve)
-                    )
-                );
                 ammReserves.quoteReserve = uint128(
                     (uint256(ammReserves.sqrtK)**2) /
                         uint256(ammReserves.baseReserve)
                 );
             } else {
                 ammReserves.baseReserve += baseAmount;
-                console.log(
-                    "[AutoMarketMakerCore][_updateAmmState] before  ammReserves.quoteReserve: ",
-                    uint128(
-                        (uint256(ammReserves.sqrtK)**2) /
-                            uint256(ammReserves.baseReserve)
-                    )
-                );
                 ammReserves.quoteReserve = uint128(
                     (uint256(ammReserves.sqrtK)**2) /
                         uint256(ammReserves.baseReserve)
                 );
             }
-            console.log(
-                "[AutoMarketMakerCore][_updateAmmState] after ammReserves.baseReserve: ",
-                ammReserves.baseReserve
-            );
-            console.log(
-                "[AutoMarketMakerCore][_updateAmmState] after  ammReserves.quoteReserve: ",
-                ammReserves.quoteReserve
-            );
         }
 
         return

@@ -26,6 +26,8 @@ export class YamlTestProcess {
         const baseVirtual = action.getProp("BaseVirtual")
         const quoteVirtual = action.getProp("QuoteVirtual")
         const liquidity = action.getProp("Liquidity")
+        const revert = action.getProp("Revert")
+
 
 
         return {
@@ -37,7 +39,8 @@ export class YamlTestProcess {
             indexPipRange,
             baseVirtual,
             quoteVirtual,
-            liquidity
+            liquidity,
+            revert
         }
     }
 
@@ -156,16 +159,19 @@ export class YamlTestProcess {
     async OpenLimit(stepData) {
 
         const action = this.extractAction(stepData.getProp("Action"));
-        if (action) { await this.testHelper.openLimitOrder( action.price, action.side, action.quantity, action.id)}
+        if (action) { await this.testHelper.openLimitOrder( action.price, action.side, action.quantity, action.id, {revert : action.revert} )}
         const expectData = stepData.getProp("Expect");
         if (expectData) await this.expectTest(expectData);
     }
     async OpenMarket(stepData) {
-
         const action = this.extractAction(stepData.getProp("Action"));
-        if (action) { await this.testHelper.openMarketOrder(  action.side, action.quantity, action.asset)}
-        const expectData = stepData.getProp("Expect");
-        if (expectData) await this.expectTest(expectData);
+        if (action) { await this.testHelper.openMarketOrder(  action.side, action.quantity, action.asset, {revert : action.revert})}
+
+        if (action.revert === undefined){
+            const expectData = stepData.getProp("Expect");
+            if (expectData) await this.expectTest(expectData);
+        }
+
     }
     async Expect(stepData) {
         if (stepData) await this.expectTest(stepData);

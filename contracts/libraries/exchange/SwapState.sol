@@ -79,7 +79,8 @@ library SwapState {
     ) internal pure returns (bool) {
         return
             (state.isBuy && _pipNext > _maxPip) ||
-            (!state.isBuy && _pipNext < _maxPip);
+            (!state.isBuy && _pipNext < _maxPip) ||
+            (_maxPip != 0 && _pipNext == 0);
     }
 
     function moveBack1Pip(State memory state) internal pure {
@@ -150,22 +151,22 @@ library SwapState {
         //        if (state.ammState.lastPipRangeLiquidityIndex != -1) {
         //            state.ammState.pipRangeLiquidityIndex++;
         //        }
-        if (
-            state.ammState.lastPipRangeLiquidityIndex !=
-            int256(_pipRangeLiquidityIndex)
-        ) {
-            state.ammState.pipRangeLiquidityIndex++;
-            if (state.ammState.pipRangeLiquidityIndex > 5) {
-                revert("Not enough liquidity");
-            }
-            state.ammState.lastPipRangeLiquidityIndex = int256(
-                _pipRangeLiquidityIndex
-            );
-            // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-            state.ammState.pipRangesIndex[
-                state.ammState.pipRangeLiquidityIndex
-            ] = _pipRangeLiquidityIndex;
-        }
+        //        if (
+        //            state.ammState.lastPipRangeLiquidityIndex !=
+        //            int256(_pipRangeLiquidityIndex)
+        //        ) {
+        //            state.ammState.pipRangeLiquidityIndex++;
+        //            if (state.ammState.pipRangeLiquidityIndex > 5) {
+        //                revert("Not enough liquidity");
+        //            }
+        //            state.ammState.lastPipRangeLiquidityIndex = int256(
+        //                _pipRangeLiquidityIndex
+        //            );
+        //            // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
+        //            state.ammState.pipRangesIndex[
+        //                state.ammState.pipRangeLiquidityIndex
+        //            ] = _pipRangeLiquidityIndex;
+        //        }
     }
 
     function updateAMMTradedSize(

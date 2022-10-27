@@ -9,8 +9,6 @@ import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 
-import "hardhat/console.sol";
-
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
     Fee,
@@ -27,12 +25,15 @@ contract MatchingEngineAMM is
     }
 
     function initialize(
+        address quoteAsset,
+        address baseAsset,
         uint256 basisPoint,
         uint256 baseBasisPoint,
         uint128 maxFindingWordsIndex,
         uint128 initialPip,
         uint128 pipRange,
-        uint32 tickSpace
+        uint32 tickSpace,
+        address owner
     ) external {
         require(!isInitialized, "Initialized");
         isInitialized = true;
@@ -45,18 +46,6 @@ contract MatchingEngineAMM is
             initialPip
         );
     }
-
-    function PairManagerInitialize(
-        address quoteAsset,
-        address baseAsset,
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint128 pipRange,
-        uint32 tickSpace,
-        address owner
-    ) external {}
 
     function _emitLimitOrderUpdatedHook(
         address spotManager,
@@ -84,14 +73,6 @@ contract MatchingEngineAMM is
 
         int256 indexPip = int256(
             LiquidityMath.calculateIndexPipRange(currentPip, pipRange)
-        );
-        console.log(
-            "[MatchingEngineAMM][_onCrossPipHook] currentPip",
-            currentPip
-        );
-        console.log(
-            "[MatchingEngineAMM][_onCrossPipHook] indexPip",
-            uint256(indexPip)
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
             if (ammState.lastPipRangeLiquidityIndex != -1)
@@ -150,15 +131,6 @@ contract MatchingEngineAMM is
             pipRange
         );
         _updateAMMStateAfterTrade(ammState);
-    }
-
-    function getCurrentPrice()
-        internal
-        view
-        override(AutoMarketMakerCore)
-        returns (uint128)
-    {
-        return uint128(getUnderlyingPriceInPip());
     }
 
     function getCurrentPrice()

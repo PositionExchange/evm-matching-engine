@@ -2,7 +2,7 @@ import {expect, use} from "chai";
 import YAML from "js-yaml";
 import {MatchingEngineAMM, MockMatchingEngineAMM, MockToken} from "../../typeChain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import {deployContract, fromWei, getAccount, SIDE, toWei} from "../utils/utils";
+import {deployContract, expectRevert, fromWei, getAccount, SIDE, toWei} from "../utils/utils";
 import {BigNumber, ethers} from "ethers";
 import {YamlTestProcess} from "./yaml-test-process";
 import Decimal from "decimal.js";
@@ -19,6 +19,7 @@ export type StringOrNumber = string | number
 export interface CallOptions {
     sender?: SignerWithAddress;
     poolId?: string;
+    revert? : any;
     [k: string]: any
 }
 
@@ -93,7 +94,16 @@ export async function deployAndCreateRouterHelper() {
     const deployer = users[0];
     matching = await deployContract("MockMatchingEngineAMM", deployer );
 
-    await matching.initialize(BASIS_POINT, BASIS_POINT**2, 1000, 100000, 30_000, 1);
+    await matching.initialize(
+        deployer.address,
+        deployer.address,
+        BASIS_POINT,
+        BASIS_POINT**2,
+        1000,
+        100000,
+        30_000,
+        1,
+        deployer.address);
 
     testHelper = new TestMatchingAmm(matching,deployer  ,{
         users
@@ -268,12 +278,28 @@ export class TestMatchingAmm {
         const a=await  this.ins.singleSlot();
         console.log("isFullBuy: ",a.isFullBuy);
 
-        if (asset === "base") {
-            await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
 
-        }else if (asset === "quote"){
-            await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
+        if (opts.revert !== undefined) {
+
+            if (asset === "base") {
+                console.log("opts.revert.toString(): ", opts?.revert.toString());
+                await expectRevert(this.ins.openMarket(orderQuantity, isBuy,this.users[0].address), opts.revert.toString());
+
+            }else if (asset === "quote"){
+                await expectRevert(this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address), opts.revert.toString());
+
+            }
+
+        }else {
+            if (asset === "base") {
+                await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
+
+            }else if (asset === "quote"){
+                await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
+            }
         }
+
+
 
 
     }

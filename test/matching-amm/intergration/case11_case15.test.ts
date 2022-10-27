@@ -221,7 +221,7 @@ describe("Case11-Case15", async function(){
     id: 3
     asset: base
     Side: 1
-    Quantity: 11.9
+    Quantity: 11.8
   Expect:
     Pool:
       K: 40092.8490499028
