@@ -15,18 +15,6 @@ interface IMatchingEngineAMM is
 {
     // TODO add guard
 
-    function initialize(
-        address quoteAsset,
-        address baseAsset,
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint128 pipRange,
-        uint32 tickSpace,
-        address owner
-    ) external;
-
     struct ExchangedData {
         uint256 baseAmount;
         uint256 quoteAmount;
