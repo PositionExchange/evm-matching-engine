@@ -57,11 +57,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         state.currentPrice = _calculateSqrtPrice(getCurrentPrice(), 10**18);
 
         if (_liquidityInfo.sqrtK == 0) {
-            (uint128 sqrtPipMin, uint128 sqrtPipMax) = LiquidityMath
+            (uint128 PipMin, uint128 PipMax) = LiquidityMath
                 .calculatePipRange(params.indexedPipRange, pipRange);
 
-            _liquidityInfo.sqrtMaxPip = _calculateSqrtPrice(sqrtPipMax, 10**18);
-            _liquidityInfo.sqrtMinPip = _calculateSqrtPrice(sqrtPipMin, 10**18);
+            _liquidityInfo.sqrtMaxPip = _calculateSqrtPrice(PipMax, 10**18);
+            _liquidityInfo.sqrtMinPip = _calculateSqrtPrice(PipMin, 10**18);
             _liquidityInfo.indexedPipRange = params.indexedPipRange;
         }
 
