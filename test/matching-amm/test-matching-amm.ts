@@ -202,6 +202,7 @@ export class TestMatchingAmm {
         console.log("[expectPool] Expected pool baseReal: ",Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
         console.log("[expectPool] Expected pool quoteReal: ",Number(expectData.QuoteReal), fromWeiAndFormat(poolData.quoteReal));
         console.log("[expectPool] Expected pool K: ",sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK));
+        console.log("[expectPool] Expected pool K: ",Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK));
 
         if (expectData.MaxPip) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**9),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
         if (expectData.MinPip) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**9),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
@@ -213,6 +214,7 @@ export class TestMatchingAmm {
         if (expectData.BaseReal) expect(this.expectDataInRange(Number(expectData.BaseReal),fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
         if (expectData.QuoteReal) expect(this.expectDataInRange(Number(expectData.QuoteReal),fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
         if (expectData.K) expect(this.expectDataInRange(sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "K");
+        if (expectData.Liquidity) expect(this.expectDataInRange(Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "Liquidity");
 
     }
 
