@@ -10,6 +10,8 @@ import "../interfaces/IAutoMarketMakerCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/helper/Convert.sol";
 
+import "hardhat/console.sol";
+
 abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;
@@ -95,7 +97,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
         _liquidityInfo.baseReal += state.baseReal;
         _liquidityInfo.quoteReal += state.quoteReal;
-        _liquidityInfo.liquidity += liquidity;
+        //        _liquidityInfo.liquidity += liquidity;
 
         if ((params.indexedPipRange < currentIndexedPipRange)) {
             _liquidityInfo.sqrtK = (LiquidityMath.calculateKWithQuote(
@@ -152,12 +154,22 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         Liquidity.Info memory _liquidityInfo = liquidityInfo[
             params.indexedPipRange
         ];
-        require(_liquidityInfo.liquidity >= params.liquidity, "Liquidity");
+        uint128 sqrtBasicPoint = uint256(_basisPoint())
+            .sqrt()
+            .Uint256ToUint128();
+
         if (params.indexedPipRange < currentIndexedPipRange) {
-            quoteAmount = LiquidityMath.calculateQuoteByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMinPip,
-                _liquidityInfo.sqrtMaxPip
+            quoteAmount =
+                LiquidityMath.calculateQuoteByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMinPip,
+                    _liquidityInfo.sqrtMaxPip
+                ) /
+                sqrtBasicPoint;
+
+            console.log(
+                "[AutoMarketMakerCore][removeLiquidity] params.indexedPipRange < currentIndexedPipRange quoteAmount",
+                quoteAmount
             );
 
             _liquidityInfo.sqrtK = LiquidityMath
@@ -168,11 +180,13 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 .sqrt()
                 .Uint256ToUint128();
         } else if (params.indexedPipRange > currentIndexedPipRange) {
-            baseAmount = LiquidityMath.calculateBaseByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMaxPip,
-                _liquidityInfo.sqrtMinPip
-            );
+            baseAmount =
+                LiquidityMath.calculateBaseByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMaxPip,
+                    _liquidityInfo.sqrtMinPip
+                ) *
+                sqrtBasicPoint;
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBase(
                     _liquidityInfo.baseReal - baseAmount,
@@ -181,17 +195,24 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 .sqrt()
                 .Uint256ToUint128();
         } else {
-            uint128 currentPrice = getCurrentPrice();
-            baseAmount = LiquidityMath.calculateBaseByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMaxPip,
-                currentPrice
+            uint128 currentPrice = _calculateSqrtPrice(
+                getCurrentPrice(),
+                10**18
             );
-            quoteAmount = LiquidityMath.calculateQuoteByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMinPip,
-                currentPrice
-            );
+            baseAmount =
+                LiquidityMath.calculateBaseByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMaxPip,
+                    currentPrice
+                ) *
+                sqrtBasicPoint;
+            quoteAmount =
+                LiquidityMath.calculateQuoteByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMinPip,
+                    currentPrice
+                ) /
+                sqrtBasicPoint;
 
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBaseAndQuote(
@@ -202,9 +223,39 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 .Uint256ToUint128();
         }
 
-        _liquidityInfo.baseReal -= baseAmount;
-        _liquidityInfo.quoteReal -= quoteAmount;
-        _liquidityInfo.liquidity -= params.liquidity;
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal",
+            _liquidityInfo.baseReal
+        );
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] baseAmount",
+            baseAmount
+        );
+
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.quoteReal",
+            _liquidityInfo.quoteReal
+        );
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] quoteAmount",
+            quoteAmount
+        );
+
+        _liquidityInfo.baseReal = _liquidityInfo.baseReal - baseAmount;
+        _liquidityInfo.quoteReal = _liquidityInfo.quoteReal - quoteAmount;
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal update",
+            _liquidityInfo.baseReal
+        );
+
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.quoteReal update",
+            _liquidityInfo.quoteReal
+        );
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] params.indexedPipRange ",
+            uint256(params.indexedPipRange)
+        );
 
         liquidityInfo[params.indexedPipRange].updateAddLiquidity(
             _liquidityInfo

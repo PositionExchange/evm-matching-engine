@@ -576,7 +576,7 @@ abstract contract MatchingEngineCore is
         uint32 basisPoint,
         uint128 currentPip,
         SwapState.AmmState memory ammState
-    ) internal virtual returns (CrossPipResult memory crossPipResult);
+    ) internal virtual returns (CrossPipResult memory crossPipResult) {}
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,
