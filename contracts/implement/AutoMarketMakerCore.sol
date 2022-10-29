@@ -1,6 +1,7 @@
 /**
  * @author Musket
  */
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
 import "../libraries/types/AMMCoreStorage.sol";
@@ -57,8 +58,10 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         state.currentPrice = _calculateSqrtPrice(getCurrentPrice(), 10**18);
 
         if (_liquidityInfo.sqrtK == 0) {
-            (uint128 PipMin, uint128 PipMax) = LiquidityMath
-                .calculatePipRange(params.indexedPipRange, pipRange);
+            (uint128 PipMin, uint128 PipMax) = LiquidityMath.calculatePipRange(
+                params.indexedPipRange,
+                pipRange
+            );
 
             _liquidityInfo.sqrtMaxPip = _calculateSqrtPrice(PipMax, 10**18);
             _liquidityInfo.sqrtMinPip = _calculateSqrtPrice(PipMin, 10**18);
@@ -95,7 +98,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
         _liquidityInfo.baseReal += state.baseReal;
         _liquidityInfo.quoteReal += state.quoteReal;
-        _liquidityInfo.liquidity += liquidity;
+        //        _liquidityInfo.liquidity += liquidity;
 
         if ((params.indexedPipRange < currentIndexedPipRange)) {
             _liquidityInfo.sqrtK = (LiquidityMath.calculateKWithQuote(
@@ -152,59 +155,92 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         Liquidity.Info memory _liquidityInfo = liquidityInfo[
             params.indexedPipRange
         ];
-        require(_liquidityInfo.liquidity >= params.liquidity, "Liquidity");
-        if (params.indexedPipRange < currentIndexedPipRange) {
-            quoteAmount = LiquidityMath.calculateQuoteByLiquidity(
+        uint128 quoteVirtualRemove = LiquidityMath
+            .calculateQuoteRealByLiquidity(
                 params.liquidity,
-                _liquidityInfo.sqrtMinPip,
-                _liquidityInfo.sqrtMaxPip
+                _liquidityInfo.sqrtK,
+                _liquidityInfo.quoteReal
             );
+        _liquidityInfo.quoteReal = _liquidityInfo.quoteReal > quoteVirtualRemove
+            ? _liquidityInfo.quoteReal - quoteVirtualRemove
+            : 0;
+        uint128 baseVirtualRemove = LiquidityMath.calculateBaseRealByLiquidity(
+            params.liquidity,
+            _liquidityInfo.sqrtK,
+            _liquidityInfo.baseReal
+        );
+        _liquidityInfo.baseReal = _liquidityInfo.baseReal > baseVirtualRemove
+            ? _liquidityInfo.baseReal - baseVirtualRemove
+            : 0;
 
-            _liquidityInfo.sqrtK = LiquidityMath
-                .calculateKWithQuote(
-                    _liquidityInfo.quoteReal - quoteAmount,
+        uint128 sqrtBasicPoint = uint256(_basisPoint())
+            .sqrt()
+            .Uint256ToUint128();
+
+        if (params.indexedPipRange < currentIndexedPipRange) {
+            quoteAmount =
+                LiquidityMath.calculateQuoteByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMinPip,
                     _liquidityInfo.sqrtMaxPip
-                )
-                .sqrt()
-                .Uint256ToUint128();
+                ) /
+                sqrtBasicPoint;
+
+            _liquidityInfo.sqrtK =
+                LiquidityMath
+                    .calculateKWithQuote(
+                        _liquidityInfo.quoteReal,
+                        _liquidityInfo.sqrtMaxPip
+                    )
+                    .sqrt()
+                    .Uint256ToUint128() *
+                sqrtBasicPoint;
         } else if (params.indexedPipRange > currentIndexedPipRange) {
-            baseAmount = LiquidityMath.calculateBaseByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMaxPip,
-                _liquidityInfo.sqrtMinPip
-            );
-            _liquidityInfo.sqrtK = LiquidityMath
-                .calculateKWithBase(
-                    _liquidityInfo.baseReal - baseAmount,
+            baseAmount =
+                LiquidityMath.calculateBaseByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMaxPip,
                     _liquidityInfo.sqrtMinPip
-                )
-                .sqrt()
-                .Uint256ToUint128();
+                ) *
+                sqrtBasicPoint;
+
+            _liquidityInfo.sqrtK =
+                LiquidityMath
+                    .calculateKWithBase(
+                        _liquidityInfo.baseReal,
+                        _liquidityInfo.sqrtMinPip
+                    )
+                    .sqrt()
+                    .Uint256ToUint128() /
+                sqrtBasicPoint;
         } else {
-            uint128 currentPrice = getCurrentPrice();
-            baseAmount = LiquidityMath.calculateBaseByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMaxPip,
-                currentPrice
+            uint128 currentPrice = _calculateSqrtPrice(
+                getCurrentPrice(),
+                10**18
             );
-            quoteAmount = LiquidityMath.calculateQuoteByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtMinPip,
-                currentPrice
-            );
+            baseAmount =
+                LiquidityMath.calculateBaseByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMaxPip,
+                    currentPrice
+                ) *
+                sqrtBasicPoint;
+            quoteAmount =
+                LiquidityMath.calculateQuoteByLiquidity(
+                    params.liquidity,
+                    _liquidityInfo.sqrtMinPip,
+                    currentPrice
+                ) /
+                sqrtBasicPoint;
 
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBaseAndQuote(
-                    _liquidityInfo.baseReal - baseAmount,
-                    _liquidityInfo.quoteReal - quoteAmount
+                    _liquidityInfo.baseReal,
+                    _liquidityInfo.quoteReal
                 )
                 .sqrt()
                 .Uint256ToUint128();
         }
-
-        _liquidityInfo.baseReal -= baseAmount;
-        _liquidityInfo.quoteReal -= quoteAmount;
-        _liquidityInfo.liquidity -= params.liquidity;
 
         liquidityInfo[params.indexedPipRange].updateAddLiquidity(
             _liquidityInfo

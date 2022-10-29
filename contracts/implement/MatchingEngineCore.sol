@@ -223,7 +223,7 @@ abstract contract MatchingEngineCore is
                 require(
                     _params.pip <=
                         (underlyingPip + maxWordRangeForLimitOrder * 250),
-                    "VL_MUST_CLOSE_TO_INDEX_PRICE_SHORT"
+                    "4"
                 );
             }
         }
@@ -394,7 +394,6 @@ abstract contract MatchingEngineCore is
             ) {
                 break;
             }
-            //            require(state.ammState.pipRangeLiquidityIndex < 5, "No liquidity");
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
@@ -407,7 +406,7 @@ abstract contract MatchingEngineCore is
                 break;
             } else {
                 if (
-                    crossPipResult.baseCrossPipOut > 0 ||
+                    crossPipResult.baseCrossPipOut > 0 &&
                     crossPipResult.quoteCrossPipOut > 0
                 ) {
                     state.updatePipRangeIndex(
@@ -576,7 +575,7 @@ abstract contract MatchingEngineCore is
         uint32 basisPoint,
         uint128 currentPip,
         SwapState.AmmState memory ammState
-    ) internal virtual returns (CrossPipResult memory crossPipResult);
+    ) internal virtual returns (CrossPipResult memory crossPipResult) {}
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,
@@ -607,12 +606,13 @@ abstract contract MatchingEngineCore is
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
         view
+        virtual
         returns (uint256)
     {}
 
-    function getBasisPoint() external view returns (uint256) {}
+    function getBasisPoint() external view virtual returns (uint256) {}
 
-    function getCurrentPip() external view returns (uint128) {}
+    function getCurrentPip() external view virtual returns (uint128) {}
 
     function quoteToBase(uint256 quoteAmount, uint128 pip)
         external

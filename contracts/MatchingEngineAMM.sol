@@ -187,6 +187,15 @@ contract MatchingEngineAMM is
         return basisPoint;
     }
 
+    function getCurrentPip()
+        external
+        view
+        override(MatchingEngineCore, IMatchingEngineCore)
+        returns (uint128)
+    {
+        return singleSlot.pip;
+    }
+
     function _addReserveSnapshot() internal override(MatchingEngineCore) {}
 
     function emitEventSwap(
