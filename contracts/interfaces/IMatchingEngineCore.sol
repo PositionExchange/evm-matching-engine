@@ -53,6 +53,14 @@ interface IMatchingEngineCore {
     event UpdateExpireTime(address spotManager, uint64 newExpireTime);
     event UpdateCounterParty(address spotManager, address newCounterParty);
     event LiquidityPoolAllowanceUpdate(address liquidityPool, bool value);
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );
 
     function updatePartialFilledOrder(uint128 _pip, uint64 _orderId) external;
 

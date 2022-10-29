@@ -1,6 +1,6 @@
 import {deployAndCreateRouterHelper, TestMatchingAmm} from "../test-matching-amm";
 
-describe("Case36-Case40", async function(){
+describe("MatchingCase36-Case40", async function(){
     let testHelper: TestMatchingAmm
 
     beforeEach(async () => {
