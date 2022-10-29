@@ -203,6 +203,28 @@ library LiquidityMath {
             );
     }
 
+    function calculateBaseRealByLiquidity(
+        uint128 liquidity,
+        uint128 totalLiquidity,
+        uint128 totalBaseReal
+    ) internal pure returns (uint128) {
+        return
+            uint128(
+                (uint256(liquidity) * totalBaseReal) / uint256(totalLiquidity)
+            );
+    }
+
+    function calculateQuoteRealByLiquidity(
+        uint128 liquidity,
+        uint128 totalLiquidity,
+        uint128 totalQuoteReal
+    ) internal pure returns (uint128) {
+        return
+            uint128(
+                (uint256(liquidity) * totalQuoteReal) / uint256(totalLiquidity)
+            );
+    }
+
     function calculateQuoteVirtualAmountFromBaseVirtualAmount(
         uint128 baseVirtualAmount,
         uint128 sqrtCurrentPrice,

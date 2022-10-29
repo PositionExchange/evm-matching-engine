@@ -154,6 +154,32 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         Liquidity.Info memory _liquidityInfo = liquidityInfo[
             params.indexedPipRange
         ];
+        uint128 quoteVirtualRemove = LiquidityMath
+            .calculateQuoteRealByLiquidity(
+                params.liquidity,
+                _liquidityInfo.sqrtK,
+                _liquidityInfo.quoteReal
+            );
+        _liquidityInfo.quoteReal = _liquidityInfo.quoteReal > quoteVirtualRemove
+            ? _liquidityInfo.quoteReal - quoteVirtualRemove
+            : 0;
+        uint128 baseVirtualRemove = LiquidityMath.calculateBaseRealByLiquidity(
+            params.liquidity,
+            _liquidityInfo.sqrtK,
+            _liquidityInfo.baseReal
+        );
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] baseVirtualRemove",
+            baseVirtualRemove
+        );
+        console.log(
+            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal",
+            _liquidityInfo.baseReal
+        );
+        _liquidityInfo.baseReal = _liquidityInfo.baseReal > baseVirtualRemove
+            ? _liquidityInfo.baseReal - baseVirtualRemove
+            : 0;
+
         uint128 sqrtBasicPoint = uint256(_basisPoint())
             .sqrt()
             .Uint256ToUint128();
@@ -172,13 +198,15 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 quoteAmount
             );
 
-            _liquidityInfo.sqrtK = LiquidityMath
-                .calculateKWithQuote(
-                    _liquidityInfo.quoteReal - quoteAmount,
-                    _liquidityInfo.sqrtMaxPip
-                )
-                .sqrt()
-                .Uint256ToUint128();
+            _liquidityInfo.sqrtK =
+                LiquidityMath
+                    .calculateKWithQuote(
+                        _liquidityInfo.quoteReal,
+                        _liquidityInfo.sqrtMaxPip
+                    )
+                    .sqrt()
+                    .Uint256ToUint128() *
+                sqrtBasicPoint;
         } else if (params.indexedPipRange > currentIndexedPipRange) {
             baseAmount =
                 LiquidityMath.calculateBaseByLiquidity(
@@ -187,13 +215,21 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     _liquidityInfo.sqrtMinPip
                 ) *
                 sqrtBasicPoint;
-            _liquidityInfo.sqrtK = LiquidityMath
-                .calculateKWithBase(
-                    _liquidityInfo.baseReal - baseAmount,
-                    _liquidityInfo.sqrtMinPip
-                )
-                .sqrt()
-                .Uint256ToUint128();
+
+            _liquidityInfo.sqrtK =
+                LiquidityMath
+                    .calculateKWithBase(
+                        _liquidityInfo.baseReal,
+                        _liquidityInfo.sqrtMinPip
+                    )
+                    .sqrt()
+                    .Uint256ToUint128() /
+                sqrtBasicPoint;
+
+            console.log(
+                "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.sqrtK",
+                _liquidityInfo.sqrtK
+            );
         } else {
             uint128 currentPrice = _calculateSqrtPrice(
                 getCurrentPrice(),
@@ -216,46 +252,44 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBaseAndQuote(
-                    _liquidityInfo.baseReal - baseAmount,
-                    _liquidityInfo.quoteReal - quoteAmount
+                    _liquidityInfo.baseReal,
+                    _liquidityInfo.quoteReal
                 )
                 .sqrt()
                 .Uint256ToUint128();
         }
 
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal",
-            _liquidityInfo.baseReal
-        );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] baseAmount",
-            baseAmount
-        );
-
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.quoteReal",
-            _liquidityInfo.quoteReal
-        );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] quoteAmount",
-            quoteAmount
-        );
-
-        _liquidityInfo.baseReal = _liquidityInfo.baseReal - baseAmount;
-        _liquidityInfo.quoteReal = _liquidityInfo.quoteReal - quoteAmount;
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal update",
-            _liquidityInfo.baseReal
-        );
-
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.quoteReal update",
-            _liquidityInfo.quoteReal
-        );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] params.indexedPipRange ",
-            uint256(params.indexedPipRange)
-        );
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal",
+        //            _liquidityInfo.baseReal
+        //        );
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] baseAmount",
+        //            baseAmount
+        //        );
+        //
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.quoteReal",
+        //            _liquidityInfo.quoteReal
+        //        );
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] quoteAmount",
+        //            quoteAmount
+        //        );
+        //
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.baseReal update",
+        //            _liquidityInfo.baseReal
+        //        );
+        //
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] _liquidityInfo.quoteReal update",
+        //            _liquidityInfo.quoteReal
+        //        );
+        //        console.log(
+        //            "[AutoMarketMakerCore][removeLiquidity] params.indexedPipRange ",
+        //            uint256(params.indexedPipRange)
+        //        );
 
         liquidityInfo[params.indexedPipRange].updateAddLiquidity(
             _liquidityInfo
