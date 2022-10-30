@@ -12,6 +12,7 @@ import "./Block.sol";
 import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
+import "../libraries/amm/CrossPipResult.sol";
 
 abstract contract MatchingEngineCore is
     IMatchingEngineCore,
@@ -36,7 +37,6 @@ abstract contract MatchingEngineCore is
         );
         singleSlot.pip = _initialPip;
         basisPoint = _basisPoint;
-        BASE_BASIC_POINT = _baseBasisPoint;
         maxFindingWordsIndex = _maxFindingWordsIndex;
         maxWordRangeForLimitOrder = _maxFindingWordsIndex;
         maxWordRangeForMarketOrder = _maxFindingWordsIndex;
@@ -350,7 +350,6 @@ abstract contract MatchingEngineCore is
             remainingSize: _size,
             pip: _initialSingleSlot.pip,
             basisPoint: basisPoint.Uint256ToUint32(),
-            baseBasisPoint: BASE_BASIC_POINT.Uint256ToUint32(),
             startPip: 0,
             remainingLiquidity: 0,
             isFullBuy: _initialSingleSlot.isFullBuy,
@@ -379,7 +378,7 @@ abstract contract MatchingEngineCore is
                 }
             }
 
-            CrossPipResult memory crossPipResult = _onCrossPipHook(
+            CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
                 step.pipNext,
                 state.isBuy,
                 _isBase,
@@ -409,10 +408,6 @@ abstract contract MatchingEngineCore is
                     crossPipResult.baseCrossPipOut > 0 &&
                     crossPipResult.quoteCrossPipOut > 0
                 ) {
-                    state.updatePipRangeIndex(
-                        uint256(state.ammState.lastPipRangeLiquidityIndex)
-                    );
-
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
                         // TODO verify me
                         if (
@@ -421,7 +416,6 @@ abstract contract MatchingEngineCore is
                         ) {
                             state.pip = crossPipResult.toPip;
                         }
-                        //                        state.pip = crossPipResult.toPip;
                         state.ammFillAll(
                             crossPipResult.baseCrossPipOut,
                             crossPipResult.quoteCrossPipOut
@@ -561,12 +555,6 @@ abstract contract MatchingEngineCore is
         uint256 size
     ) internal virtual {}
 
-    struct CrossPipResult {
-        uint128 baseCrossPipOut;
-        uint128 quoteCrossPipOut;
-        uint128 toPip;
-    }
-
     function _onCrossPipHook(
         uint128 pipNext,
         bool isBuy,
@@ -575,7 +563,7 @@ abstract contract MatchingEngineCore is
         uint32 basisPoint,
         uint128 currentPip,
         SwapState.AmmState memory ammState
-    ) internal virtual returns (CrossPipResult memory crossPipResult) {}
+    ) internal virtual returns (CrossPipResult.Result memory crossPipResult) {}
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,

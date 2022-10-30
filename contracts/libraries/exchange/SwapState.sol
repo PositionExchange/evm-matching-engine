@@ -30,7 +30,6 @@ library SwapState {
         // the tick associated with the current price
         uint128 pip;
         uint32 basisPoint;
-        uint32 baseBasisPoint;
         uint128 startPip;
         uint128 remainingLiquidity;
         uint8 isFullBuy;
@@ -134,39 +133,6 @@ library SwapState {
         } else {
             state.isFullBuy = uint8(2);
         }
-    }
-
-    function updatePipRangeIndex(
-        State memory state,
-        uint256 _pipRangeLiquidityIndex
-    ) internal pure {
-        // initial lastPipRangeLiquidityIndex = -1
-        // so it will update state.pipRangesIndex[0] = _pipRangeLiquidityIndex
-        // once _pipRangeLiquidityIndex != the last one (initial one)
-        // it will increase the pipRangeLiquidityIndex to 1
-        // then update state.pipRangesIndex[1] = the new _pipRangeLiquidityIndex
-        // next until 5
-        // finally we have an arrays of range liquidity index eg [1301, 1302, 1303, 1304]
-        // then now we can use that range to update reserve to the corresponding range
-        //        if (state.ammState.lastPipRangeLiquidityIndex != -1) {
-        //            state.ammState.pipRangeLiquidityIndex++;
-        //        }
-        //        if (
-        //            state.ammState.lastPipRangeLiquidityIndex !=
-        //            int256(_pipRangeLiquidityIndex)
-        //        ) {
-        //            state.ammState.pipRangeLiquidityIndex++;
-        //            if (state.ammState.pipRangeLiquidityIndex > 5) {
-        //                revert("Not enough liquidity");
-        //            }
-        //            state.ammState.lastPipRangeLiquidityIndex = int256(
-        //                _pipRangeLiquidityIndex
-        //            );
-        //            // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-        //            state.ammState.pipRangesIndex[
-        //                state.ammState.pipRangeLiquidityIndex
-        //            ] = _pipRangeLiquidityIndex;
-        //        }
     }
 
     function updateAMMTradedSize(
