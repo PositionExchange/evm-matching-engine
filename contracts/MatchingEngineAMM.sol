@@ -111,13 +111,14 @@ contract MatchingEngineAMM is
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,
-        uint128 currentPip
+        uint128 currentPip,
+        bool isBuy
     ) internal override(MatchingEngineCore) {
         currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
             currentPip,
             pipRange
         );
-        _updateAMMStateAfterTrade(ammState);
+        _updateAMMStateAfterTrade(ammState, isBuy);
     }
 
     function accumulateClaimableAmount(

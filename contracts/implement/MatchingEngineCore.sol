@@ -546,7 +546,7 @@ abstract contract MatchingEngineCore is
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
-        _updateAMMState(state.ammState, singleSlot.pip);
+        _updateAMMState(state.ammState, singleSlot.pip, state.isBuy);
 
         if (mainSideOut != 0) {
             emit MarketFilled(
@@ -583,7 +583,8 @@ abstract contract MatchingEngineCore is
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,
-        uint128 currentPip
+        uint128 currentPip,
+        bool isBuy
     ) internal virtual {}
 
     function emitEventSwap(

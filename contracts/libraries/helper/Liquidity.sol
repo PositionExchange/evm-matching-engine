@@ -66,9 +66,17 @@ library Liquidity {
     function updateAMMReserve(
         Liquidity.Info storage self,
         uint128 quoteReserve,
-        uint128 baseReserve
+        uint128 baseReserve,
+        uint256 feeGrowth,
+        bool isBuy
     ) internal {
         self.quoteReal = quoteReserve;
         self.baseReal = baseReserve;
+
+        if (isBuy) {
+            self.feeGrowthBase += feeGrowth;
+        } else {
+            self.feeGrowthQuote = feeGrowth;
+        }
     }
 }

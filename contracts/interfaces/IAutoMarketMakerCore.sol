@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
+import "../libraries/helper/Liquidity.sol";
+
 interface IAutoMarketMakerCore {
     // TODO add guard
 
@@ -33,6 +35,30 @@ interface IAutoMarketMakerCore {
     function removeLiquidity(RemoveLiquidity calldata params)
         external
         returns (uint128 baseAmount, uint128 quoteAmount);
+
+    function estimateRemoveLiquidity(RemoveLiquidity calldata params)
+        external
+        view
+        returns (
+            uint128 baseAmount,
+            uint128 quoteAmount,
+            Liquidity.Info memory _liquidityInfo
+        );
+
+    function collectFee(
+        uint256 feeGrowthBase,
+        uint256 feeGrowthQuote,
+        uint128 liquidity,
+        uint32 indexedPipRange
+    )
+        external
+        view
+        returns (
+            uint256 baseAmount,
+            uint256 quoteAmount,
+            uint256 newFeeGrowthBase,
+            uint256 newFeeGrowthQuote
+        );
 
     function getPipRange() external view returns (uint128);
 }

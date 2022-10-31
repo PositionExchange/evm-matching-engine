@@ -11,6 +11,7 @@ import "../interfaces/IAutoMarketMakerCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Convert.sol";
+import "../libraries/helper/FixedPoint128.sol";
 import "hardhat/console.sol";
 
 abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
@@ -111,6 +112,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 _liquidityInfo.quoteReal,
                 state.currentPrice
             ) * _basisPoint()).sqrt().Uint256ToUint128();
+            //            if (params.indexedPipRange < currentIndexedPipRange){
+            //                _liquidityInfo.baseReal =
+            //                (_liquidityInfo.sqrtK**2) /
+            //                _liquidityInfo.quoteReal;
+            //            }
         } else if (
             (params.indexedPipRange > currentIndexedPipRange) ||
             ((params.indexedPipRange == currentIndexedPipRange) &&
@@ -120,6 +126,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 _liquidityInfo.baseReal,
                 state.currentPrice
             ) / _basisPoint()).sqrt().Uint256ToUint128();
+            //            if (params.indexedPipRange < currentIndexedPipRange){
+            //                _liquidityInfo.quoteReal =
+            //                    (_liquidityInfo.sqrtK**2) /
+            //                    _liquidityInfo.baseReal;
+            //            }
         } else if (params.indexedPipRange == currentIndexedPipRange) {
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBaseAndQuote(
@@ -147,9 +158,26 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         virtual
         returns (uint128 baseAmount, uint128 quoteAmount)
     {
-        Liquidity.Info memory _liquidityInfo = liquidityInfo[
-            params.indexedPipRange
-        ];
+        Liquidity.Info memory _liquidityInfo;
+
+        (baseAmount, quoteAmount, _liquidityInfo) = estimateRemoveLiquidity(
+            params
+        );
+        liquidityInfo[params.indexedPipRange].updateAddLiquidity(
+            _liquidityInfo
+        );
+    }
+
+    function estimateRemoveLiquidity(RemoveLiquidity calldata params)
+        public
+        view
+        returns (
+            uint128 baseAmount,
+            uint128 quoteAmount,
+            Liquidity.Info memory _liquidityInfo
+        )
+    {
+        _liquidityInfo = liquidityInfo[params.indexedPipRange];
         uint128 quoteVirtualRemove = LiquidityMath
             .calculateQuoteRealByLiquidity(
                 params.liquidity,
@@ -242,18 +270,42 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 .sqrt()
                 .Uint256ToUint128();
         }
-
-        liquidityInfo[params.indexedPipRange].updateAddLiquidity(
-            _liquidityInfo
-        );
     }
 
-    function collectFee(uint256 feeGrowthBase, uint256 feeGrowthQuote)
-        external
+    function collectFee(
+        uint256 feeGrowthBase,
+        uint256 feeGrowthQuote,
+        uint128 liquidity,
+        uint32 indexedPipRange
+    )
+        public
+        view
         virtual
-        returns (uint256 baseAmount, uint256 quoteAmount)
+        returns (
+            uint256 baseAmount,
+            uint256 quoteAmount,
+            uint256 newFeeGrowthBase,
+            uint256 newFeeGrowthQuote
+        )
     {
-        return (0, 0);
+        Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];
+
+        baseAmount = Math.mulDiv(
+            _liquidityInfo.feeGrowthBase,
+            liquidity,
+            FixedPoint128.Q128
+        );
+        quoteAmount = Math.mulDiv(
+            _liquidityInfo.feeGrowthQuote,
+            liquidity,
+            FixedPoint128.Q128
+        );
+        return (
+            baseAmount,
+            quoteAmount,
+            _liquidityInfo.feeGrowthBase,
+            _liquidityInfo.feeGrowthQuote
+        );
     }
 
     function getCurrentPip() public view virtual returns (uint128) {}
@@ -305,7 +357,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     quoteReserve: _liquidity.quoteReal,
                     sqrtK: _liquidity.sqrtK,
                     sqrtMaxPip: _liquidity.sqrtMaxPip,
-                    sqrtMinPip: _liquidity.sqrtMinPip
+                    sqrtMinPip: _liquidity.sqrtMinPip,
+                    feeAmount: 0
                 });
                 ammState.pipRangesIndex[ammState.index] = uint256(i);
                 _ammReserves = ammState.ammReserves[ammState.index];
@@ -402,7 +455,8 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     quoteReserve: _liquidity.quoteReal,
                     sqrtK: _liquidity.sqrtK,
                     sqrtMaxPip: _liquidity.sqrtMaxPip,
-                    sqrtMinPip: _liquidity.sqrtMinPip
+                    sqrtMinPip: _liquidity.sqrtMinPip,
+                    feeAmount: 0
                 });
 
                 ammState.pipRangesIndex[ammState.index] = uint256(
@@ -652,9 +706,10 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             ammReserves.baseReserve;
     }
 
-    function _updateAMMStateAfterTrade(SwapState.AmmState memory ammState)
-        internal
-    {
+    function _updateAMMStateAfterTrade(
+        SwapState.AmmState memory ammState,
+        bool isBuy
+    ) internal {
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -662,9 +717,17 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             ];
             if (ammReserves.sqrtK == 0) break;
 
+            uint256 feeGrowth = Math.mulDiv(
+                ammReserves.feeAmount,
+                FixedPoint128.Q128,
+                ammReserves.sqrtK
+            );
+
             liquidityInfo[indexedPipRange].updateAMMReserve(
                 ammReserves.quoteReserve,
-                ammReserves.baseReserve
+                ammReserves.baseReserve,
+                feeGrowth,
+                isBuy
             );
         }
     }
