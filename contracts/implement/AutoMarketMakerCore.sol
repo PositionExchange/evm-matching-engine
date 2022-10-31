@@ -288,7 +288,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         params.currentPip = _calculateSqrtPrice(params.currentPip, 10**18);
         for (int256 i = ammState.lastPipRangeLiquidityIndex; ; ) {
             SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
-                ammState.pipRangeLiquidityIndex
+                ammState.index
             ];
             // Init amm state
             if (
@@ -298,21 +298,15 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 if (_liquidity.baseReal == 0 && _liquidity.quoteReal == 0) {
                     break;
                 }
-                ammState.ammReserves[
-                    ammState.pipRangeLiquidityIndex
-                ] = SwapState.AmmReserves({
+                ammState.ammReserves[ammState.index] = SwapState.AmmReserves({
                     baseReserve: _liquidity.baseReal,
                     quoteReserve: _liquidity.quoteReal,
                     sqrtK: _liquidity.sqrtK,
                     sqrtMaxPip: _liquidity.sqrtMaxPip,
                     sqrtMinPip: _liquidity.sqrtMinPip
                 });
-                ammState.pipRangesIndex[
-                    ammState.pipRangeLiquidityIndex
-                ] = uint256(i);
-                _ammReserves = ammState.ammReserves[
-                    ammState.pipRangeLiquidityIndex
-                ];
+                ammState.pipRangesIndex[ammState.index] = uint256(i);
+                _ammReserves = ammState.ammReserves[ammState.index];
             }
 
             if (_ammReserves.sqrtK != 0) {
@@ -358,7 +352,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
                 _updateAmmState(
                     params,
-                    ammState.ammReserves[ammState.pipRangeLiquidityIndex],
+                    ammState.ammReserves[ammState.index],
                     baseOut,
                     quoteOut
                 );
@@ -376,7 +370,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 result.updatePipResult(params.pipNext);
                 break;
             }
-            ammState.pipRangeLiquidityIndex += 1;
+            ammState.index += 1;
             ammState.lastPipRangeLiquidityIndex = i;
             crossPipState.startIntoIndex = true;
         }
@@ -391,7 +385,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
 
         while (params.amount != 0) {
             SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
-                ammState.pipRangeLiquidityIndex
+                ammState.index
             ];
             // Init amm state
             if (
@@ -401,9 +395,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     uint256(ammState.lastPipRangeLiquidityIndex)
                 ];
 
-                ammState.ammReserves[
-                    ammState.pipRangeLiquidityIndex
-                ] = SwapState.AmmReserves({
+                ammState.ammReserves[ammState.index] = SwapState.AmmReserves({
                     baseReserve: _liquidity.baseReal,
                     quoteReserve: _liquidity.quoteReal,
                     sqrtK: _liquidity.sqrtK,
@@ -411,19 +403,15 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     sqrtMinPip: _liquidity.sqrtMinPip
                 });
 
-                ammState.pipRangesIndex[
-                    ammState.pipRangeLiquidityIndex
-                ] = uint256(ammState.lastPipRangeLiquidityIndex);
-                _ammReserves = ammState.ammReserves[
-                    ammState.pipRangeLiquidityIndex
-                ];
+                ammState.pipRangesIndex[ammState.index] = uint256(
+                    ammState.lastPipRangeLiquidityIndex
+                );
+                _ammReserves = ammState.ammReserves[ammState.index];
             }
 
             uint128 baseOut;
             uint128 quoteOut;
-            if (
-                ammState.ammReserves[ammState.pipRangeLiquidityIndex].sqrtK != 0
-            ) {
+            if (ammState.ammReserves[ammState.index].sqrtK != 0) {
                 crossPipState.pipTargetStep = params.isBuy
                     ? _ammReserves.sqrtMaxPip
                     : _ammReserves.sqrtMinPip;
@@ -461,7 +449,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                     : params.amount - quoteOut;
                 _updateAmmState(
                     params,
-                    ammState.ammReserves[ammState.pipRangeLiquidityIndex],
+                    ammState.ammReserves[ammState.index],
                     baseOut,
                     quoteOut
                 );
@@ -474,10 +462,9 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 ? ammState.lastPipRangeLiquidityIndex + 1
                 : ammState.lastPipRangeLiquidityIndex - 1;
 
-            ammState.pipRangeLiquidityIndex += 1;
+            ammState.index += 1;
             if (
-                ammState.lastPipRangeLiquidityIndex < 0 ||
-                ammState.pipRangeLiquidityIndex >= 5
+                ammState.lastPipRangeLiquidityIndex < 0 || ammState.index >= 5
             ) {
                 ammState.lastPipRangeLiquidityIndex = -2;
                 return result;
@@ -502,12 +489,11 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 params,
                 _ammReserves
             );
-
             result.updateAmountResult(baseAmount, quoteAmount);
             result.updatePipResult(
                 _updateAmmState(
                     params,
-                    ammState.ammReserves[ammState.pipRangeLiquidityIndex],
+                    ammState.ammReserves[ammState.index],
                     baseAmount,
                     quoteAmount
                 )
@@ -667,7 +653,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     function _updateAMMStateAfterTrade(SwapState.AmmState memory ammState)
         internal
     {
-        for (uint8 i = 0; i <= ammState.pipRangeLiquidityIndex; i++) {
+        for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
                 uint256(i)

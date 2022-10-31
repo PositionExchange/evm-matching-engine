@@ -20,7 +20,7 @@ library SwapState {
 
     struct AmmState {
         int256 lastPipRangeLiquidityIndex;
-        uint8 pipRangeLiquidityIndex;
+        uint8 index;
         uint256[5] pipRangesIndex;
         AmmReserves[5] ammReserves;
     }
@@ -48,7 +48,7 @@ library SwapState {
         return
             AmmState({
                 lastPipRangeLiquidityIndex: -1,
-                pipRangeLiquidityIndex: 0,
+                index: 0,
                 pipRangesIndex: _pipRangesIndex,
                 ammReserves: _ammReserves
             });

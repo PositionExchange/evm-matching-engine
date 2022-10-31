@@ -13,6 +13,7 @@ import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
+import "hardhat/console.sol";
 
 abstract contract MatchingEngineCore is
     IMatchingEngineCore,
@@ -364,10 +365,18 @@ abstract contract MatchingEngineCore is
 
         while (state.remainingSize != 0) {
             StepComputations memory step;
+            uint256 startGas = gasleft();
             (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
                 state.pip,
                 _maxFindingWordsIndex,
                 !state.isBuy
+            );
+
+            console.log(
+                "[MatchingEngineCore][_internalOpenMarketOrder] gasUsed find liquidity, state.pip, step.pipNext: ",
+                startGas - gasleft(),
+                state.pip,
+                step.pipNext
             );
 
             // updated findHasLiquidityInMultipleWords, save more gas
@@ -378,6 +387,8 @@ abstract contract MatchingEngineCore is
                 }
             }
 
+            startGas = gasleft();
+
             CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
                 step.pipNext,
                 state.isBuy,
@@ -387,8 +398,13 @@ abstract contract MatchingEngineCore is
                 state.pip,
                 state.ammState
             );
+            console.log(
+                "[MatchingEngineCore][_internalOpenMarketOrder] gasUsed _onCrossPipHook: ",
+                startGas - gasleft()
+            );
+
             if (
-                state.ammState.pipRangeLiquidityIndex >= 5 ||
+                state.ammState.index >= 5 ||
                 state.ammState.lastPipRangeLiquidityIndex == -2
             ) {
                 break;

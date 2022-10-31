@@ -75,8 +75,7 @@ contract MatchingEngineAMM is
             LiquidityMath.calculateIndexPipRange(currentPip, pipRange)
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
-            if (ammState.lastPipRangeLiquidityIndex != -1)
-                ammState.pipRangeLiquidityIndex++;
+            if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
             ammState.lastPipRangeLiquidityIndex = indexPip;
         }
         // Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
