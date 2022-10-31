@@ -294,25 +294,27 @@ export class TestMatchingAmm {
 
         }else {
             if (asset === "base") {
-                await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
+                const tx = await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
+                const receipt = await tx.wait();
+                const gasUsed = receipt.gasUsed.toString()
+                console.log(`GasUes OpenMarket \x1b[33m  ${gasUsed} \x1b[0m`);
+
 
             }else if (asset === "quote"){
-                await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
+                const tx = await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
+                const receipt = await tx.wait();
+                const gasUsed = receipt.gasUsed.toString()
+                console.log(`GasUes OpenMarket \x1b[33m  ${gasUsed} \x1b[0m`);
+
             }
         }
-
-
-
-
     }
 
     async  expectPending(orderId : number, price : number, side : any, _size : number){
 
-        console.log("price: ", price);
 
         const  {isFilled, isBuy, size} =  await this.ins
             .getPendingOrderDetail(price, orderId)
-        console.log("size: ", size,fromWeiAndFormat(size), _size );
 
         expect( this.expectDataInRange(fromWeiAndFormat(size), Number(_size), 0.01))
             .to

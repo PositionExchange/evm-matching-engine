@@ -65,7 +65,7 @@ contract MatchingEngineAMM is
     )
         internal
         override(MatchingEngineCore)
-        returns (CrossPipResult memory crossPipResult)
+        returns (CrossPipResult.Result memory crossPipResult)
     {
         if (pipNext == currentPip) {
             return crossPipResult;
@@ -75,8 +75,7 @@ contract MatchingEngineAMM is
             LiquidityMath.calculateIndexPipRange(currentPip, pipRange)
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
-            if (ammState.lastPipRangeLiquidityIndex != -1)
-                ammState.pipRangeLiquidityIndex++;
+            if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
             ammState.lastPipRangeLiquidityIndex = indexPip;
         }
         // Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
@@ -85,40 +84,28 @@ contract MatchingEngineAMM is
         // then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
         // because ammStates is passed by an underlying pointer
         // let's try it in Remix
-        (
-            uint128 baseCrossPipOut,
-            uint128 quoteCrossPipOut,
-            uint128 toPip
-        ) = pipNext != 0
-                ? _onCrossPipAMMTargetPrice(
-                    OnCrossPipParams(
-                        pipNext,
-                        isBuy,
-                        isBase,
-                        amount,
-                        basisPoint,
-                        currentPip
-                    ),
-                    ammState
-                )
-                : _onCrossPipAMMNoTargetPrice(
-                    OnCrossPipParams(
-                        pipNext,
-                        isBuy,
-                        isBase,
-                        amount,
-                        basisPoint,
-                        currentPip
-                    ),
-                    ammState
-                );
-
-        return
-            CrossPipResult(
-                baseCrossPipOut,
-                quoteCrossPipOut,
-                //                pipRangeLiquidityIndex,
-                toPip
+        crossPipResult = pipNext != 0
+            ? _onCrossPipAMMTargetPrice(
+                OnCrossPipParams(
+                    pipNext,
+                    isBuy,
+                    isBase,
+                    amount,
+                    basisPoint,
+                    currentPip
+                ),
+                ammState
+            )
+            : _onCrossPipAMMNoTargetPrice(
+                OnCrossPipParams(
+                    pipNext,
+                    isBuy,
+                    isBase,
+                    amount,
+                    basisPoint,
+                    currentPip
+                ),
+                ammState
             );
     }
 
@@ -131,15 +118,6 @@ contract MatchingEngineAMM is
             pipRange
         );
         _updateAMMStateAfterTrade(ammState);
-    }
-
-    function getCurrentPrice()
-        internal
-        view
-        override(AutoMarketMakerCore)
-        returns (uint128)
-    {
-        return uint128(getUnderlyingPriceInPip());
     }
 
     function accumulateClaimableAmount(
@@ -188,9 +166,9 @@ contract MatchingEngineAMM is
     }
 
     function getCurrentPip()
-        external
+        public
         view
-        override(MatchingEngineCore, IMatchingEngineCore)
+        override(MatchingEngineCore, AutoMarketMakerCore, IMatchingEngineCore)
         returns (uint128)
     {
         return singleSlot.pip;

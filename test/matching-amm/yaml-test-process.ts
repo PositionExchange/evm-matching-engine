@@ -104,7 +104,6 @@ export class YamlTestProcess {
         if (expectPendingOrder) {
             console.log("[IT] PendingOrder");
             const extract = this.extractPending(expectPendingOrder)
-            console.log("extract: ", extract);
             await this.testHelper.expectPending(extract.orderId, extract.price, extract.side, extract.size);
         }
 
