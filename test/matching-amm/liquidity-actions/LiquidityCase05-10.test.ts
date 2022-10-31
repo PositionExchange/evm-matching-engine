@@ -332,21 +332,21 @@ describe("CaseLiquidityCase05-10", async function(){
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 
-    Price: 165000
+    Price: 179999
 - S1: AddLiquidity
   Action:
     Id: 1
     IndexPipRange: 5
-    BaseVirtual: 10
-    QuoteVirtual: 180.3765750184
+    BaseVirtual: 0
+    QuoteVirtual: 100
   Expect:
     Pool:
-      K: 910483.1139089900
-      Liquidity: 954.1923883101
-      BaseVirtual: 10
-      QuoteVirtual: 180.3765750184
-      BaseReal: 234.9059275164
-      QuoteReal: 3875.9478040214
+      K: 73186.17028902370
+      Liquidity: 270.52942592077
+      BaseVirtual: 0
+      QuoteVirtual: 100
+      BaseReal: 0
+      QuoteReal: 1147.75596125021
       IndexPipRange: 5
       MaxPip: 179999
       MinPip: 150000
@@ -356,16 +356,16 @@ describe("CaseLiquidityCase05-10", async function(){
   Action:
     Id: 2
     IndexPipRange: 5
-    BaseVirtual: 35
-    QuoteVirtual: 631.31801256436
+    BaseVirtual: 0
+    QuoteVirtual: 200
   Expect:
     Pool:
-      K: 18437283.05665700000
-      Liquidity: 4293.86574739558
-      BaseVirtual: 45
-      QuoteVirtual: 811.69458758275
-      BaseReal: 1057.07667382402
-      QuoteReal: 17441.76511809630
+      K: 658675.53260121300
+      Liquidity: 811.58827776232
+      BaseVirtual: 0
+      QuoteVirtual: 300
+      BaseReal: 0
+      QuoteReal: 3443.26788375064
       IndexPipRange: 5
       MaxPip: 179999
       MinPip: 150000
@@ -375,14 +375,14 @@ describe("CaseLiquidityCase05-10", async function(){
   Action:
     Id: 1
     IndexPipRange: 5
-    Liquidity: 954.19238831013
+    Liquidity: 270.52942592077
   Expect:
     Pool:
-      Liquidity: 3339.67335908545
+      Liquidity: 541.05885184155
       BaseVirtual: 0
       QuoteVirtual: 0
-      BaseReal: 822.17074630757
-      QuoteReal: 13565.81731407490
+      BaseReal: 0
+      QuoteReal: 2295.51192250042
       IndexPipRange: 5
       MaxPip: 179999
       MinPip: 150000
@@ -410,7 +410,7 @@ describe("CaseLiquidityCase05-10", async function(){
     id: 3
     asset: base
     Side: 0
-    Quantity: 39.08522542399
+    Quantity: 4.08522542399
   Expect:
     Pool:
       Liquidity: 3145.76012377308
@@ -427,7 +427,7 @@ describe("CaseLiquidityCase05-10", async function(){
   Action:
     Id: 2
     IndexPipRange: 5
-    Liquidity: 3339.67335908545
+    Liquidity: 541.05885184155
   Expect:
     Pool:
       Liquidity: 0
@@ -459,21 +459,21 @@ describe("CaseLiquidityCase05-10", async function(){
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 
-    Price: 165000
+    Price: 150000
 - S1: AddLiquidity
   Action:
     Id: 1
     IndexPipRange: 5
     BaseVirtual: 10
-    QuoteVirtual: 180.3765750184
+    QuoteVirtual: 0
   Expect:
     Pool:
-      K: 910483.1139089900
-      Liquidity: 954.1923883101
+      K: 197601.56198781000
+      Liquidity: 444.52397234324
       BaseVirtual: 10
-      QuoteVirtual: 180.3765750184
-      BaseReal: 234.9059275164
-      QuoteReal: 3875.9478040214
+      QuoteVirtual: 0
+      BaseReal: 114.77559612502
+      QuoteReal: 0
       IndexPipRange: 5
       MaxPip: 179999
       MinPip: 150000
@@ -484,15 +484,15 @@ describe("CaseLiquidityCase05-10", async function(){
     Id: 2
     IndexPipRange: 5
     BaseVirtual: 55
-    QuoteVirtual: 992.0711626011
+    QuoteVirtual: 0
   Expect:
     Pool:
-      K: 38467911.5626548000
-      Liquidity: 6202.2505240158
+      K: 8348665.99398496000
+      Liquidity: 2889.40582023103
       BaseVirtual: 65
-      QuoteVirtual: 1172.4477376195
-      BaseReal: 1526.8885288569
-      QuoteReal: 25193.6607261391
+      QuoteVirtual: 0
+      BaseReal: 746.04137481264
+      QuoteReal: 0
       IndexPipRange: 5
       MaxPip: 179999
       MinPip: 150000
@@ -502,14 +502,14 @@ describe("CaseLiquidityCase05-10", async function(){
   Action:
     Id: 1
     IndexPipRange: 5
-    Liquidity: 954.1923883101
+    Liquidity: 444.52397234324
   Expect:
     Pool:
-      Liquidity: 5248.05813570571
+      Liquidity: 2444.88184788780
       BaseVirtual: 0
       QuoteVirtual: 0
-      BaseReal: 1291.98260134047
-      QuoteReal: 21317.71292211770
+      BaseReal: 631.26577868762
+      QuoteReal: 0
       IndexPipRange: 5
       MaxPip: 179999
       MinPip: 150000
@@ -537,7 +537,7 @@ describe("CaseLiquidityCase05-10", async function(){
     id: 1
     asset: base
     Side: 1
-    Quantity: 64.69949121441
+    Quantity: 1.63930858711
   Expect:
     Pool:
       Liquidity: 85.60202733367
@@ -554,7 +554,7 @@ describe("CaseLiquidityCase05-10", async function(){
   Action:
     Id: 2
     IndexPipRange: 5
-    Liquidity: 5248.05813570571
+    Liquidity: 2444.88184788780
   Expect:
     Pool:
       Liquidity: 0
