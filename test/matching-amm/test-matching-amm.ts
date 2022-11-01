@@ -269,7 +269,7 @@ export class TestMatchingAmm {
         console.log("isBuy", isBuy);
         console.log("orderQuantity", orderQuantity);
 
-        await  this.ins.openLimit(pip ,orderQuantity, isBuy, this.users[id].address, 0);
+        await  this.ins.openLimit(pip ,orderQuantity, isBuy, this.users[id].address, 0, 0);
 
     }
 
@@ -285,23 +285,23 @@ export class TestMatchingAmm {
 
             if (asset === "base") {
                 console.log("opts.revert.toString(): ", opts?.revert.toString());
-                await expectRevert(this.ins.openMarket(orderQuantity, isBuy,this.users[0].address), opts.revert.toString());
+                await expectRevert(this.ins.openMarket(orderQuantity, isBuy,this.users[0].address, 0), opts.revert.toString());
 
             }else if (asset === "quote"){
-                await expectRevert(this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address), opts.revert.toString());
+                await expectRevert(this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address, 0), opts.revert.toString());
 
             }
 
         }else {
             if (asset === "base") {
-                const tx = await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address);
+                const tx = await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address,0);
                 const receipt = await tx.wait();
                 const gasUsed = receipt.gasUsed.toString()
                 console.log(`GasUes OpenMarket \x1b[33m  ${gasUsed} \x1b[0m`);
 
 
             }else if (asset === "quote"){
-                const tx = await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address);
+                const tx = await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address, 0);
                 const receipt = await tx.wait();
                 const gasUsed = receipt.gasUsed.toString()
                 console.log(`GasUes OpenMarket \x1b[33m  ${gasUsed} \x1b[0m`);

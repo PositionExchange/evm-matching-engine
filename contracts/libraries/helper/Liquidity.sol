@@ -14,7 +14,6 @@ library Liquidity {
         uint256 feeGrowthBase;
         uint256 feeGrowthQuote;
         uint128 sqrtK;
-        //        uint256 liquidity;
     }
 
     function initNewPipRange(
@@ -40,18 +39,6 @@ library Liquidity {
         self.quoteReal = updater.quoteReal;
         self.baseReal = updater.baseReal;
         self.sqrtK = updater.sqrtK;
-        //        self.liquidity = updater.liquidity;
-    }
-
-    function updateLiquidity(
-        Liquidity.Info storage self,
-        uint128 quoteReal,
-        uint128 baseReal,
-        uint128 sqrtK
-    ) internal {
-        self.quoteReal = quoteReal;
-        self.baseReal = baseReal;
-        self.sqrtK = sqrtK;
     }
 
     function updateFeeGrowth(

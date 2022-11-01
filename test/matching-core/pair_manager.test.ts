@@ -69,7 +69,7 @@ describe("MockMatchingEngineCore", async function () {
 
     const shouldOpenLimitAndVerify = async function (pip: number, size: number, expectOut: number, isBuy: boolean = true) {
         const [caller] = await ethers.getSigners()
-        const tx = await matchingEngineCore.openLimit(pip, size, isBuy, caller.address, 0)
+        const tx = await matchingEngineCore.openLimit(pip, size, isBuy, caller.address, 0, 0)
         const receipt = await ethers.provider.getTransactionReceipt(tx.hash)
 
         const interfaceEvent = new ethers.utils.Interface(["event MarketFilled(bool isBuy, uint256 indexed amount, uint128 toPip, uint256 startPip, uint128 remainingLiquidity, uint64 filledIndex)"]);
@@ -128,7 +128,7 @@ describe("MockMatchingEngineCore", async function () {
     async function createLimitOrder(pip: number, size: number, isBuy: boolean) {
         const [caller] = await ethers.getSigners();
 
-        return matchingEngineCore.openLimit(pip, size, isBuy, caller.address, 0);
+        return matchingEngineCore.openLimit(pip, size, isBuy, caller.address, 0, 0);
     }
 
     async function cancelLimitOrder(pip: number, orderId: number) {
@@ -195,7 +195,7 @@ describe("MockMatchingEngineCore", async function () {
 
     async function marketBuy(size: number, isBuy: boolean = true) {
         const [caller] = await ethers.getSigners();
-        return matchingEngineCore.openMarket(size, isBuy, caller.address);
+        return matchingEngineCore.openMarket(size, isBuy, caller.address, 0);
     }
 
     const shouldBuyMarketAndVerify = async function (
