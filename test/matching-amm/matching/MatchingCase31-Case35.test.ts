@@ -909,7 +909,7 @@ describe("MatchingCase31-Case35", async function(){
       Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 652.4000129860
-      BaseReal: 314.3468326227
+      BaseReal: 371.252485
       QuoteReal: 2227.4777863816
       IndexPipRange: 1
       MaxPip: 59999  
@@ -1155,7 +1155,7 @@ describe("MatchingCase31-Case35", async function(){
       Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 652.4000129860
-      BaseReal: 314.3468326227
+      BaseReal: 371.252485
       QuoteReal: 2227.4777863816
       IndexPipRange: 1
       MaxPip: 59999  

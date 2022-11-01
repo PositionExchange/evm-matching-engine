@@ -16,6 +16,7 @@ library SwapState {
         uint128 sqrtK;
         uint128 sqrtMaxPip;
         uint128 sqrtMinPip;
+        uint128 amountFilled;
     }
 
     struct AmmState {

@@ -38,7 +38,7 @@ contract MatchingEngineAMM is
         require(!isInitialized, "Initialized");
         isInitialized = true;
 
-        _initializeAMM(pipRange, tickSpace, initialPip);
+        _initializeAMM(pipRange, tickSpace, initialPip, 50);
         _initializeCore(
             basisPoint,
             baseBasisPoint,
@@ -111,13 +111,53 @@ contract MatchingEngineAMM is
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,
-        uint128 currentPip
+        uint128 currentPip,
+        bool isBuy,
+        bool isBase,
+        uint256 mainSideOut,
+        uint256 flipSideOut,
+        uint16 feePercent
     ) internal override(MatchingEngineCore) {
         currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
             currentPip,
             pipRange
         );
-        _updateAMMStateAfterTrade(ammState);
+
+        (
+            uint128 totalFeeAmm,
+            uint128 feeProtocolAmm,
+            uint128 totalFilledAmm
+        ) = _updateAMMStateAfterTrade(ammState, isBuy, feePercent);
+
+        uint128 amount;
+
+        if ((isBuy && isBase) || (!isBuy && !isBase)) {
+            amount = uint128(mainSideOut) - totalFilledAmm;
+        } else if ((isBuy && !isBase) || (!isBuy && isBase)) {
+            amount = uint128(flipSideOut) - totalFilledAmm;
+        }
+
+        uint128 feeProtocol = feeProtocolAmm + (amount * feePercent) / 10000;
+
+        if ((isBuy && isBase) || (isBuy && !isBase)) {
+            increaseBaseFeeFunding(feeProtocol);
+        } else if ((!isBuy && !isBase) || (!isBuy && isBase)) {
+            increaseQuoteFeeFunding(feeProtocol);
+        }
+    }
+
+    function increaseQuoteFeeFunding(uint256 quoteFee)
+        public
+        override(Fee, IFee)
+    {
+        super.increaseQuoteFeeFunding(quoteFee);
+    }
+
+    function increaseBaseFeeFunding(uint256 baseFee)
+        public
+        override(Fee, IFee)
+    {
+        super.increaseBaseFeeFunding(baseFee);
     }
 
     function accumulateClaimableAmount(

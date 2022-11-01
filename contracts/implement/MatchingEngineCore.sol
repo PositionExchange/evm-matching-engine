@@ -73,7 +73,8 @@ abstract contract MatchingEngineCore is
         uint128 baseAmountIn,
         bool isBuy,
         address trader,
-        uint256 quoteAmountIn
+        uint256 quoteAmountIn,
+        uint16 feePercent
     )
         external
         virtual
@@ -89,7 +90,8 @@ abstract contract MatchingEngineCore is
                 size: baseAmountIn,
                 isBuy: isBuy,
                 trader: trader,
-                quoteDeposited: quoteAmountIn
+                quoteDeposited: quoteAmountIn,
+                feePercent: feePercent
             })
         );
     }
@@ -97,7 +99,8 @@ abstract contract MatchingEngineCore is
     function openMarket(
         uint256 size,
         bool isBuy,
-        address trader
+        address trader,
+        uint16 feePercent
     ) external virtual returns (uint256 baseOut, uint256 quoteOut) {
         return
             _internalOpenMarketOrder(
@@ -106,14 +109,16 @@ abstract contract MatchingEngineCore is
                 0,
                 trader,
                 true,
-                maxWordRangeForLimitOrder
+                maxWordRangeForLimitOrder,
+                feePercent
             );
     }
 
     function openMarketWithQuoteAsset(
         uint256 quoteAmount,
         bool _isBuy,
-        address _trader
+        address _trader,
+        uint16 feePercent
     ) external virtual returns (uint256 sizeOutQuote, uint256 baseAmount) {
         (sizeOutQuote, baseAmount) = _internalOpenMarketOrder(
             quoteAmount,
@@ -121,7 +126,8 @@ abstract contract MatchingEngineCore is
             0,
             _trader,
             false,
-            maxWordRangeForLimitOrder
+            maxWordRangeForLimitOrder,
+            feePercent
         );
     }
 
@@ -191,6 +197,7 @@ abstract contract MatchingEngineCore is
         bool isBuy;
         address trader;
         uint256 quoteDeposited;
+        uint16 feePercent;
     }
 
     function _internalOpenLimit(ParamsInternalOpenLimit memory _params)
@@ -201,7 +208,7 @@ abstract contract MatchingEngineCore is
             uint256 quoteAmountFilled
         )
     {
-        require(_params.size != 0, "VL_INVALID_SIZE");
+        require(_params.size != 0, "6");
         SingleSlot memory _singleSlot = singleSlot;
         uint256 underlyingPip = uint256(getUnderlyingPriceInPip());
         {
@@ -210,15 +217,9 @@ abstract contract MatchingEngineCore is
                     int128(maxWordRangeForLimitOrder * 250);
 
                 if (maxPip > 0) {
-                    require(
-                        int128(_params.pip) >= maxPip,
-                        "VL_MUST_CLOSE_TO_INDEX_PRICE_LONG"
-                    );
+                    require(int128(_params.pip) >= maxPip, "24.2");
                 } else {
-                    require(
-                        _params.pip >= 1,
-                        "VL_MUST_CLOSE_TO_INDEX_PRICE_LONG"
-                    );
+                    require(_params.pip >= 1, "24.2");
                 }
             } else {
                 require(
@@ -256,7 +257,8 @@ abstract contract MatchingEngineCore is
                     _params.size,
                     _params.isBuy,
                     _params.pip,
-                    _params.trader
+                    _params.trader,
+                    _params.feePercent
                 );
                 hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
                 // reassign _singleSlot after _openMarketPositionWithMaxPip
@@ -318,7 +320,8 @@ abstract contract MatchingEngineCore is
         uint256 size,
         bool isBuy,
         uint128 maxPip,
-        address _trader
+        address _trader,
+        uint16 feePercent
     ) internal returns (uint256 baseOut, uint256 quoteOut) {
         // plus 1 avoid  (singleSlot.pip - maxPip)/250 = 0
         uint128 _maxFindingWordsIndex = ((
@@ -331,7 +334,8 @@ abstract contract MatchingEngineCore is
                 maxPip,
                 address(0),
                 true,
-                _maxFindingWordsIndex
+                _maxFindingWordsIndex,
+                feePercent
             );
     }
 
@@ -341,7 +345,8 @@ abstract contract MatchingEngineCore is
         uint128 _maxPip,
         address _trader,
         bool _isBase,
-        uint128 _maxFindingWordsIndex
+        uint128 _maxFindingWordsIndex,
+        uint16 feePercent
     ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
@@ -546,7 +551,15 @@ abstract contract MatchingEngineCore is
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
-        _updateAMMState(state.ammState, singleSlot.pip);
+        _updateAMMState(
+            state.ammState,
+            singleSlot.pip,
+            state.isBuy,
+            state.isBase,
+            mainSideOut,
+            flipSideOut,
+            feePercent
+        );
 
         if (mainSideOut != 0) {
             emit MarketFilled(
@@ -583,7 +596,12 @@ abstract contract MatchingEngineCore is
 
     function _updateAMMState(
         SwapState.AmmState memory ammState,
-        uint128 currentPip
+        uint128 currentPip,
+        bool isBuy,
+        bool isBase,
+        uint256 mainSideOut,
+        uint256 flipSideOut,
+        uint16 feePercent
     ) internal virtual {}
 
     function emitEventSwap(

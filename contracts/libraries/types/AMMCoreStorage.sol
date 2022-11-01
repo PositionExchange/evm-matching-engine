@@ -11,4 +11,6 @@ abstract contract AMMCoreStorage {
     uint256 public currentIndexedPipRange;
 
     mapping(uint256 => Liquidity.Info) public liquidityInfo;
+
+    uint32 public feeShareAmm;
 }
