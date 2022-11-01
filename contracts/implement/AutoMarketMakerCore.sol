@@ -26,10 +26,12 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     function _initializeAMM(
         uint128 _pipRange,
         uint32 _tickSpace,
-        uint128 _initPip
+        uint128 _initPip,
+        uint32 _feeShareAmm
     ) internal {
         pipRange = _pipRange;
         tickSpace = _tickSpace;
+        feeShareAmm = _feeShareAmm;
 
         currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
             _initPip,
@@ -701,6 +703,10 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             }
         }
 
+        ammReserves.feeAmount = params.isBuy
+            ? ammReserves.feeAmount + baseAmount
+            : ammReserves.feeAmount + quoteAmount;
+
         return
             (ammReserves.quoteReserve * params.basisPoint) /
             ammReserves.baseReserve;
@@ -710,6 +716,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
         SwapState.AmmState memory ammState,
         bool isBuy
     ) internal {
+        uint32 _feeShareAmm = feeShareAmm;
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -718,7 +725,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
             if (ammReserves.sqrtK == 0) break;
 
             uint256 feeGrowth = Math.mulDiv(
-                ammReserves.feeAmount,
+                ((ammReserves.feeAmount * 10_000) / _feeShareAmm),
                 FixedPoint128.Q128,
                 ammReserves.sqrtK
             );

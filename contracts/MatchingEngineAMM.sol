@@ -38,7 +38,7 @@ contract MatchingEngineAMM is
         require(!isInitialized, "Initialized");
         isInitialized = true;
 
-        _initializeAMM(pipRange, tickSpace, initialPip);
+        _initializeAMM(pipRange, tickSpace, initialPip, 50);
         _initializeCore(
             basisPoint,
             baseBasisPoint,
