@@ -53,12 +53,35 @@ contract MatchingEngineAMM is
         approve();
     }
 
+    function addLiquidity(AddLiquidity calldata params)
+        public
+        override(AutoMarketMakerCore, IAutoMarketMakerCore)
+        onlyCounterParty
+        returns (
+            uint128 baseAmountAdded,
+            uint128 quoteAmountAdded,
+            uint256 liquidity,
+            uint256 feeGrowthBase,
+            uint256 feeGrowthQuote
+        )
+    {
+        super.addLiquidity(params);
+    }
+
+    function removeLiquidity(RemoveLiquidity calldata params)
+        public
+        override(AutoMarketMakerCore, IAutoMarketMakerCore)
+        returns (uint128 baseAmount, uint128 quoteAmount)
+    {
+        super.removeLiquidity(params);
+    }
+
     function approve() public {
         quoteAsset.approve(counterParty, type(uint256).max);
         baseAsset.approve(counterParty, type(uint256).max);
 
-        quoteAsset.approve(counterParty, type(uint256).max);
-        baseAsset.approve(counterParty, type(uint256).max);
+        quoteAsset.approve(positionConcentratedLiquidity, type(uint256).max);
+        baseAsset.approve(positionConcentratedLiquidity, type(uint256).max);
     }
 
     function _emitLimitOrderUpdatedHook(

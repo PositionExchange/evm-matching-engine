@@ -21,8 +21,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     using Convert for uint256;
     using CrossPipResult for CrossPipResult.Result;
 
-    uint256 public constant CURVE_PIP = 1 * 18;
-
     function _initializeAMM(
         uint128 _pipRange,
         uint32 _tickSpace,
@@ -46,7 +44,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     }
 
     function addLiquidity(AddLiquidity calldata params)
-        external
+        public
         virtual
         returns (
             uint128 baseAmountAdded,
@@ -158,7 +156,7 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
     }
 
     function removeLiquidity(RemoveLiquidity calldata params)
-        external
+        public
         virtual
         returns (uint128 baseAmount, uint128 quoteAmount)
     {
