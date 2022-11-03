@@ -18,6 +18,7 @@ contract MatchingEngineAMM is
     using Math for uint128;
     bool isInitialized;
     address public counterParty;
+    address public positionConcentratedLiquidity;
 
     modifier onlyCounterParty() {
         require(counterParty == _msgSender(), "VL_ONLY_COUNTERPARTY");
@@ -25,18 +26,21 @@ contract MatchingEngineAMM is
     }
 
     function initialize(
-        address quoteAsset,
-        address baseAsset,
+        IERC20 quoteAsset,
+        IERC20 baseAsset,
         uint256 basisPoint,
         uint256 baseBasisPoint,
         uint128 maxFindingWordsIndex,
         uint128 initialPip,
         uint128 pipRange,
         uint32 tickSpace,
-        address owner
+        address owner,
+        address positionLiquidity
     ) external {
         require(!isInitialized, "Initialized");
         isInitialized = true;
+
+        positionConcentratedLiquidity = positionLiquidity;
 
         _initializeAMM(pipRange, tickSpace, initialPip, 50);
         _initializeCore(
@@ -45,6 +49,16 @@ contract MatchingEngineAMM is
             maxFindingWordsIndex,
             initialPip
         );
+        _initFee(quoteAsset, baseAsset);
+        approve();
+    }
+
+    function approve() public {
+        quoteAsset.approve(counterParty, type(uint256).max);
+        baseAsset.approve(counterParty, type(uint256).max);
+
+        quoteAsset.approve(counterParty, type(uint256).max);
+        baseAsset.approve(counterParty, type(uint256).max);
     }
 
     function _emitLimitOrderUpdatedHook(

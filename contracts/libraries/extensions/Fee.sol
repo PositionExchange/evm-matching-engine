@@ -20,7 +20,10 @@ abstract contract Fee is IFee {
     // base fee for quote asset
     uint256 internal quoteFeeFunding;
 
-    function _initFee() internal {}
+    function _initFee(IERC20 quoteAsset, IERC20 baseAsset) internal {
+        quoteAsset = quoteAsset;
+        baseAsset = baseAsset;
+    }
 
     function decreaseBaseFeeFunding(uint256 baseFee) external virtual {
         if (baseFee > 0) {

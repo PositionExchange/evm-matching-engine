@@ -5,6 +5,7 @@
 pragma solidity ^0.8.9;
 
 import "../implement/MatchingEngineCore.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MockMatchingEngineCore is MatchingEngineCore {
     using LiquidityBitmap for mapping(uint128 => uint256);
@@ -12,15 +13,16 @@ contract MockMatchingEngineCore is MatchingEngineCore {
     bool isInitialized;
 
     function initialize(
-        address quoteAsset,
-        address baseAsset,
+        IERC20 quoteAsset,
+        IERC20 baseAsset,
         uint256 basisPoint,
         uint256 baseBasisPoint,
         uint128 maxFindingWordsIndex,
         uint128 initialPip,
         uint128 pipRange,
         uint32 tickSpace,
-        address owner
+        address owner,
+        address positionLiquidity
     ) external {
         require(!isInitialized, "Initialized");
         isInitialized = true;

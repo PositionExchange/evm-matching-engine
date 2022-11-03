@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "./IAutoMarketMakerCore.sol";
 import "./IMatchingEngineCore.sol";
 import "./IFee.sol";
@@ -35,15 +37,16 @@ interface IMatchingEngineAMM is
     );
 
     function initialize(
-        address quoteAsset,
-        address baseAsset,
+        IERC20 quoteAsset,
+        IERC20 baseAsset,
         uint256 basisPoint,
         uint256 baseBasisPoint,
         uint128 maxFindingWordsIndex,
         uint128 initialPip,
         uint128 pipRange,
         uint32 tickSpace,
-        address owner
+        address owner,
+        address positionLiquidity
     ) external;
 
     function accumulateClaimableAmount(
