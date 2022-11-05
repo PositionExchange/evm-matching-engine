@@ -89,14 +89,26 @@ interface IMatchingEngineCore {
         bool isBuy,
         address trader,
         uint16 feePercent
-    ) external returns (uint256 baseOut, uint256 quoteOut, uint256 fee);
+    )
+        external
+        returns (
+            uint256 baseOut,
+            uint256 quoteOut,
+            uint256 fee
+        );
 
     function openMarketWithQuoteAsset(
         uint256 quoteAmount,
         bool _isBuy,
         address _trader,
         uint16 feePercent
-    ) external returns (uint256 sizeOutQuote, uint256 baseAmount, uint256 fee);
+    )
+        external
+        returns (
+            uint256 sizeOutQuote,
+            uint256 baseAmount,
+            uint256 fee
+        );
 
     function hasLiquidity(uint128 _pip) external view returns (bool);
 

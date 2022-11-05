@@ -85,7 +85,12 @@ abstract contract MatchingEngineCore is
             uint256 fee
         )
     {
-        (orderId, baseAmountFilled, quoteAmountFilled, fee) = _internalOpenLimit(
+        (
+            orderId,
+            baseAmountFilled,
+            quoteAmountFilled,
+            fee
+        ) = _internalOpenLimit(
             ParamsInternalOpenLimit({
                 pip: pip,
                 size: baseAmountIn,
@@ -102,7 +107,15 @@ abstract contract MatchingEngineCore is
         bool isBuy,
         address trader,
         uint16 feePercent
-    ) external virtual returns (uint256 baseOut, uint256 quoteOut, uint256 fee) {
+    )
+        external
+        virtual
+        returns (
+            uint256 baseOut,
+            uint256 quoteOut,
+            uint256 fee
+        )
+    {
         return
             _internalOpenMarketOrder(
                 size,
@@ -120,7 +133,15 @@ abstract contract MatchingEngineCore is
         bool _isBuy,
         address _trader,
         uint16 feePercent
-    ) external virtual returns (uint256 sizeOutQuote, uint256 baseAmount, uint256 fee) {
+    )
+        external
+        virtual
+        returns (
+            uint256 sizeOutQuote,
+            uint256 baseAmount,
+            uint256 fee
+        )
+    {
         (sizeOutQuote, baseAmount, fee) = _internalOpenMarketOrder(
             quoteAmount,
             _isBuy,
@@ -255,7 +276,11 @@ abstract contract MatchingEngineCore is
                         "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
                     );
                 }
-                (baseAmountFilled, quoteAmountFilled, fee) = _openMarketWithMaxPip(
+                (
+                    baseAmountFilled,
+                    quoteAmountFilled,
+                    fee
+                ) = _openMarketWithMaxPip(
                     _params.size,
                     _params.isBuy,
                     _params.pip,
@@ -324,7 +349,14 @@ abstract contract MatchingEngineCore is
         uint128 maxPip,
         address _trader,
         uint16 feePercent
-    ) internal returns (uint256 baseOut, uint256 quoteOut, uint256 fee) {
+    )
+        internal
+        returns (
+            uint256 baseOut,
+            uint256 quoteOut,
+            uint256 fee
+        )
+    {
         // plus 1 avoid  (singleSlot.pip - maxPip)/250 = 0
         uint128 _maxFindingWordsIndex = ((
             isBuy ? maxPip - singleSlot.pip : singleSlot.pip - maxPip
@@ -610,11 +642,15 @@ abstract contract MatchingEngineCore is
         uint128 currentPip,
         bool isBuy,
         uint16 feePercent
-    ) internal virtual returns (
-        uint128 totalFeeAmm,
-        uint128 feeProtocolAmm,
-        uint128 totalFilledAmm
-    ){}
+    )
+        internal
+        virtual
+        returns (
+            uint128 totalFeeAmm,
+            uint128 feeProtocolAmm,
+            uint128 totalFilledAmm
+        )
+    {}
 
     function _calculateFee(
         SwapState.AmmState memory ammState,
