@@ -45,20 +45,27 @@ interface IAutoMarketMakerCore {
             Liquidity.Info memory _liquidityInfo
         );
 
-    function collectFee(
-        uint256 feeGrowthBase,
-        uint256 feeGrowthQuote,
-        uint128 liquidity,
-        uint32 indexedPipRange
-    )
+    function getPipRange() external view returns (uint128);
+
+    function liquidityInfo(uint256 index)
         external
         view
         returns (
-            uint256 baseAmount,
-            uint256 quoteAmount,
-            uint256 newFeeGrowthBase,
-            uint256 newFeeGrowthQuote
+            uint128 sqrtMaxPip,
+            uint128 sqrtMinPip,
+            uint128 quoteReal,
+            uint128 baseReal,
+            uint32 indexedPipRange,
+            uint256 feeGrowthBase,
+            uint256 feeGrowthQuote,
+            uint128 sqrtK
         );
 
-    function getPipRange() external view returns (uint128);
+    function pipRange() external view returns (uint128);
+
+    function tickSpace() external view returns (uint32);
+
+    function currentIndexedPipRange() external view returns (uint256);
+
+    function feeShareAmm() external view returns (uint32);
 }

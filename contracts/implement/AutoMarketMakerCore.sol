@@ -14,7 +14,7 @@ import "../libraries/helper/Convert.sol";
 import "../libraries/helper/FixedPoint128.sol";
 import "hardhat/console.sol";
 
-abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
+abstract contract AutoMarketMakerCore is AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;
     using Math for uint256;
@@ -272,43 +272,6 @@ abstract contract AutoMarketMakerCore is IAutoMarketMakerCore, AMMCoreStorage {
                 .sqrt()
                 .Uint256ToUint128();
         }
-    }
-
-    function collectFee(
-        uint256 feeGrowthBase,
-        uint256 feeGrowthQuote,
-        uint128 liquidity,
-        uint32 indexedPipRange
-    )
-        public
-        view
-        virtual
-        returns (
-            uint256 baseAmount,
-            uint256 quoteAmount,
-            uint256 newFeeGrowthBase,
-            uint256 newFeeGrowthQuote
-        )
-    {
-        // TODO can refactor to reduce contract size
-        Liquidity.Info memory _liquidityInfo = liquidityInfo[indexedPipRange];
-
-        baseAmount = Math.mulDiv(
-            _liquidityInfo.feeGrowthBase,
-            liquidity,
-            FixedPoint128.Q128
-        );
-        quoteAmount = Math.mulDiv(
-            _liquidityInfo.feeGrowthQuote,
-            liquidity,
-            FixedPoint128.Q128
-        );
-        return (
-            baseAmount,
-            quoteAmount,
-            _liquidityInfo.feeGrowthBase,
-            _liquidityInfo.feeGrowthQuote
-        );
     }
 
     function getCurrentPip() public view virtual returns (uint128) {}
