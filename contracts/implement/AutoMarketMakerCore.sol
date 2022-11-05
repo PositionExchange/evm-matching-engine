@@ -615,7 +615,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         SwapState.AmmReserves memory ammReserves,
         uint128 baseAmount,
         uint128 quoteAmount
-    ) internal returns (uint128 price) {
+    ) internal pure returns (uint128 price) {
         if (
             (ammReserves.baseReserve == 0) ||
             (params.currentPip == ammReserves.sqrtMaxPip)
@@ -720,7 +720,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
 
     function _calculateSqrtPrice(uint128 pip, uint256 curve)
         internal
-        view
+        pure
         returns (uint128)
     {
         return (uint256(pip) * curve).sqrt().Uint256ToUint128();

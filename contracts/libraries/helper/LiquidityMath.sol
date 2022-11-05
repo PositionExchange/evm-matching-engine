@@ -40,17 +40,24 @@ library LiquidityMath {
         uint128 sqrtPriceTarget,
         uint128 quoteReal,
         uint128 sqrtCurrentPrice
-    ) internal view returns (uint128) {
+    ) internal pure returns (uint128) {
         //        return uint128(((10**18 * uint256(quoteReal)) / uint256(sqrtPriceTarget) ) * (10**18 *((uint256(quoteReal) *
         //        (uint256(sqrtCurrentPrice) -
         //        uint256(sqrtPriceTarget))))/uint256(sqrtCurrentPrice)**2));
 
-        uint256 a = (10**18 *
-            (uint256(quoteReal) *
-                (uint256(sqrtCurrentPrice) - uint256(sqrtPriceTarget))));
-        uint256 b = (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2);
+        //        uint256 a = (10**18 *
+        //            (uint256(quoteReal) *
+        //                (uint256(sqrtCurrentPrice) - uint256(sqrtPriceTarget))));
+        //        uint256 b = (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2);
 
-        return uint128(a / b);
+        return
+            uint128(
+                (10**18 *
+                    (uint256(quoteReal) *
+                        (uint256(sqrtCurrentPrice) -
+                            uint256(sqrtPriceTarget)))) /
+                    (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2)
+            );
     }
 
     function calculateQuoteWithPriceWhenSell(
@@ -70,10 +77,7 @@ library LiquidityMath {
         uint128 sqrtPriceTarget,
         uint128 baseReal,
         uint128 sqrtCurrentPrice
-    ) internal view returns (uint128) {
-        uint256 a = (uint256(baseReal) *
-            (uint256(sqrtPriceTarget) - uint256(sqrtCurrentPrice)));
-        uint256 b = uint256(sqrtPriceTarget);
+    ) internal pure returns (uint128) {
         return
             uint128(
                 (uint256(baseReal) *

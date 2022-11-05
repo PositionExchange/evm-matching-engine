@@ -9,6 +9,8 @@ import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 
+import "hardhat/console.sol";
+
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
     Fee,
@@ -56,11 +58,11 @@ contract MatchingEngineAMM is
         override(AutoMarketMakerCore, IAutoMarketMakerCore)
         onlyCounterParty
         returns (
-            uint128 baseAmountAdded,
-            uint128 quoteAmountAdded,
-            uint256 liquidity,
-            uint256 feeGrowthBase,
-            uint256 feeGrowthQuote
+            uint128,
+            uint128,
+            uint256,
+            uint256,
+            uint256
         )
     {
         super.addLiquidity(params);
@@ -69,7 +71,7 @@ contract MatchingEngineAMM is
     function removeLiquidity(RemoveLiquidity calldata params)
         public
         override(AutoMarketMakerCore, IAutoMarketMakerCore)
-        returns (uint128 baseAmount, uint128 quoteAmount)
+        returns (uint128, uint128)
     {
         super.removeLiquidity(params);
     }
@@ -179,17 +181,24 @@ contract MatchingEngineAMM is
         uint256 flipSideOut,
         uint16 feePercent
     ) internal override(MatchingEngineCore) returns (uint256) {
-        (
-            uint128 totalFeeAmm,
-            uint128 feeProtocolAmm,
-            uint128 totalFilledAmm
-        ) = _updateAMMState(ammState, currentPip, isBuy, feePercent);
+        (, uint128 feeProtocolAmm, uint128 totalFilledAmm) = _updateAMMState(
+            ammState,
+            currentPip,
+            isBuy,
+            feePercent
+        );
 
         uint128 amount;
 
-        if ((isBuy && isBase) || (!isBuy && !isBase)) {
+        if (
+            ((isBuy && isBase) || (!isBuy && !isBase)) &&
+            uint128(mainSideOut) >= totalFilledAmm
+        ) {
             amount = uint128(mainSideOut) - totalFilledAmm;
-        } else if ((isBuy && !isBase) || (!isBuy && isBase)) {
+        } else if (
+            ((isBuy && !isBase) || (!isBuy && isBase)) &&
+            uint128(flipSideOut) >= totalFilledAmm
+        ) {
             amount = uint128(flipSideOut) - totalFilledAmm;
         }
 
@@ -232,6 +241,7 @@ contract MatchingEngineAMM is
             uint256 baseSize,
             uint256 partialFilled
         ) = getPendingOrderDetail(_pip, _orderId);
+        // TODO calculate fee
         uint256 filledSize = isFilled ? baseSize : partialFilled;
         {
             if (isBuy) {

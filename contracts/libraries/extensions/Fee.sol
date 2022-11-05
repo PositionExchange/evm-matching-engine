@@ -20,7 +20,7 @@ abstract contract Fee is IFee {
     // base fee for quote asset
     uint256 internal quoteFeeFunding;
 
-    function _initFee(IERC20 quoteAsset, IERC20 baseAsset) internal {
+    function _initFee(IERC20 quoteAsset, IERC20 baseAsset) internal pure {
         quoteAsset = quoteAsset;
         baseAsset = baseAsset;
     }

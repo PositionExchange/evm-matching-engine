@@ -15,12 +15,12 @@ library CrossPipResult {
         Result memory self,
         uint128 baseCrossPipOut,
         uint128 quoteCrossPipOut
-    ) internal {
+    ) internal pure {
         self.baseCrossPipOut += baseCrossPipOut;
         self.quoteCrossPipOut += quoteCrossPipOut;
     }
 
-    function updatePipResult(Result memory self, uint128 toPip) internal {
+    function updatePipResult(Result memory self, uint128 toPip) internal pure {
         self.toPip = toPip;
     }
 }

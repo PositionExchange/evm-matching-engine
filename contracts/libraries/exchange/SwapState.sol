@@ -128,7 +128,7 @@ library SwapState {
             : tradedQuantity;
     }
 
-    function reverseIsFullBuy(State memory state) internal {
+    function reverseIsFullBuy(State memory state) internal pure {
         if (!state.isBuy) {
             state.isFullBuy = uint8(1);
         } else {
