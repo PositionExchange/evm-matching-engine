@@ -150,21 +150,42 @@ contract MatchingEngineAMM is
         SwapState.AmmState memory ammState,
         uint128 currentPip,
         bool isBuy,
-        bool isBase,
-        uint256 mainSideOut,
-        uint256 flipSideOut,
         uint16 feePercent
-    ) internal override(MatchingEngineCore) {
+    )
+        internal
+        override(MatchingEngineCore)
+        returns (
+            uint128 totalFeeAmm,
+            uint128 feeProtocolAmm,
+            uint128 totalFilledAmm
+        )
+    {
         currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
             currentPip,
             pipRange
         );
 
         (
+            totalFeeAmm,
+            feeProtocolAmm,
+            totalFilledAmm
+        ) = _updateAMMStateAfterTrade(ammState, isBuy, feePercent);
+    }
+
+    function _calculateFee(
+        SwapState.AmmState memory ammState,
+        uint128 currentPip,
+        bool isBuy,
+        bool isBase,
+        uint256 mainSideOut,
+        uint256 flipSideOut,
+        uint16 feePercent
+    ) internal override(MatchingEngineCore) returns (uint256) {
+        (
             uint128 totalFeeAmm,
             uint128 feeProtocolAmm,
             uint128 totalFilledAmm
-        ) = _updateAMMStateAfterTrade(ammState, isBuy, feePercent);
+        ) = _updateAMMState(ammState, currentPip, isBuy, feePercent);
 
         uint128 amount;
 
@@ -181,6 +202,8 @@ contract MatchingEngineAMM is
         } else if ((!isBuy && !isBase) || (!isBuy && isBase)) {
             increaseQuoteFeeFunding(feeProtocol);
         }
+
+        return feeProtocol;
     }
 
     function increaseQuoteFeeFunding(uint256 quoteFee)

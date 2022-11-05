@@ -81,10 +81,11 @@ abstract contract MatchingEngineCore is
         returns (
             uint64 orderId,
             uint256 baseAmountFilled,
-            uint256 quoteAmountFilled
+            uint256 quoteAmountFilled,
+            uint256 fee
         )
     {
-        (orderId, baseAmountFilled, quoteAmountFilled) = _internalOpenLimit(
+        (orderId, baseAmountFilled, quoteAmountFilled, fee) = _internalOpenLimit(
             ParamsInternalOpenLimit({
                 pip: pip,
                 size: baseAmountIn,
@@ -101,7 +102,7 @@ abstract contract MatchingEngineCore is
         bool isBuy,
         address trader,
         uint16 feePercent
-    ) external virtual returns (uint256 baseOut, uint256 quoteOut) {
+    ) external virtual returns (uint256 baseOut, uint256 quoteOut, uint256 fee) {
         return
             _internalOpenMarketOrder(
                 size,
@@ -119,8 +120,8 @@ abstract contract MatchingEngineCore is
         bool _isBuy,
         address _trader,
         uint16 feePercent
-    ) external virtual returns (uint256 sizeOutQuote, uint256 baseAmount) {
-        (sizeOutQuote, baseAmount) = _internalOpenMarketOrder(
+    ) external virtual returns (uint256 sizeOutQuote, uint256 baseAmount, uint256 fee) {
+        (sizeOutQuote, baseAmount, fee) = _internalOpenMarketOrder(
             quoteAmount,
             _isBuy,
             0,
@@ -205,7 +206,8 @@ abstract contract MatchingEngineCore is
         returns (
             uint64 orderId,
             uint256 baseAmountFilled,
-            uint256 quoteAmountFilled
+            uint256 quoteAmountFilled,
+            uint256 fee
         )
     {
         require(_params.size != 0, "6");
@@ -253,7 +255,7 @@ abstract contract MatchingEngineCore is
                         "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
                     );
                 }
-                (baseAmountFilled, quoteAmountFilled) = _openMarketWithMaxPip(
+                (baseAmountFilled, quoteAmountFilled, fee) = _openMarketWithMaxPip(
                     _params.size,
                     _params.isBuy,
                     _params.pip,
@@ -322,7 +324,7 @@ abstract contract MatchingEngineCore is
         uint128 maxPip,
         address _trader,
         uint16 feePercent
-    ) internal returns (uint256 baseOut, uint256 quoteOut) {
+    ) internal returns (uint256 baseOut, uint256 quoteOut, uint256 fee) {
         // plus 1 avoid  (singleSlot.pip - maxPip)/250 = 0
         uint128 _maxFindingWordsIndex = ((
             isBuy ? maxPip - singleSlot.pip : singleSlot.pip - maxPip
@@ -347,7 +349,15 @@ abstract contract MatchingEngineCore is
         bool _isBase,
         uint128 _maxFindingWordsIndex,
         uint16 feePercent
-    ) internal virtual returns (uint256 mainSideOut, uint256 flipSideOut) {
+    )
+        internal
+        virtual
+        returns (
+            uint256 mainSideOut,
+            uint256 flipSideOut,
+            uint256 fee
+        )
+    {
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
 
@@ -551,7 +561,8 @@ abstract contract MatchingEngineCore is
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
-        _updateAMMState(
+
+        fee = _calculateFee(
             state.ammState,
             singleSlot.pip,
             state.isBuy,
@@ -598,11 +609,22 @@ abstract contract MatchingEngineCore is
         SwapState.AmmState memory ammState,
         uint128 currentPip,
         bool isBuy,
+        uint16 feePercent
+    ) internal virtual returns (
+        uint128 totalFeeAmm,
+        uint128 feeProtocolAmm,
+        uint128 totalFilledAmm
+    ){}
+
+    function _calculateFee(
+        SwapState.AmmState memory ammState,
+        uint128 currentPip,
+        bool isBuy,
         bool isBase,
         uint256 mainSideOut,
         uint256 flipSideOut,
         uint16 feePercent
-    ) internal virtual {}
+    ) internal virtual returns (uint256) {}
 
     function emitEventSwap(
         bool isBuy,
