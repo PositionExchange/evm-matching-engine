@@ -19,7 +19,6 @@ contract MatchingEngineAMM is
     bool isInitialized;
     address public counterParty;
     address public positionConcentratedLiquidity;
-
     modifier onlyCounterParty() {
         require(counterParty == _msgSender(), "VL_ONLY_COUNTERPARTY");
         _;
@@ -50,7 +49,6 @@ contract MatchingEngineAMM is
             initialPip
         );
         _initFee(quoteAsset, baseAsset);
-        approve();
     }
 
     function addLiquidity(AddLiquidity calldata params)

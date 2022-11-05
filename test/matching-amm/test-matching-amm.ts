@@ -93,6 +93,7 @@ export async function deployAndCreateRouterHelper() {
     users = await getAccount() as unknown as any[];
     const deployer = users[0];
     matching = await deployContract("MockMatchingEngineAMM", deployer );
+    await matching.setCounterParty();
 
     await matching.initialize(
         deployer.address,
@@ -103,7 +104,8 @@ export async function deployAndCreateRouterHelper() {
         100000,
         30_000,
         1,
-        deployer.address);
+        deployer.address,
+        deployer.address)
 
     testHelper = new TestMatchingAmm(matching,deployer  ,{
         users

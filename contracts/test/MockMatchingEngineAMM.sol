@@ -14,4 +14,8 @@ contract MockMatchingEngineAMM is MatchingEngineAMM {
             pipRange
         );
     }
+
+    function setCounterParty() public {
+        counterParty = msg.sender;
+    }
 }

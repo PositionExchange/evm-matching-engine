@@ -34,6 +34,7 @@ describe("MockMatchingEngineCore", async function () {
             BigNumber.from(200),
             BigNumber.from(0),
             BigNumber.from(0),
+            deployer.address,
             deployer.address);
 
         // await matchingEngineCore.initializeFactory(
