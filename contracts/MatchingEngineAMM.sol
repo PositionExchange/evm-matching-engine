@@ -22,7 +22,11 @@ contract MatchingEngineAMM is
     address public counterParty;
     address public positionConcentratedLiquidity;
     modifier onlyCounterParty() {
-        require(counterParty == _msgSender(), "VL_ONLY_COUNTERPARTY");
+        require(
+            counterParty == _msgSender() ||
+                positionConcentratedLiquidity == _msgSender(),
+            "VL_ONLY_COUNTERPARTY"
+        );
         _;
     }
 
@@ -43,7 +47,7 @@ contract MatchingEngineAMM is
 
         positionConcentratedLiquidity = positionLiquidity;
 
-        _initializeAMM(pipRange, tickSpace, initialPip, 50);
+        _initializeAMM(pipRange, tickSpace, initialPip, 6000);
         _initializeCore(
             basisPoint,
             baseBasisPoint,
@@ -65,7 +69,7 @@ contract MatchingEngineAMM is
             uint256
         )
     {
-        super.addLiquidity(params);
+        return super.addLiquidity(params);
     }
 
     function removeLiquidity(RemoveLiquidity calldata params)
@@ -73,10 +77,12 @@ contract MatchingEngineAMM is
         override(AutoMarketMakerCore, IAutoMarketMakerCore)
         returns (uint128, uint128)
     {
-        super.removeLiquidity(params);
+        return super.removeLiquidity(params);
     }
 
     function approve() public {
+        console.log("quoteAsset: ", address(quoteAsset));
+        console.log("baseAsset: ", address(baseAsset));
         quoteAsset.approve(counterParty, type(uint256).max);
         baseAsset.approve(counterParty, type(uint256).max);
 
