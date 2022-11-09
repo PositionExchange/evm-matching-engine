@@ -32,7 +32,6 @@ abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
         uint8 isFullBuy;
     }
 
-
     struct StepComputations {
         uint128 pipNext;
     }

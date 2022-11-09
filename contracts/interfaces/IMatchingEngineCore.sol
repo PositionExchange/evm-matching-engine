@@ -4,13 +4,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-
 interface IMatchingEngineCore {
     struct LiquidityOfEachPip {
         uint128 pip;
         uint256 liquidity;
     }
-
 
     // TODO add guard
     event MarketFilled(
@@ -133,14 +131,7 @@ interface IMatchingEngineCore {
         uint128 fromPip,
         uint256 dataLength,
         bool toHigher
-    )
-        external
-        view
-        virtual
-        returns (
-            LiquidityOfEachPip[] memory,
-            uint128
-        );
+    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128);
 
     function getAmountEstimate(
         uint256 size,

@@ -15,10 +15,7 @@ import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "hardhat/console.sol";
 
-abstract contract MatchingEngineCore is
-    Block,
-    MatchingEngineCoreStorage
-{
+abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);

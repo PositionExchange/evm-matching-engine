@@ -187,12 +187,11 @@ contract MatchingEngineAMM is
         uint256 flipSideOut,
         uint16 feePercent
     ) internal override(MatchingEngineCore) returns (uint256) {
-        (uint128 totalFeeAmm, uint128 feeProtocolAmm, uint128 totalFilledAmm) = _updateAMMState(
-            ammState,
-            currentPip,
-            isBuy,
-            feePercent
-        );
+        (
+            uint128 totalFeeAmm,
+            uint128 feeProtocolAmm,
+            uint128 totalFilledAmm
+        ) = _updateAMMState(ammState, currentPip, isBuy, feePercent);
 
         uint128 amount;
 
