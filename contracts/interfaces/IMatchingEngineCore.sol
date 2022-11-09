@@ -4,9 +4,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "../libraries/types/MatchingEngineCoreStorage.sol";
 
 interface IMatchingEngineCore {
+    struct LiquidityOfEachPip {
+        uint128 pip;
+        uint256 liquidity;
+    }
+
+
     // TODO add guard
     event MarketFilled(
         bool isBuy,
@@ -133,7 +138,7 @@ interface IMatchingEngineCore {
         view
         virtual
         returns (
-            MatchingEngineCoreStorage.LiquidityOfEachPip[] memory,
+            LiquidityOfEachPip[] memory,
             uint128
         );
 
@@ -148,7 +153,7 @@ interface IMatchingEngineCore {
         view
         returns (uint256);
 
-    function getBasisPoint() external view returns (uint256);
+    function basisPoint() external view returns (uint256);
 
     function getCurrentPip() external view returns (uint128);
 

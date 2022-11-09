@@ -16,7 +16,6 @@ import "../libraries/amm/CrossPipResult.sol";
 import "hardhat/console.sol";
 
 abstract contract MatchingEngineCore is
-    IMatchingEngineCore,
     Block,
     MatchingEngineCoreStorage
 {

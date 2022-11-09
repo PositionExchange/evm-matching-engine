@@ -187,7 +187,7 @@ contract MatchingEngineAMM is
         uint256 flipSideOut,
         uint16 feePercent
     ) internal override(MatchingEngineCore) returns (uint256) {
-        (, uint128 feeProtocolAmm, uint128 totalFilledAmm) = _updateAMMState(
+        (uint128 totalFeeAmm, uint128 feeProtocolAmm, uint128 totalFilledAmm) = _updateAMMState(
             ammState,
             currentPip,
             isBuy,
@@ -208,7 +208,8 @@ contract MatchingEngineAMM is
             amount = uint128(flipSideOut) - totalFilledAmm;
         }
 
-        uint128 feeProtocol = feeProtocolAmm + (amount * feePercent) / 10000;
+        uint128 feeLimitOrder = (amount * feePercent) / 10_000;
+        uint128 feeProtocol = feeProtocolAmm + feeLimitOrder;
 
         if ((isBuy && isBase) || (isBuy && !isBase)) {
             increaseBaseFeeFunding(feeProtocol);
@@ -216,7 +217,10 @@ contract MatchingEngineAMM is
             increaseQuoteFeeFunding(feeProtocol);
         }
 
-        return feeProtocol;
+        console.log("[_calculateFee] feeLimitOrder: ", feeLimitOrder);
+        console.log("[_calculateFee] totalFeeAmm: ", totalFeeAmm);
+
+        return totalFeeAmm + feeLimitOrder;
     }
 
     function increaseQuoteFeeFunding(uint256 quoteFee)
@@ -296,6 +300,15 @@ contract MatchingEngineAMM is
         uint256 _quoteAmount,
         address _trader
     ) internal override(MatchingEngineCore) {}
+
+    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
+        external
+        view
+        override(MatchingEngineCore, IMatchingEngineCore)
+        returns (uint256)
+    {
+        return TradeConvert.baseToQuote(quantity, pip, basisPoint);
+    }
 
     function getLiquidityInPipRange(
         uint128 fromPip,

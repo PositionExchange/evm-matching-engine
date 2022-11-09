@@ -694,6 +694,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         )
     {
         uint32 _feeShareAmm = feeShareAmm;
+        console.log("feeShareAmm: ", _feeShareAmm);
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -706,9 +707,17 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 10_000;
             totalFeeAmm += feeEachIndex;
 
+
+            console.log("feeEachIndex, indexedPipRange : ", feeEachIndex, indexedPipRange);
+
+
+            uint256 feeShareAmm = ((feeEachIndex * _feeShareAmm) / 10_000);
+            console.log("fee shared amm, indexedPipRange: ", feeShareAmm, indexedPipRange);
+            console.log("liquidity: ", ammReserves.sqrtK);
+
             uint256 feeGrowth = Math.mulDiv(
                 ((feeEachIndex * _feeShareAmm) / 10_000),
-                FixedPoint128.Q128,
+                FixedPoint128.BUFFER,
                 ammReserves.sqrtK
             );
 
@@ -719,6 +728,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 isBuy
             );
         }
+
+        console.log("totalFeeAmm: ", totalFeeAmm);
+
 
         feeProtocolAmm = (totalFeeAmm * (10_000 - _feeShareAmm)) / 10_000;
     }
