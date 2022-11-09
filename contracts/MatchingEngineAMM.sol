@@ -22,7 +22,11 @@ contract MatchingEngineAMM is
     address public counterParty;
     address public positionConcentratedLiquidity;
     modifier onlyCounterParty() {
-        require(counterParty == _msgSender(), "VL_ONLY_COUNTERPARTY");
+        require(
+            counterParty == _msgSender() ||
+                positionConcentratedLiquidity == _msgSender(),
+            "VL_ONLY_COUNTERPARTY"
+        );
         _;
     }
 
@@ -43,7 +47,7 @@ contract MatchingEngineAMM is
 
         positionConcentratedLiquidity = positionLiquidity;
 
-        _initializeAMM(pipRange, tickSpace, initialPip, 50);
+        _initializeAMM(pipRange, tickSpace, initialPip, 6000);
         _initializeCore(
             basisPoint,
             baseBasisPoint,
@@ -65,7 +69,7 @@ contract MatchingEngineAMM is
             uint256
         )
     {
-        super.addLiquidity(params);
+        return super.addLiquidity(params);
     }
 
     function removeLiquidity(RemoveLiquidity calldata params)
@@ -73,10 +77,12 @@ contract MatchingEngineAMM is
         override(AutoMarketMakerCore, IAutoMarketMakerCore)
         returns (uint128, uint128)
     {
-        super.removeLiquidity(params);
+        return super.removeLiquidity(params);
     }
 
     function approve() public {
+        console.log("quoteAsset: ", address(quoteAsset));
+        console.log("baseAsset: ", address(baseAsset));
         quoteAsset.approve(counterParty, type(uint256).max);
         baseAsset.approve(counterParty, type(uint256).max);
 
@@ -181,12 +187,11 @@ contract MatchingEngineAMM is
         uint256 flipSideOut,
         uint16 feePercent
     ) internal override(MatchingEngineCore) returns (uint256) {
-        (, uint128 feeProtocolAmm, uint128 totalFilledAmm) = _updateAMMState(
-            ammState,
-            currentPip,
-            isBuy,
-            feePercent
-        );
+        (
+            uint128 totalFeeAmm,
+            uint128 feeProtocolAmm,
+            uint128 totalFilledAmm
+        ) = _updateAMMState(ammState, currentPip, isBuy, feePercent);
 
         uint128 amount;
 
@@ -202,7 +207,8 @@ contract MatchingEngineAMM is
             amount = uint128(flipSideOut) - totalFilledAmm;
         }
 
-        uint128 feeProtocol = feeProtocolAmm + (amount * feePercent) / 10000;
+        uint128 feeLimitOrder = (amount * feePercent) / 10_000;
+        uint128 feeProtocol = feeProtocolAmm + feeLimitOrder;
 
         if ((isBuy && isBase) || (isBuy && !isBase)) {
             increaseBaseFeeFunding(feeProtocol);
@@ -210,7 +216,10 @@ contract MatchingEngineAMM is
             increaseQuoteFeeFunding(feeProtocol);
         }
 
-        return feeProtocol;
+        console.log("[_calculateFee] feeLimitOrder: ", feeLimitOrder);
+        console.log("[_calculateFee] totalFeeAmm: ", totalFeeAmm);
+
+        return totalFeeAmm + feeLimitOrder;
     }
 
     function increaseQuoteFeeFunding(uint256 quoteFee)
@@ -290,6 +299,15 @@ contract MatchingEngineAMM is
         uint256 _quoteAmount,
         address _trader
     ) internal override(MatchingEngineCore) {}
+
+    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
+        external
+        view
+        override(MatchingEngineCore, IMatchingEngineCore)
+        returns (uint256)
+    {
+        return TradeConvert.baseToQuote(quantity, pip, basisPoint);
+    }
 
     function getLiquidityInPipRange(
         uint128 fromPip,

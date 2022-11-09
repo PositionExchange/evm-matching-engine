@@ -9,10 +9,10 @@ import "../../interfaces/IFee.sol";
 
 abstract contract Fee is IFee {
     // quote asset token address
-    IERC20 internal quoteAsset;
+    IERC20 public quoteAsset;
 
     // base asset token address
-    IERC20 internal baseAsset;
+    IERC20 public baseAsset;
 
     // base fee for base asset
     uint256 internal baseFeeFunding;
@@ -20,9 +20,9 @@ abstract contract Fee is IFee {
     // base fee for quote asset
     uint256 internal quoteFeeFunding;
 
-    function _initFee(IERC20 quoteAsset, IERC20 baseAsset) internal pure {
-        quoteAsset = quoteAsset;
-        baseAsset = baseAsset;
+    function _initFee(IERC20 _quoteAsset, IERC20 _baseAsset) internal {
+        quoteAsset = _quoteAsset;
+        baseAsset = _baseAsset;
     }
 
     function decreaseBaseFeeFunding(uint256 baseFee) external virtual {

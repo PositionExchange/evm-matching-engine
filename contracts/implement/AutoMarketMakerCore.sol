@@ -41,6 +41,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 currentPrice;
         uint128 quoteReal;
         uint128 baseReal;
+        uint128 cacheSqrtK;
     }
 
     function addLiquidity(AddLiquidity calldata params)
@@ -60,6 +61,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         ];
 
         state.currentPrice = _calculateSqrtPrice(getCurrentPip(), 10**18);
+        state.cacheSqrtK = _liquidityInfo.sqrtK;
 
         if (_liquidityInfo.sqrtK == 0) {
             (uint128 pipMin, uint128 pipMax) = LiquidityMath.calculatePipRange(
@@ -88,17 +90,17 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             state.currentPrice
         );
 
-        liquidity = state.baseReal != 0
-            ? LiquidityMath.calculateLiquidity(
-                state.baseReal,
-                state.currentPrice,
-                true
-            )
-            : LiquidityMath.calculateLiquidity(
-                state.quoteReal,
-                state.currentPrice,
-                false
-            );
+        //        liquidity = state.baseReal != 0
+        //            ? LiquidityMath.calculateLiquidity(
+        //                state.baseReal,
+        //                state.currentPrice,
+        //                true
+        //            )
+        //            : LiquidityMath.calculateLiquidity(
+        //                state.quoteReal,
+        //                state.currentPrice,
+        //                false
+        //            );
 
         _liquidityInfo.baseReal += state.baseReal;
         _liquidityInfo.quoteReal += state.quoteReal;
@@ -146,10 +148,12 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             _liquidityInfo
         );
 
+        console.log("abc ", params.baseAmount);
+        console.log("abc ", _liquidityInfo.sqrtK - state.cacheSqrtK);
         return (
-            baseAmountAdded,
+            params.baseAmount,
             params.quoteAmount,
-            liquidity,
+            _liquidityInfo.sqrtK - state.cacheSqrtK,
             _liquidityInfo.feeGrowthBase,
             _liquidityInfo.feeGrowthQuote
         );
@@ -689,6 +693,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         )
     {
         uint32 _feeShareAmm = feeShareAmm;
+        console.log("feeShareAmm: ", _feeShareAmm);
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -701,9 +706,23 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 10_000;
             totalFeeAmm += feeEachIndex;
 
+            console.log(
+                "feeEachIndex, indexedPipRange : ",
+                feeEachIndex,
+                indexedPipRange
+            );
+
+            uint256 feeShareAmm = ((feeEachIndex * _feeShareAmm) / 10_000);
+            console.log(
+                "fee shared amm, indexedPipRange: ",
+                feeShareAmm,
+                indexedPipRange
+            );
+            console.log("liquidity: ", ammReserves.sqrtK);
+
             uint256 feeGrowth = Math.mulDiv(
                 ((feeEachIndex * _feeShareAmm) / 10_000),
-                FixedPoint128.Q128,
+                FixedPoint128.BUFFER,
                 ammReserves.sqrtK
             );
 
@@ -714,6 +733,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 isBuy
             );
         }
+
+        console.log("totalFeeAmm: ", totalFeeAmm);
 
         feeProtocolAmm = (totalFeeAmm * (10_000 - _feeShareAmm)) / 10_000;
     }
