@@ -550,11 +550,13 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 ammReserves.baseReserve,
                 sqrtCurrentPrice
             );
-            quoteOut = LiquidityMath.calculateQuoteWithPriceWhenBuy(
-                sqrtPriceTarget,
-                ammReserves.baseReserve,
-                sqrtCurrentPrice
-            );
+            quoteOut =
+                LiquidityMath.calculateQuoteWithPriceWhenBuy(
+                    sqrtPriceTarget,
+                    ammReserves.baseReserve,
+                    sqrtCurrentPrice
+                ) /
+                uint128(basisPoint);
         } else {
             baseOut =
                 LiquidityMath.calculateBaseWithPriceWhenSell(
