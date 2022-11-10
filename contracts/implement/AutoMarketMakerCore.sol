@@ -60,6 +60,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             params.indexedPipRange
         ];
 
+        console.log("[addLiquidity] getCurrentPip: ", getCurrentPip());
+
         state.currentPrice = _calculateSqrtPrice(getCurrentPip(), 10**18);
         state.cacheSqrtK = _liquidityInfo.sqrtK;
 
@@ -114,27 +116,37 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 _liquidityInfo.quoteReal,
                 state.currentPrice
             ) * _basisPoint()).sqrt().Uint256ToUint128();
-            if (params.indexedPipRange < currentIndexedPipRange) {
-                _liquidityInfo.baseReal = uint128(
-                    (uint256(_liquidityInfo.sqrtK)**2) /
-                        uint256(_liquidityInfo.quoteReal)
-                );
-            }
+            _liquidityInfo.baseReal = uint128(
+                (uint256(_liquidityInfo.sqrtK)**2) /
+                    uint256(_liquidityInfo.quoteReal)
+            );
+            //            if (params.indexedPipRange < currentIndexedPipRange) {
+            //                _liquidityInfo.baseReal = uint128(
+            //                    (uint256(_liquidityInfo.sqrtK)**2) /
+            //                        uint256(_liquidityInfo.quoteReal)
+            //                );
+            //            }
         } else if (
             (params.indexedPipRange > currentIndexedPipRange) ||
             ((params.indexedPipRange == currentIndexedPipRange) &&
                 (state.currentPrice == _liquidityInfo.sqrtMinPip))
         ) {
+            console.log("state.currentPrice == _liquidityInfo.sqrtMinPip ");
+
             _liquidityInfo.sqrtK = (LiquidityMath.calculateKWithBase(
                 _liquidityInfo.baseReal,
                 state.currentPrice
             ) / _basisPoint()).sqrt().Uint256ToUint128();
-            if (params.indexedPipRange > currentIndexedPipRange) {
-                _liquidityInfo.quoteReal = uint128(
-                    (uint256(_liquidityInfo.sqrtK)**2) /
-                        uint256(_liquidityInfo.baseReal)
-                );
-            }
+            _liquidityInfo.quoteReal = uint128(
+                (uint256(_liquidityInfo.sqrtK)**2) /
+                    uint256(_liquidityInfo.baseReal)
+            );
+            //            if (params.indexedPipRange > currentIndexedPipRange) {
+            //                _liquidityInfo.quoteReal = uint128(
+            //                    (uint256(_liquidityInfo.sqrtK)**2) /
+            //                        uint256(_liquidityInfo.baseReal)
+            //                );
+            //            }
         } else if (params.indexedPipRange == currentIndexedPipRange) {
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBaseAndQuote(

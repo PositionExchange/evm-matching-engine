@@ -424,7 +424,7 @@ describe("CaseLiquidityCase11-15", async function(){
     id: 4
     asset: base
     Side: 1
-    Quantity: 40
+    Quantity: 23.67410
   Expect:
     Pool:
       Liquidity: 6202.2505240158
@@ -516,7 +516,7 @@ describe("CaseLiquidityCase11-15", async function(){
     id: 5
     asset: base
     Side: 1
-    Quantity: 60.76649
+    Quantity: 30.99271
   Expect:
     Pool:
       Liquidity: 134.51747152434
@@ -565,11 +565,11 @@ describe("CaseLiquidityCase11-15", async function(){
     Asset: base
     Side: 0
     Quantity: 143
-    Price: 150000
+    Price: 135000
   Expect:
     PendingOrder:
       OrderId: 1
-      Price: 150000
+      Price: 135000
       Size : 143
       Side: 0
 - S13: OpenMarket

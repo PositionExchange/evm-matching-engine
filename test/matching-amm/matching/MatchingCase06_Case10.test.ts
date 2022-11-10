@@ -75,15 +75,15 @@ describe("MatchingCase06_Case10", async function(){
     id: 3
     asset: quote
     Side: 0
-    Quantity: 10
+    Quantity: 10.2387770
   Expect:
     Pool:
       K: 3542.842506
       Liquidity: 
       BaseVirtual: 0.4588494149
       QuoteVirtual: 40
-      BaseReal: 24.75871757
-      QuoteReal: 143.0947502
+      BaseReal: 25.3801730
+      QuoteReal: 139.59095164
       IndexPipRange: 1
       MaxPip: 59999
       MinPip: 30000
