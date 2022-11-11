@@ -265,7 +265,7 @@ describe("CaseLiquidityCase11-15", async function(){
   Action:
     Id: 2
     Asset: base
-    Side: 0
+    Side: 1
     Quantity: 120
     Price: 160000
   Expect:
@@ -273,7 +273,7 @@ describe("CaseLiquidityCase11-15", async function(){
       OrderId: 1
       Price: 160000
       Size : 120
-      Side: 0
+      Side: 1
 - S11: OpenMarket
   Action:
     id: 2
@@ -296,7 +296,7 @@ describe("CaseLiquidityCase11-15", async function(){
   Action:
     id: 2
     asset: base
-    Side: 1
+    Side: 0
     Quantity: 120
   Expect:
     Pool:
