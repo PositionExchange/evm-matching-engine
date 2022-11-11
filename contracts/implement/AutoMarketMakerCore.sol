@@ -60,7 +60,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             params.indexedPipRange
         ];
 
-        console.log("[addLiquidity] getCurrentPip: ", getCurrentPip());
+        console.log("_liquidityInfo.sqrtMinPip]getCurrentPip: ", getCurrentPip());
 
         state.currentPrice = _calculateSqrtPrice(getCurrentPip(), 10**18);
         state.cacheSqrtK = _liquidityInfo.sqrtK;
@@ -131,7 +131,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             ((params.indexedPipRange == currentIndexedPipRange) &&
                 (state.currentPrice == _liquidityInfo.sqrtMinPip))
         ) {
-            console.log("state.currentPrice == _liquidityInfo.sqrtMinPip ");
+            console.log("[_AutoMarketMakerCore][addLiquidity] state.currentPrice _liquidityInfo.sqrtMinPip: ", state.currentPrice , _liquidityInfo.sqrtMinPip );
 
             _liquidityInfo.sqrtK = (LiquidityMath.calculateKWithBase(
                 _liquidityInfo.baseReal,
@@ -160,8 +160,11 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             _liquidityInfo
         );
 
-        console.log("abc ", params.baseAmount);
-        console.log("abc ", _liquidityInfo.sqrtK - state.cacheSqrtK);
+        console.log("[_AutoMarketMakerCore][addLiquidity]params.baseAmount: ", params.baseAmount);
+        console.log("[_AutoMarketMakerCore][addLiquidity]liquidity ", _liquidityInfo.sqrtK - state.cacheSqrtK);
+        console.log("[_AutoMarketMakerCore][addLiquidity]quoteReal ", _liquidityInfo.quoteReal);
+        console.log("[_AutoMarketMakerCore][addLiquidity]baseReal ", _liquidityInfo.baseReal);
+        console.log("[_AutoMarketMakerCore][addLiquidity]L", _liquidityInfo.sqrtK);
         return (
             params.baseAmount,
             params.quoteAmount,
