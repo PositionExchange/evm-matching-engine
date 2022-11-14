@@ -373,17 +373,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 Liquidity.Info memory _liquidity = liquidityInfo[uint256(i)];
 
                 if (_liquidity.sqrtK != 0) {
-                    ammState.ammReserves[ammState.index] = SwapState
-                        .AmmReserves({
-                            baseReserve: _liquidity.baseReal,
-                            quoteReserve: _liquidity.quoteReal,
-                            sqrtK: _liquidity.sqrtK,
-                            sqrtMaxPip: _liquidity.sqrtMaxPip,
-                            sqrtMinPip: _liquidity.sqrtMinPip,
-                            amountFilled: 0
-                        });
-                    ammState.pipRangesIndex[ammState.index] = uint256(i);
-                    _ammReserves = ammState.ammReserves[ammState.index];
+                    _ammReserves = _initCrossAmmReserves(_liquidity, ammState); // ammState.ammReserves[ammState.index];
                     if (crossPipState.skipIndex) {
                         crossPipState.skipIndex = false;
                     }
@@ -487,20 +477,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 ];
 
                 if (_liquidity.sqrtK != 0) {
-                    ammState.ammReserves[ammState.index] = SwapState
-                        .AmmReserves({
-                            baseReserve: _liquidity.baseReal,
-                            quoteReserve: _liquidity.quoteReal,
-                            sqrtK: _liquidity.sqrtK,
-                            sqrtMaxPip: _liquidity.sqrtMaxPip,
-                            sqrtMinPip: _liquidity.sqrtMinPip,
-                            amountFilled: 0
-                        });
-
-                    ammState.pipRangesIndex[ammState.index] = uint256(
-                        ammState.lastPipRangeLiquidityIndex
-                    );
-                    _ammReserves = ammState.ammReserves[ammState.index];
+                    _ammReserves = _initCrossAmmReserves(_liquidity, ammState);
                     if (crossPipState.skipIndex) {
                         crossPipState.skipIndex = false;
                     }
@@ -818,6 +795,25 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         console.log("totalFeeAmm: ", totalFeeAmm);
 
         feeProtocolAmm = (totalFeeAmm * (10_000 - _feeShareAmm)) / 10_000;
+    }
+
+    function _initCrossAmmReserves(
+        Liquidity.Info memory _liquidity,
+        SwapState.AmmState memory ammState
+    ) internal returns (SwapState.AmmReserves memory) {
+        ammState.ammReserves[ammState.index] = SwapState.AmmReserves({
+            baseReserve: _liquidity.baseReal,
+            quoteReserve: _liquidity.quoteReal,
+            sqrtK: _liquidity.sqrtK,
+            sqrtMaxPip: _liquidity.sqrtMaxPip,
+            sqrtMinPip: _liquidity.sqrtMinPip,
+            amountFilled: 0
+        });
+
+        ammState.pipRangesIndex[ammState.index] = uint256(
+            ammState.lastPipRangeLiquidityIndex
+        );
+        return ammState.ammReserves[ammState.index];
     }
 
     function _calculateSqrtPrice(uint128 pip, uint256 curve)
