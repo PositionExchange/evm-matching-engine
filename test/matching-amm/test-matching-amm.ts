@@ -206,17 +206,17 @@ export class TestMatchingAmm {
         console.log("[expectPool] Expected pool K: ",sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK));
         console.log("[expectPool] Expected pool Liquidity: ",Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK));
 
-        if (expectData.MaxPip) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**12),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
-        if (expectData.MinPip) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**12),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
-        if (expectData.FeeGrowthBase) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase),fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
-        if (expectData.FeeGrowthQuote) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote),fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
+        if (expectData.MaxPip !== undefined) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**12),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
+        if (expectData.MinPip !== undefined) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**12),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
+        if (expectData.FeeGrowthBase !== undefined) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase),fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
+        if (expectData.FeeGrowthQuote !== undefined) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote),fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
 
 
 
-        if (expectData.BaseReal) expect(this.expectDataInRange(Number(expectData.BaseReal),fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
-        if (expectData.QuoteReal) expect(this.expectDataInRange(Number(expectData.QuoteReal),fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
-        if (expectData.K) expect(this.expectDataInRange(sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "K");
-        if (expectData.Liquidity) expect(this.expectDataInRange(Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "Liquidity");
+        if (expectData.BaseReal !== undefined) expect(this.expectDataInRange(Number(expectData.BaseReal),fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
+        if (expectData.QuoteReal !== undefined) expect(this.expectDataInRange(Number(expectData.QuoteReal),fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
+        if (expectData.K !== undefined) expect(this.expectDataInRange(sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "K");
+        if (expectData.Liquidity !== undefined) expect(this.expectDataInRange(Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "Liquidity");
 
     }
 
