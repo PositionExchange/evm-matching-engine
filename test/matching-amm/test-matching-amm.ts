@@ -206,8 +206,8 @@ export class TestMatchingAmm {
         console.log("[expectPool] Expected pool K: ",sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK));
         console.log("[expectPool] Expected pool Liquidity: ",Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK));
 
-        if (expectData.MaxPip) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**9),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
-        if (expectData.MinPip) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**9),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
+        if (expectData.MaxPip) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**12),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
+        if (expectData.MinPip) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**12),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
         if (expectData.FeeGrowthBase) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase),fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
         if (expectData.FeeGrowthQuote) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote),fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
 

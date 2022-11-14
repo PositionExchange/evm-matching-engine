@@ -60,9 +60,15 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             params.indexedPipRange
         ];
 
-        console.log("_liquidityInfo.sqrtMinPip]getCurrentPip: ", getCurrentPip());
+        console.log(
+            "_liquidityInfo.sqrtMinPip]getCurrentPip: ",
+            getCurrentPip()
+        );
 
-        state.currentPrice = _calculateSqrtPrice(getCurrentPip(), 10**18);
+        state.currentPrice = _calculateSqrtPrice(
+            getCurrentPip(),
+            FixedPoint128.BUFFER
+        );
         state.cacheSqrtK = _liquidityInfo.sqrtK;
 
         if (_liquidityInfo.sqrtK == 0) {
@@ -71,8 +77,14 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 pipRange
             );
 
-            _liquidityInfo.sqrtMaxPip = _calculateSqrtPrice(pipMax, 10**18);
-            _liquidityInfo.sqrtMinPip = _calculateSqrtPrice(pipMin, 10**18);
+            _liquidityInfo.sqrtMaxPip = _calculateSqrtPrice(
+                pipMax,
+                FixedPoint128.BUFFER
+            );
+            _liquidityInfo.sqrtMinPip = _calculateSqrtPrice(
+                pipMin,
+                FixedPoint128.BUFFER
+            );
             _liquidityInfo.indexedPipRange = params.indexedPipRange;
         }
 
@@ -131,7 +143,11 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             ((params.indexedPipRange == currentIndexedPipRange) &&
                 (state.currentPrice == _liquidityInfo.sqrtMinPip))
         ) {
-            console.log("[_AutoMarketMakerCore][addLiquidity] state.currentPrice _liquidityInfo.sqrtMinPip: ", state.currentPrice , _liquidityInfo.sqrtMinPip );
+            console.log(
+                "[_AutoMarketMakerCore][addLiquidity] state.currentPrice _liquidityInfo.sqrtMinPip: ",
+                state.currentPrice,
+                _liquidityInfo.sqrtMinPip
+            );
 
             _liquidityInfo.sqrtK = (LiquidityMath.calculateKWithBase(
                 _liquidityInfo.baseReal,
@@ -160,11 +176,26 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             _liquidityInfo
         );
 
-        console.log("[_AutoMarketMakerCore][addLiquidity]params.baseAmount: ", params.baseAmount);
-        console.log("[_AutoMarketMakerCore][addLiquidity]liquidity ", _liquidityInfo.sqrtK - state.cacheSqrtK);
-        console.log("[_AutoMarketMakerCore][addLiquidity]quoteReal ", _liquidityInfo.quoteReal);
-        console.log("[_AutoMarketMakerCore][addLiquidity]baseReal ", _liquidityInfo.baseReal);
-        console.log("[_AutoMarketMakerCore][addLiquidity]L", _liquidityInfo.sqrtK);
+        console.log(
+            "[_AutoMarketMakerCore][addLiquidity]params.baseAmount: ",
+            params.baseAmount
+        );
+        console.log(
+            "[_AutoMarketMakerCore][addLiquidity]liquidity ",
+            _liquidityInfo.sqrtK - state.cacheSqrtK
+        );
+        console.log(
+            "[_AutoMarketMakerCore][addLiquidity]quoteReal ",
+            _liquidityInfo.quoteReal
+        );
+        console.log(
+            "[_AutoMarketMakerCore][addLiquidity]baseReal ",
+            _liquidityInfo.baseReal
+        );
+        console.log(
+            "[_AutoMarketMakerCore][addLiquidity]L",
+            _liquidityInfo.sqrtK
+        );
         return (
             params.baseAmount,
             params.quoteAmount,
@@ -199,29 +230,31 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         )
     {
         _liquidityInfo = liquidityInfo[params.indexedPipRange];
-        uint128 quoteVirtualRemove = LiquidityMath
-            .calculateQuoteRealByLiquidity(
-                params.liquidity,
-                _liquidityInfo.sqrtK,
-                _liquidityInfo.quoteReal
-            );
-        _liquidityInfo.quoteReal = _liquidityInfo.quoteReal > quoteVirtualRemove
-            ? _liquidityInfo.quoteReal - quoteVirtualRemove
+        uint128 quoteRealRemove = LiquidityMath.calculateQuoteRealByLiquidity(
+            params.liquidity,
+            _liquidityInfo.sqrtK,
+            _liquidityInfo.quoteReal
+        );
+        _liquidityInfo.quoteReal = _liquidityInfo.quoteReal > quoteRealRemove
+            ? _liquidityInfo.quoteReal - quoteRealRemove
             : 0;
-        uint128 baseVirtualRemove = LiquidityMath.calculateBaseRealByLiquidity(
+        uint128 baseRealRemove = LiquidityMath.calculateBaseRealByLiquidity(
             params.liquidity,
             _liquidityInfo.sqrtK,
             _liquidityInfo.baseReal
         );
-        _liquidityInfo.baseReal = _liquidityInfo.baseReal > baseVirtualRemove
-            ? _liquidityInfo.baseReal - baseVirtualRemove
+        _liquidityInfo.baseReal = _liquidityInfo.baseReal > baseRealRemove
+            ? _liquidityInfo.baseReal - baseRealRemove
             : 0;
 
         uint128 sqrtBasicPoint = uint256(_basisPoint())
             .sqrt()
             .Uint256ToUint128();
 
-        uint128 _currentPrice = _calculateSqrtPrice(getCurrentPip(), 10**18);
+        uint128 _currentPrice = _calculateSqrtPrice(
+            getCurrentPip(),
+            FixedPoint128.BUFFER
+        );
 
         if (
             (params.indexedPipRange < currentIndexedPipRange) ||
@@ -320,12 +353,15 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         // Have target price
         crossPipState.sqrtTargetPip = _calculateSqrtPrice(
             params.pipNext,
-            10**18
+            FixedPoint128.BUFFER
         );
         crossPipState.indexedPipRange = int256(
             LiquidityMath.calculateIndexPipRange(params.pipNext, pipRange)
         );
-        params.currentPip = _calculateSqrtPrice(params.currentPip, 10**18);
+        params.currentPip = _calculateSqrtPrice(
+            params.currentPip,
+            FixedPoint128.BUFFER
+        );
         for (int256 i = ammState.lastPipRangeLiquidityIndex; ; ) {
             SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
                 ammState.index
@@ -433,7 +469,10 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     ) internal returns (CrossPipResult.Result memory result) {
         CrossPipState memory crossPipState;
         uint8 countSkipIndex;
-        params.currentPip = _calculateSqrtPrice(params.currentPip, 10**18);
+        params.currentPip = _calculateSqrtPrice(
+            params.currentPip,
+            FixedPoint128.BUFFER
+        );
 
         while (params.amount != 0) {
             SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
@@ -764,7 +803,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
 
             uint256 feeGrowth = Math.mulDiv(
                 ((feeEachIndex * _feeShareAmm) / 10_000),
-                FixedPoint128.BUFFER,
+                FixedPoint128.Q_POW18,
                 ammReserves.sqrtK
             );
 

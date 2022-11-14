@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
+import "./FixedPoint128.sol";
+
 library LiquidityMath {
     function calculateBaseReal(
         uint128 sqrtMaxPip,
@@ -52,7 +54,7 @@ library LiquidityMath {
 
         return
             uint128(
-                (10**18 *
+                (FixedPoint128.BUFFER *
                     (uint256(quoteReal) *
                         (uint256(sqrtCurrentPrice) -
                             uint256(sqrtPriceTarget)))) /
@@ -96,7 +98,7 @@ library LiquidityMath {
                 (uint256(baseReal) *
                     uint256(sqrtCurrentPrice) *
                     (uint256(sqrtPriceTarget) - uint256(sqrtCurrentPrice))) /
-                    10**18
+                    FixedPoint128.BUFFER
             );
     }
 
@@ -150,7 +152,9 @@ library LiquidityMath {
         pure
         returns (uint256)
     {
-        return (uint256(quoteReal)**2 * 10**18) / uint256(sqrtPriceMax)**2;
+        return
+            (uint256(quoteReal)**2 * FixedPoint128.BUFFER) /
+            uint256(sqrtPriceMax)**2;
     }
 
     function calculateKWithBase(uint128 baseReal, uint128 sqrtPriceMin)
@@ -158,7 +162,9 @@ library LiquidityMath {
         pure
         returns (uint256)
     {
-        return (uint256(baseReal)**2 * uint256(sqrtPriceMin)**2) / 10**18;
+        return
+            (uint256(baseReal)**2 * uint256(sqrtPriceMin)**2) /
+            FixedPoint128.BUFFER;
     }
 
     function calculateKWithBaseAndQuote(uint128 quoteReal, uint128 baseReal)
@@ -188,7 +194,7 @@ library LiquidityMath {
     ) internal pure returns (uint128) {
         return
             uint128(
-                (10**9 *
+                (FixedPoint128.HALF_BUFFER *
                     uint256(liquidity) *
                     (uint256(sqrtPriceMax) - uint256(sqrtPrice))) /
                     (uint256(sqrtPrice) * uint256(sqrtPriceMax))
@@ -203,7 +209,8 @@ library LiquidityMath {
         return
             uint128(
                 (uint256(liquidity) *
-                    (uint256(sqrtPrice) - uint256(sqrtPriceMin))) / 10**9
+                    (uint256(sqrtPrice) - uint256(sqrtPriceMin))) /
+                    FixedPoint128.HALF_BUFFER
             );
     }
 

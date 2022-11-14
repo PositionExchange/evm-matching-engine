@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
 import "../libraries/helper/LiquidityMath.sol";
 
 contract LiquidityMathTest {
-    uint256 public CURVE_PIP = 10**18;
+    uint256 public CURVE_PIP = 10**24;
     uint128 public basisPoint = 10000;
 
     function calculateBaseReal(
