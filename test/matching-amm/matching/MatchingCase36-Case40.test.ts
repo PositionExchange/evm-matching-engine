@@ -21,7 +21,6 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 148218.4264216180
-      Liquidity: 
       BaseVirtual: 15
       QuoteVirtual: 194.0423075233
       BaseReal: 172.1734163114
@@ -53,11 +52,10 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 17819.0440221790
-      Liquidity: 
       BaseVirtual: 10
       QuoteVirtual: 0
       BaseReal: 54.4962445528
-      QuoteReal: 0
+      QuoteReal: 326.977467
       IndexPipRange: 2
       MaxPip: 89999  
       MinPip: 60000 
@@ -84,7 +82,6 @@ describe("MatchingCase36-Case40", async function(){
     Quantity: 37.1383826965
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 7.8616173035
       QuoteVirtual: 13.3540843738
       BaseReal: 52.3578618564
@@ -103,10 +100,9 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 274974.5036167670
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 376.2000064930
-      BaseReal: 0
+      BaseReal: 214.0790689603
       QuoteReal: 1284.4530058551
       IndexPipRange: 1
       MaxPip: 59999  
@@ -121,7 +117,6 @@ describe("MatchingCase36-Case40", async function(){
     Quantity: 50.2503351268
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 48.1123709349
       QuoteVirtual: 140.4984882809
       BaseReal: 262.1922417815
@@ -147,7 +142,6 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 148218.4264216180
-      Liquidity: 
       BaseVirtual: 15
       QuoteVirtual: 194.0423075233
       BaseReal: 172.1734163114
@@ -179,7 +173,6 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 411717.8511711620
-      Liquidity: 
       BaseVirtual: 25
       QuoteVirtual: 323.4038458721
       BaseReal: 286.9556938523
@@ -217,7 +210,6 @@ describe("MatchingCase36-Case40", async function(){
     Quantity: 55.5240207936
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 4.4759792064
       QuoteVirtual: 433.9290803509
       BaseReal: 266.4316730586
@@ -236,10 +228,9 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 3372.1592692615
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 100
-      BaseReal: 0
+      BaseReal: 33.526901
       QuoteReal: 100.5807029593
       IndexPipRange: 0
       MaxPip: 30000  
@@ -254,7 +245,6 @@ describe("MatchingCase36-Case40", async function(){
     Quantity: 130
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 25.9734652622
       QuoteVirtual: 56.0938938855
       BaseReal: 59.5003662487
@@ -266,7 +256,6 @@ describe("MatchingCase36-Case40", async function(){
       FeeGrowthQuote: 0
 - S9: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 108.5025139441
     QuoteVirtual: 0
     BaseReal: 370.4582077964
@@ -292,7 +281,6 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 148218.4264216180
-      Liquidity: 
       BaseVirtual: 15
       QuoteVirtual: 194.0423075233
       BaseReal: 172.1734163114
@@ -362,7 +350,6 @@ describe("MatchingCase36-Case40", async function(){
     Quantity: 30.3223150839
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 35.3223150839
       QuoteVirtual: 103.1581515476
       BaseReal: 192.4957313953
@@ -381,11 +368,10 @@ describe("MatchingCase36-Case40", async function(){
   Expect:
     Pool:
       K: 1781904.4022179000
-      Liquidity: 
       BaseVirtual: 100
       QuoteVirtual: 0
       BaseReal: 544.9624455284
-      QuoteReal: 0
+      QuoteReal: 3269.774673
       IndexPipRange: 2
       MaxPip: 89999
       MinPip: 60000
@@ -399,7 +385,6 @@ describe("MatchingCase36-Case40", async function(){
     Quantity: 133.3334386762
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 26.9888764077
       QuoteVirtual: 505.8359023183
       BaseReal: 471.9513219361
@@ -411,7 +396,6 @@ describe("MatchingCase36-Case40", async function(){
       FeeGrowthQuote: 0
 - S9: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 0
     QuoteVirtual: 276.2000064930
     BaseReal: 157.1734163114

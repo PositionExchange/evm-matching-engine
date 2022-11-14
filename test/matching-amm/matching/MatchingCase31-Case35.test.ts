@@ -21,7 +21,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 65874.8561873859
-      Liquidity: 
       BaseVirtual: 10
       QuoteVirtual: 129.3615383
       BaseReal: 114.7822775409
@@ -40,11 +39,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 57966733.0643528000
-      Liquidity: 
       BaseVirtual: 340
       QuoteVirtual: 0
       BaseReal: 2537.8629037561
-      QuoteReal: 0
+      QuoteReal: 22840.7661338050
       IndexPipRange: 3
       MaxPip: 119999  
       MinPip: 90000 
@@ -72,11 +70,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 285104.7043548640
-      Liquidity: 
       BaseVirtual: 40
       QuoteVirtual: 0
       BaseReal: 217.9849782114
-      QuoteReal: 0
+      QuoteReal: 1307.9098692682
       IndexPipRange: 2
       MaxPip: 89999  
       MinPip: 60000 
@@ -117,7 +114,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 592873.7056864740
-      Liquidity: 
       BaseVirtual: 30
       QuoteVirtual: 388.084615
       BaseReal: 344.3468326227
@@ -135,7 +131,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 36.02500999
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 13.9749900083
       QuoteVirtual: 472.1204764033
       BaseReal: 328.3218226310
@@ -167,7 +162,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 1744922.1159909200
-      Liquidity: 
       BaseVirtual: 23.9749900083
       QuoteVirtual: 809.9529014171
       BaseReal: 563.2571051871
@@ -186,11 +180,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 1140418.8174194600
-      Liquidity: 
       BaseVirtual: 80
       QuoteVirtual: 0
       BaseReal: 435.9699564227
-      QuoteReal: 0
+      QuoteReal: 2615.8197385364
       IndexPipRange: 2
       MaxPip: 89999  
       MinPip: 60000 
@@ -230,7 +223,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 34.7603953628
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 9.2145946454
       QuoteVirtual: 893.3197399
       BaseReal: 548.4967098243
@@ -249,7 +241,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 7587278.5888238000
-      Liquidity: 
       BaseVirtual: 19.2145946454
       QuoteVirtual: 1862.7815276566
       BaseReal: 1143.7444998039
@@ -268,11 +259,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 231866932.2574110000
-      Liquidity: 
       BaseVirtual: 680
       QuoteVirtual: 0
       BaseReal: 5075.7258075122
-      QuoteReal: 0
+      QuoteReal: 45681.5322676101
       IndexPipRange: 3
       MaxPip: 119999  
       MinPip: 90000 
@@ -287,11 +277,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 2565942.3391937800
-      Liquidity: 
       BaseVirtual: 120
       QuoteVirtual: 0
       BaseReal: 653.9549346341
-      QuoteReal: 0
+      QuoteReal: 3923.7296078046
       IndexPipRange: 2
       MaxPip: 89999  
       MinPip: 60000 
@@ -305,7 +294,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 40
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 99.2145946454
       QuoteVirtual: 128.8064359206
       BaseReal: 633.1695292795
@@ -324,7 +312,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 5052022.8074817600
-      Liquidity: 
       BaseVirtual: 139.2145946454
       QuoteVirtual: 180.7368747359
       BaseReal: 888.4422667401
@@ -342,7 +329,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 159.2145946
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 1237.3282198459
       BaseReal: 749.2276720947
@@ -360,7 +346,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 300
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 400
       QuoteVirtual: 2667.1310138071
       BaseReal: 4795.7258075122
@@ -372,7 +357,6 @@ describe("MatchingCase31-Case35", async function(){
       FeeGrowthQuote: 0
 - S22: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 0
     QuoteVirtual: 1976.1304067544
     BaseReal: 1124.5299051585
@@ -384,7 +368,6 @@ describe("MatchingCase31-Case35", async function(){
     FeeGrowthQuote: 0
 - S23: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 0
     QuoteVirtual: 1237.3282198459
     BaseReal: 749.2276720947
@@ -410,10 +393,9 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 19429.1959951070
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 100
-      BaseReal: 0
+      BaseReal: 56.9056526490
       QuoteReal: 341.4282253286
       IndexPipRange: 1  
       MaxPip: 59999  
@@ -429,7 +411,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 282795585.5366000000
-      Liquidity: 
       BaseVirtual: 340
       QuoteVirtual: 6372.410774
       BaseReal: 5945.5401934622
@@ -461,10 +442,9 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 539.5454830818
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 40
-      BaseReal: 0
+      BaseReal: 13.4107603946
       QuoteReal: 40.2322811837
       IndexPipRange: 0
       MaxPip: 30000  
@@ -506,7 +486,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 317044185.8611020000
-      Liquidity: 
       BaseVirtual: 360
       QuoteVirtual: 6747.258466
       BaseReal: 6295.2778519012
@@ -524,7 +503,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 454.6572556304
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 794.6572556304
       QuoteVirtual: 3494.5814036973
       BaseReal: 6729.9351075316
@@ -556,7 +534,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 325073786.8549900000
-      Liquidity: 
       BaseVirtual: 804.6572556304
       QuoteVirtual: 3538.5573616205
       BaseReal: 6814.6248912068
@@ -575,10 +552,9 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 2158.1819323274
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 80
-      BaseReal: 0
+      BaseReal: 26.8215207891
       QuoteReal: 80.4645623674
       IndexPipRange: 0  
       MaxPip: 30000  
@@ -593,7 +569,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 277.2455703
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 1061.9028258959
       QuoteVirtual: 1803.3411227427
       BaseReal: 7071.8704614723
@@ -612,7 +587,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 331225091.8174800000
-      Liquidity: 
       BaseVirtual: 1071.9028258959
       QuoteVirtual: 1820.3232898371
       BaseReal: 7138.4666724345
@@ -631,10 +605,9 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 59484.8895097733
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 420
-      BaseReal: 0
+      BaseReal: 140.8129841430
       QuoteReal: 422.4389524290
       IndexPipRange: 0 
       MaxPip: 30000  
@@ -650,10 +623,9 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 485729.8998776760
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 500
-      BaseReal: 0
+      BaseReal: 284.5282632449
       QuoteReal: 1707.1411266430
       IndexPipRange: 1 
       MaxPip: 59999  
@@ -668,7 +640,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 300
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 8.5149922700
       QuoteVirtual: 450.3953999160
       BaseReal: 293.0432555149
@@ -687,7 +658,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 15768059.6771385000
-      Liquidity: 
       BaseVirtual: 48.5149922700
       QuoteVirtual: 2566.1713660505
       BaseReal: 1669.6422997587
@@ -705,7 +675,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 335.8085103307
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 364.3235026007
       QuoteVirtual: 1063.9998823503
       BaseReal: 1985.4508100894
@@ -723,7 +692,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 607.1503092464
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 103.0822587581
       QuoteVirtual: 138.9181153
       BaseReal: 420.8129841430
@@ -735,7 +703,6 @@ describe("MatchingCase31-Case35", async function(){
       FeeGrowthQuote: 0
 - S20: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 671.4738118471
     QuoteVirtual: 0
     BaseReal: 2292.6011193357
@@ -747,7 +714,6 @@ describe("MatchingCase31-Case35", async function(){
     FeeGrowthQuote: 0
 - S21: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 1363.3878336259
     QuoteVirtual: 0
     BaseReal: 7429.9516801645
@@ -773,7 +739,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 65874.8561873859
-      Liquidity: 
       BaseVirtual: 10
       QuoteVirtual: 129.3615383
       BaseReal: 114.7822775409
@@ -792,11 +757,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 20598814.8896389000
-      Liquidity: 
       BaseVirtual: 340
       QuoteVirtual: 0
       BaseReal: 1852.8723147966
-      QuoteReal: 0
+      QuoteReal: 11117.2338887798
       IndexPipRange: 2 
       MaxPip: 89999  
       MinPip: 60000 
@@ -824,11 +788,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 25730699.5680265000
-      Liquidity: 
       BaseVirtual: 380
       QuoteVirtual: 0
       BaseReal: 2070.8572930080
-      QuoteReal: 0
+      QuoteReal: 12425.143758
       IndexPipRange: 2 
       MaxPip: 89999  
       MinPip: 60000 
@@ -869,7 +832,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 592873.7056864740
-      Liquidity: 
       BaseVirtual: 30
       QuoteVirtual: 388.084615
       BaseReal: 344.3468326227
@@ -887,7 +849,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 50
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 552.4000129860
       BaseReal: 314.3468326227
@@ -906,7 +867,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 826956.6640816640
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 652.4000129860
       BaseReal: 371.252485
@@ -925,11 +885,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 802307.7240740880
-      Liquidity: 
       BaseVirtual: 40
       QuoteVirtual: 0
       BaseReal: 298.5721063242
-      QuoteReal: 0
+      QuoteReal: 2687.1489569182
       IndexPipRange: 3
       MaxPip: 119999  
       MinPip: 90000 
@@ -969,7 +928,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 193.7734391935
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 153.7734391935
       QuoteVirtual: 0
       BaseReal: 525.0259244652
@@ -981,11 +939,10 @@ describe("MatchingCase31-Case35", async function(){
       FeeGrowthQuote: 0
 - S14: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 40
     QuoteVirtual: 0
     BaseReal: 298.5721063242
-    QuoteReal: 0
+    QuoteReal: 2687.148957
     IndexPipRange: 3
     MaxPip: 119999
     MinPip: 90000
@@ -993,7 +950,6 @@ describe("MatchingCase31-Case35", async function(){
     FeeGrowthQuote: 0
 - S15: Expect
   Pool:
-    Liquidity: 
     BaseVirtual: 360
     QuoteVirtual: 121.1702423217
     BaseReal: 2050.8572930080
@@ -1019,7 +975,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 65874.8561873859
-      Liquidity: 
       BaseVirtual: 10
       QuoteVirtual: 129.3615383
       BaseReal: 114.7822775409
@@ -1038,11 +993,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 20598814.8896389000
-      Liquidity: 
       BaseVirtual: 340
       QuoteVirtual: 0
       BaseReal: 1852.8723147966
-      QuoteReal: 0
+      QuoteReal: 11117.233889
       IndexPipRange: 2 
       MaxPip: 89999  
       MinPip: 60000 
@@ -1070,11 +1024,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 25730699.5680265000
-      Liquidity: 
       BaseVirtual: 380
       QuoteVirtual: 0
       BaseReal: 2070.8572930080
-      QuoteReal: 0
+      QuoteReal: 12425.143758
       IndexPipRange: 2 
       MaxPip: 89999  
       MinPip: 60000 
@@ -1115,7 +1068,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 592873.7056864740
-      Liquidity: 
       BaseVirtual: 30
       QuoteVirtual: 388.084615
       BaseReal: 344.3468326227
@@ -1133,7 +1085,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 50
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 552.4000129860
       BaseReal: 314.3468326227
@@ -1152,7 +1103,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 826956.6640816640
-      Liquidity: 
       BaseVirtual: 0
       QuoteVirtual: 652.4000129860
       BaseReal: 371.252485
@@ -1171,11 +1121,10 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 802307.7240740880
-      Liquidity: 
       BaseVirtual: 40
       QuoteVirtual: 0
       BaseReal: 298.5721063242
-      QuoteReal: 0
+      QuoteReal: 2687.148957
       IndexPipRange: 3
       MaxPip: 119999  
       MinPip: 90000 
@@ -1202,7 +1151,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 193.7734391935
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 153.7734391935
       QuoteVirtual: 0
       BaseReal: 525.0259244652
@@ -1228,7 +1176,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 65874.8561873859
-      Liquidity: 
       BaseVirtual: 10
       QuoteVirtual: 129.3615383
       BaseReal: 114.7822775409
@@ -1364,7 +1311,6 @@ describe("MatchingCase31-Case35", async function(){
   Expect:
     Pool:
       K: 592873.7056864740
-      Liquidity: 
       BaseVirtual: 30
       QuoteVirtual: 388.0846150465
       BaseReal: 344.3468326227
@@ -1434,7 +1380,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 1000
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 23.3130171825
       QuoteVirtual: 422.1816709200
       BaseReal: 337.6598498052
@@ -1452,7 +1397,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 100
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 23.3130171825
       QuoteVirtual: 422.1816709200
       BaseReal: 337.6598498052
@@ -1470,7 +1414,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 1200
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 48.6265994281
       QuoteVirtual: 299.7308961618
       BaseReal: 362.9734320508
@@ -1488,7 +1431,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 1500
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 61.3663639992
       QuoteVirtual: 244.3458777448
       BaseReal: 375.7131966219
@@ -1506,7 +1448,6 @@ describe("MatchingCase31-Case35", async function(){
     Quantity: 1000
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 5.3711750476
       QuoteVirtual: 520.7148964210
       BaseReal: 319.7180076704

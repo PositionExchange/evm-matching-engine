@@ -136,7 +136,7 @@ describe("CaseLiquidityCase11-15", async function(){
       Liquidity: 489.15444190668
       BaseVirtual: 0
       QuoteVirtual: 200
-      BaseReal: 0
+      BaseReal: 126.2996
       QuoteReal: 1894.48069226072
       IndexPipRange: 4
       MaxPip: 149999
@@ -242,7 +242,7 @@ describe("CaseLiquidityCase11-15", async function(){
       BaseVirtual: 100
       QuoteVirtual: 0
       BaseReal: 1348.11413060980
-      QuoteReal: 0
+      QuoteReal: 24266.0543509765
       IndexPipRange: 6
       MaxPip: 209999
       MinPip: 180000
@@ -393,7 +393,7 @@ describe("CaseLiquidityCase11-15", async function(){
       Liquidity: 85.60202733367
       BaseVirtual: 0
       QuoteVirtual: 35
-      BaseReal: 0
+      BaseReal: 22.102422092522
       QuoteReal: 331.53412114563
       IndexPipRange: 4
       MaxPip: 149999
@@ -486,7 +486,7 @@ describe("CaseLiquidityCase11-15", async function(){
       Liquidity: 134.51747152434
       BaseVirtual: 0
       QuoteVirtual: 55
-      BaseReal: 0
+      BaseReal: 34.732377573964
       QuoteReal: 520.9821903717
       IndexPipRange: 4
       MaxPip: 149999
@@ -637,7 +637,6 @@ describe("CaseLiquidityCase11-15", async function(){
       MinPip: 120000
     `)
     })
-
     it ("Case Liquidity #15", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
@@ -701,8 +700,7 @@ describe("CaseLiquidityCase11-15", async function(){
     Side: 0
     Quantity: 20.000000
   Expect:
-    Pool:
-      Liquidity: 
+    Pool: 
       BaseVirtual: 0.0000000000
       QuoteVirtual: 705.4259514006
       BaseReal: 449.8118550329
@@ -758,7 +756,6 @@ describe("CaseLiquidityCase11-15", async function(){
     Quantity: 10.000000
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 0.0000000000
       QuoteVirtual: 303.5761892003
       BaseReal: 194.8844282009
@@ -872,7 +869,6 @@ describe("CaseLiquidityCase11-15", async function(){
     Quantity: 21.38336
   Expect:
     Pool:
-      Liquidity: 
       BaseVirtual: 13.0394395745
       QuoteVirtual: 477.3295503201
       BaseReal: 462.8512946074
