@@ -215,9 +215,13 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         (baseAmount, quoteAmount, _liquidityInfo) = estimateRemoveLiquidity(
             params
         );
+        console.log("[AutoMarketMakerCore][removeLiquidity] before: _liquidityInfo.baseReal  _liquidityInfo.quoteReal", _liquidityInfo.baseReal, _liquidityInfo.quoteReal);
+        console.log("[AutoMarketMakerCore][removeLiquidity] baseAmount, quoteAmount: ", baseAmount, quoteAmount);
+        console.log("[AutoMarketMakerCore][removeLiquidity] indexedPipRange", indexedPipRange);
         liquidityInfo[params.indexedPipRange].updateAddLiquidity(
             _liquidityInfo
         );
+        console.log("[AutoMarketMakerCore][removeLiquidity] after: _liquidityInfo.baseReal  _liquidityInfo.quoteReal", liquidityInfo[params.indexedPipRange].baseReal, liquidityInfo[params.indexedPipRange].quoteReal);
     }
 
     function estimateRemoveLiquidity(RemoveLiquidity calldata params)
@@ -785,6 +789,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 ammReserves.sqrtK
             );
 
+            console.log("feeGrowth: ", feeGrowth);
             liquidityInfo[indexedPipRange].updateAMMReserve(
                 ammReserves.quoteReserve,
                 ammReserves.baseReserve,
