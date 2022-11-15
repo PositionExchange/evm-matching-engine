@@ -30,31 +30,25 @@ contract MatchingEngineAMM is
         _;
     }
 
-    function initialize(
-        IERC20 quoteAsset,
-        IERC20 baseAsset,
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint128 pipRange,
-        uint32 tickSpace,
-        address owner,
-        address positionLiquidity
-    ) external {
+    function initialize(InitParams memory params) external {
         require(!isInitialized, "Initialized");
         isInitialized = true;
 
-        positionConcentratedLiquidity = positionLiquidity;
+        positionConcentratedLiquidity = params.positionLiquidity;
+        counterParty = params.spotHouse;
 
-        _initializeAMM(pipRange, tickSpace, initialPip, 6000);
-        _initializeCore(
-            basisPoint,
-            baseBasisPoint,
-            maxFindingWordsIndex,
-            initialPip
+        _initializeAMM(
+            params.pipRange,
+            params.tickSpace,
+            params.initialPip,
+            params.feeShareAmm
         );
-        _initFee(quoteAsset, baseAsset);
+        _initializeCore(
+            params.basisPoint,
+            params.maxFindingWordsIndex,
+            params.initialPip
+        );
+        _initFee(params.quoteAsset, params.baseAsset);
     }
 
     function addLiquidity(AddLiquidity calldata params)
@@ -207,7 +201,8 @@ contract MatchingEngineAMM is
             amount = uint128(flipSideOut) - totalFilledAmm;
         }
 
-        uint128 feeLimitOrder = (amount * feePercent) / 10_000;
+        uint128 feeLimitOrder = (amount * feePercent) /
+            FixedPoint128.BASIC_POINT_FEE;
         uint128 feeProtocol = feeProtocolAmm + feeLimitOrder;
 
         if ((isBuy && isBase) || (isBuy && !isBase)) {

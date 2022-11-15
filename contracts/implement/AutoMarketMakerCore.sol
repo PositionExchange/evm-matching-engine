@@ -761,7 +761,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             totalFilledAmm += ammReserves.amountFilled;
 
             uint128 feeEachIndex = (ammReserves.amountFilled * feePercent) /
-                10_000;
+                FixedPoint128.BASIC_POINT_FEE;
             totalFeeAmm += feeEachIndex;
 
             console.log(
@@ -770,7 +770,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 indexedPipRange
             );
 
-            uint256 feeShareAmm = ((feeEachIndex * _feeShareAmm) / 10_000);
+            uint256 feeShareAmm = ((feeEachIndex * _feeShareAmm) /
+                FixedPoint128.BASIC_POINT_FEE);
             console.log(
                 "fee shared amm, indexedPipRange: ",
                 feeShareAmm,
@@ -779,7 +780,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             console.log("liquidity: ", ammReserves.sqrtK);
 
             uint256 feeGrowth = Math.mulDiv(
-                ((feeEachIndex * _feeShareAmm) / 10_000),
+                ((feeEachIndex * _feeShareAmm) / FixedPoint128.BASIC_POINT_FEE),
                 FixedPoint128.Q_POW18,
                 ammReserves.sqrtK
             );
@@ -794,7 +795,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
 
         console.log("totalFeeAmm: ", totalFeeAmm);
 
-        feeProtocolAmm = (totalFeeAmm * (10_000 - _feeShareAmm)) / 10_000;
+        feeProtocolAmm =
+            (totalFeeAmm * (FixedPoint128.BASIC_POINT_FEE - _feeShareAmm)) /
+            FixedPoint128.BASIC_POINT_FEE;
     }
 
     function _initCrossAmmReserves(

@@ -11,4 +11,5 @@ library FixedPoint128 {
     uint256 internal constant BUFFER = 10**24;
     uint256 internal constant Q_POW18 = 10**18;
     uint256 internal constant HALF_BUFFER = 10**12;
+    uint32 internal constant BASIC_POINT_FEE = 10_000;
 }

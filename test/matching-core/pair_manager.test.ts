@@ -26,16 +26,19 @@ describe("MockMatchingEngineCore", async function () {
         matchingEngineCore = await deployContract("MockMatchingEngineCore", deployer);
 
         await matchingEngineCore.initialize(
-            deployer.address,
-            deployer.address,
-            BigNumber.from(1),
-            BigNumber.from(1),
-            BigNumber.from(1800),
-            BigNumber.from(200),
-            BigNumber.from(0),
-            BigNumber.from(0),
-            deployer.address,
-            deployer.address);
+            {
+                quoteAsset: deployer.address,
+                baseAsset: deployer.address,
+                basisPoint: 1,
+                maxFindingWordsIndex: 1800,
+                initialPip: 200,
+                pipRange: 0,
+                tickSpace: 0,
+                owner: deployer.address,
+                positionLiquidity: deployer.address,
+                spotHouse: deployer.address,
+                feeShareAmm: 0
+            });
 
         // await matchingEngineCore.initializeFactory(
         //   quoteAsset.address,

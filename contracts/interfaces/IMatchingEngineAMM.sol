@@ -15,6 +15,19 @@ interface IMatchingEngineAMM is
     IAutoMarketMakerCore,
     IMatchingEngineCore
 {
+    struct InitParams {
+        IERC20 quoteAsset;
+        IERC20 baseAsset;
+        uint256 basisPoint;
+        uint128 maxFindingWordsIndex;
+        uint128 initialPip;
+        uint128 pipRange;
+        uint32 tickSpace;
+        address owner;
+        address positionLiquidity;
+        address spotHouse;
+        uint32 feeShareAmm;
+    }
     // TODO add guard
 
     struct ExchangedData {
@@ -36,18 +49,7 @@ interface IMatchingEngineAMM is
         address owner
     );
 
-    function initialize(
-        IERC20 quoteAsset,
-        IERC20 baseAsset,
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint128 pipRange,
-        uint32 tickSpace,
-        address owner,
-        address positionLiquidity
-    ) external;
+    function initialize(InitParams memory params) external;
 
     function accumulateClaimableAmount(
         uint128 _pip,

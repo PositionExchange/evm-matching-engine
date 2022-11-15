@@ -25,7 +25,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
 
     function _initializeCore(
         uint256 _basisPoint,
-        uint256 _baseBasisPoint,
         uint128 _maxFindingWordsIndex,
         uint128 _initialPip
     ) internal {

@@ -3,11 +3,12 @@ import YAML from "js-yaml";
 import {MatchingEngineAMM, MockMatchingEngineAMM, MockToken} from "../../typeChain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {deployContract, expectRevert, fromWei, getAccount, SIDE, toWei} from "../utils/utils";
-import {BigNumber, ethers} from "ethers";
+import {BigNumber, BigNumberish, ethers} from "ethers";
 import {YamlTestProcess} from "./yaml-test-process";
 import Decimal from "decimal.js";
 import {deployMockToken} from "../utils/mock";
 import {EventFragment} from "@ethersproject/abi";
+import {PromiseOrValue} from "../../typeChain/common";
 
 // import {waffle} from "hardhat";
 // const {solidity} = waffle
@@ -19,7 +20,8 @@ export type StringOrNumber = string | number
 export interface CallOptions {
     sender?: SignerWithAddress;
     poolId?: string;
-    revert? : any;
+    revert?: any;
+
     [k: string]: any
 }
 
@@ -49,13 +51,14 @@ export interface ExpectedPoolData {
     QuoteVirtual?: SNumber;
     BaseReal?: SNumber;
     QuoteReal?: SNumber;
-    IndexPipRange? : SNumber;
-    MaxPip? : SNumber;
-    MinPip? : SNumber;
+    IndexPipRange?: SNumber;
+    MaxPip?: SNumber;
+    MinPip?: SNumber;
     FeeGrowthBase?: SNumber;
-    FeeGrowthQuote? : SNumber;
-    K? : SNumber;
+    FeeGrowthQuote?: SNumber;
+    K?: SNumber;
 }
+
 export interface ExpectAddLiquidityResult extends ExpectedPoolData {
     userDebt?: StringOrNumber;
 }
@@ -71,15 +74,16 @@ function price2Pip(currentPrice: number | string) {
     return new Decimal(currentPrice).mul(BASIS_POINT).toNumber();
 }
 
-function fromWeiAndFormat(n, decimal = 6): number{
+function fromWeiAndFormat(n, decimal = 6): number {
     return new Decimal(fromWei(n).toString()).toDP(decimal).toNumber()
 }
-function sqrt(n: number) :number {
+
+function sqrt(n: number): number {
 
     return Math.sqrt(n);
 }
 
-function roundNumber(n, decimal = 6){
+function roundNumber(n, decimal = 6) {
     return new Decimal((n).toString()).toDP(decimal).toNumber()
 }
 
@@ -89,30 +93,32 @@ export async function deployAndCreateRouterHelper() {
     let testHelper: TestMatchingAmm;
 
 
-    let users  : any[] = [];
+    let users: any[] = [];
     users = await getAccount() as unknown as any[];
     const deployer = users[0];
-    matching = await deployContract("MockMatchingEngineAMM", deployer );
+    matching = await deployContract("MockMatchingEngineAMM", deployer);
     await matching.setCounterParty();
 
     await matching.initialize(
-        deployer.address,
-        deployer.address,
-        BASIS_POINT,
-        BASIS_POINT**2,
-        1000,
-        100000,
-        30_000,
-        1,
-        deployer.address,
-        deployer.address)
+        {
+            quoteAsset: deployer.address,
+            baseAsset: deployer.address,
+            basisPoint: BASIS_POINT,
+            maxFindingWordsIndex: 1000,
+            initialPip: 100000,
+            pipRange: 30_000,
+            tickSpace: 1,
+            owner: deployer.address,
+            positionLiquidity: deployer.address,
+            spotHouse: deployer.address,
+            feeShareAmm: 6000
+        })
 
-    testHelper = new TestMatchingAmm(matching,deployer  ,{
+    testHelper = new TestMatchingAmm(matching, deployer, {
         users
     });
     return testHelper;
 }
-
 
 
 export class TestMatchingAmm {
@@ -125,11 +131,11 @@ export class TestMatchingAmm {
     // @notice fee in %
     spotFee: number;
     verbose = true;
-    users : SignerWithAddress[]
+    users: SignerWithAddress[]
 
 
-    constructor(_ins: MockMatchingEngineAMM,  _defaultSender: SignerWithAddress, opts: {
-        users : SignerWithAddress[]
+    constructor(_ins: MockMatchingEngineAMM, _defaultSender: SignerWithAddress, opts: {
+        users: SignerWithAddress[]
     }) {
         this.ins = _ins;
         this.defaultSender = _defaultSender;
@@ -167,27 +173,31 @@ export class TestMatchingAmm {
 
     }
 
-    async setCurrentPrice(price : StringOrNumber) {
+    async setCurrentPrice(price: StringOrNumber) {
         await this.ins.setCurrentPip(price);
     }
 
-    async addLiquidity(baseVirtual: StringOrNumber, quoteVirtual: StringOrNumber, indexPip : StringOrNumber, opts: CallOptions = {}): Promise<number> {
+    async addLiquidity(baseVirtual: StringOrNumber, quoteVirtual: StringOrNumber, indexPip: StringOrNumber, opts: CallOptions = {}): Promise<number> {
 
         console.group(`AddLiquidity`);
         // console.l
 
-        await this.ins.addLiquidity({baseAmount: toWei(baseVirtual), quoteAmount: toWei(quoteVirtual), indexedPipRange: indexPip});
+        await this.ins.addLiquidity({
+            baseAmount: toWei(baseVirtual),
+            quoteAmount: toWei(quoteVirtual),
+            indexedPipRange: indexPip
+        });
         return 0;
     }
 
 
-    async removeLiquidity(indexPip: SNumber, liquidity : SNumber, opts: CallOptions = {}) {
+    async removeLiquidity(indexPip: SNumber, liquidity: SNumber, opts: CallOptions = {}) {
         console.group(`RemoveLiquidity`);
 
         await this.ins.removeLiquidity({
             indexedPipRange: indexPip,
             liquidity: toWei(liquidity),
-            feeGrowthBase:0,
+            feeGrowthBase: 0,
             feeGrowthQuote: 0
         });
 
@@ -195,31 +205,28 @@ export class TestMatchingAmm {
     }
 
 
-
-    async expectPool( expectData: ExpectedPoolData) {
+    async expectPool(expectData: ExpectedPoolData) {
 
         const poolData = await this.ins.liquidityInfo(expectData.IndexPipRange);
         //
-        console.log("[expectPool] Expected pool max pip: ", sqrt(Number(expectData.MaxPip))* 10**9, Number(poolData.sqrtMaxPip));
-        console.log("[expectPool] Expected pool baseReal: ",Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
-        console.log("[expectPool] Expected pool quoteReal: ",Number(expectData.QuoteReal), fromWeiAndFormat(poolData.quoteReal));
-        console.log("[expectPool] Expected pool K: ",sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK));
-        console.log("[expectPool] Expected pool Liquidity: ",Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK));
+        console.log("[expectPool] Expected pool max pip: ", sqrt(Number(expectData.MaxPip)) * 10 ** 9, Number(poolData.sqrtMaxPip));
+        console.log("[expectPool] Expected pool baseReal: ", Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal));
+        console.log("[expectPool] Expected pool quoteReal: ", Number(expectData.QuoteReal), fromWeiAndFormat(poolData.quoteReal));
+        console.log("[expectPool] Expected pool K: ", sqrt(Number(expectData.K)), fromWeiAndFormat(poolData.sqrtK));
+        console.log("[expectPool] Expected pool Liquidity: ", Number(expectData.Liquidity), fromWeiAndFormat(poolData.sqrtK));
 
-        if (expectData.MaxPip !== undefined) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip))* 10**12),Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
-        if (expectData.MinPip !== undefined) expect(this.expectDataInRange(Math.round( sqrt( Number(expectData.MinPip))* 10**12),Number( poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
-        if (expectData.FeeGrowthBase !== undefined) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase),fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
-        if (expectData.FeeGrowthQuote !== undefined) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote),fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
+        if (expectData.MaxPip !== undefined) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MaxPip)) * 10 ** 12), Number(poolData.sqrtMaxPip), 0.01)).to.equal(true, "MaxPip");
+        if (expectData.MinPip !== undefined) expect(this.expectDataInRange(Math.round(sqrt(Number(expectData.MinPip)) * 10 ** 12), Number(poolData.sqrtMinPip), 0.01)).to.equal(true, "MinPip");
+        if (expectData.FeeGrowthBase !== undefined) expect(this.expectDataInRange(Number(expectData.FeeGrowthBase), fromWeiAndFormat(poolData.feeGrowthBase), 0.01)).to.equal(true, "FeeGrowthBase");
+        if (expectData.FeeGrowthQuote !== undefined) expect(this.expectDataInRange(Number(expectData.FeeGrowthQuote), fromWeiAndFormat(poolData.feeGrowthQuote), 0.01)).to.equal(true, "FeeGrowthQuote")
 
 
-
-        if (expectData.BaseReal !== undefined) expect(this.expectDataInRange(Number(expectData.BaseReal),fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
-        if (expectData.QuoteReal !== undefined) expect(this.expectDataInRange(Number(expectData.QuoteReal),fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
-        if (expectData.K !== undefined) expect(this.expectDataInRange(sqrt(Number(expectData.K)),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "K");
-        if (expectData.Liquidity !== undefined) expect(this.expectDataInRange(Number(expectData.Liquidity),fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "Liquidity");
+        if (expectData.BaseReal !== undefined) expect(this.expectDataInRange(Number(expectData.BaseReal), fromWeiAndFormat(poolData.baseReal), 0.01)).to.equal(true, "BaseReal");
+        if (expectData.QuoteReal !== undefined) expect(this.expectDataInRange(Number(expectData.QuoteReal), fromWeiAndFormat(poolData.quoteReal), 0.01)).to.equal(true, "QuoteReal");
+        if (expectData.K !== undefined) expect(this.expectDataInRange(sqrt(Number(expectData.K)), fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "K");
+        if (expectData.Liquidity !== undefined) expect(this.expectDataInRange(Number(expectData.Liquidity), fromWeiAndFormat(poolData.sqrtK), 0.01)).to.equal(true, "Liquidity");
 
     }
-
 
 
     // process test case by yaml
@@ -238,7 +245,7 @@ export class TestMatchingAmm {
             for (let step of steps) {
                 const stepIdentityKey = Object.keys(step)[0];
                 let stepFnName = step[stepIdentityKey];
-                if(typeof stepFnName === 'object'){
+                if (typeof stepFnName === 'object') {
                     step = stepFnName
                     stepFnName = Object.keys(stepFnName)[0];
                 }
@@ -258,12 +265,11 @@ export class TestMatchingAmm {
     }
 
 
-
-    async openLimitOrder(pip: number, side: number, size: number,id : number, opts?: CallOptions) {
+    async openLimitOrder(pip: number, side: number, size: number, id: number, opts?: CallOptions) {
         // const pip = price2Pip(price)
         const a = await this.ins.singleSlot()
 
-        console.log("a",a.pip.toString());
+        console.log("a", a.pip.toString());
         const isBuy = side == 0;
         const orderQuantity = toWei(size);
 
@@ -271,39 +277,39 @@ export class TestMatchingAmm {
         console.log("isBuy", isBuy);
         console.log("orderQuantity", orderQuantity);
 
-        await  this.ins.openLimit(pip ,orderQuantity, isBuy, this.users[id].address, 0, 0);
+        await this.ins.openLimit(pip, orderQuantity, isBuy, this.users[id].address, 0, 0);
 
     }
 
-    async openMarketOrder( side: number, size: number, asset : String, opts?: CallOptions) {
+    async openMarketOrder(side: number, size: number, asset: String, opts?: CallOptions) {
         const isBuy = side == 0;
         const orderQuantity = toWei(size);
 
-        const a=await  this.ins.singleSlot();
-        console.log("isFullBuy: ",a.isFullBuy);
+        const a = await this.ins.singleSlot();
+        console.log("isFullBuy: ", a.isFullBuy);
 
 
         if (opts.revert !== undefined) {
 
             if (asset === "base") {
                 console.log("opts.revert.toString(): ", opts?.revert.toString());
-                await expectRevert(this.ins.openMarket(orderQuantity, isBuy,this.users[0].address, 0), opts.revert.toString());
+                await expectRevert(this.ins.openMarket(orderQuantity, isBuy, this.users[0].address, 0), opts.revert.toString());
 
-            }else if (asset === "quote"){
-                await expectRevert(this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address, 0), opts.revert.toString());
+            } else if (asset === "quote") {
+                await expectRevert(this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy, this.users[0].address, 0), opts.revert.toString());
 
             }
 
-        }else {
+        } else {
             if (asset === "base") {
-                const tx = await  this.ins.openMarket(orderQuantity, isBuy,this.users[0].address,0);
+                const tx = await this.ins.openMarket(orderQuantity, isBuy, this.users[0].address, 0);
                 const receipt = await tx.wait();
                 const gasUsed = receipt.gasUsed.toString()
                 console.log(`GasUes OpenMarket \x1b[33m  ${gasUsed} \x1b[0m`);
 
 
-            }else if (asset === "quote"){
-                const tx = await  this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy,this.users[0].address, 0);
+            } else if (asset === "quote") {
+                const tx = await this.ins.openMarketWithQuoteAsset(orderQuantity, isBuy, this.users[0].address, 0);
                 const receipt = await tx.wait();
                 const gasUsed = receipt.gasUsed.toString()
                 console.log(`GasUes OpenMarket \x1b[33m  ${gasUsed} \x1b[0m`);
@@ -312,17 +318,17 @@ export class TestMatchingAmm {
         }
     }
 
-    async  expectPending(orderId : number, price : number, side : any, _size : number){
+    async expectPending(orderId: number, price: number, side: any, _size: number) {
 
 
-        const  {isFilled, isBuy, size} =  await this.ins
+        const {isFilled, isBuy, size} = await this.ins
             .getPendingOrderDetail(price, orderId)
 
-        expect( this.expectDataInRange(fromWeiAndFormat(size), Number(_size), 0.01))
+        expect(this.expectDataInRange(fromWeiAndFormat(size), Number(_size), 0.01))
             .to
             .eq(true, `pending base is not correct, expect ${fromWei(size)} in range of to ${_size}`);
 
-        await expect( side == SIDE.BUY).to.eq(isBuy);
+        await expect(side == SIDE.BUY).to.eq(isBuy);
 
     }
 
@@ -330,12 +336,20 @@ export class TestMatchingAmm {
         const currentPip = await this.ins.getCurrentPip();
         console.log("currentPip: ", currentPip.toString());
         const bid = await this.ins.getLiquidityInPipRange(currentPip, limit, false).then(
-            dt => dt[0].map(d => ({ pip: (d["pip"].toString()), liquidity: (d["liquidity"]).toString(), liquidityFormat: fromWei(d['liquidity']) }))
+            dt => dt[0].map(d => ({
+                pip: (d["pip"].toString()),
+                liquidity: (d["liquidity"]).toString(),
+                liquidityFormat: fromWei(d['liquidity'])
+            }))
         );
         const ask = await this.ins.getLiquidityInPipRange(currentPip, limit, true).then(
-            dt => dt[0].map(d => ({ pip: (d["pip"].toString()), liquidity: (d["liquidity"]).toString(), liquidityFormat: fromWei(d['liquidity']) }))
+            dt => dt[0].map(d => ({
+                pip: (d["pip"].toString()),
+                liquidity: (d["liquidity"]).toString(),
+                liquidityFormat: fromWei(d['liquidity'])
+            }))
         );
-        return { ask: ask.filter(obj => Number(obj.pip) != 0), bid: bid.filter(obj => Number(obj.pip) != 0) };
+        return {ask: ask.filter(obj => Number(obj.pip) != 0), bid: bid.filter(obj => Number(obj.pip) != 0)};
     }
 
     async getCurrentPrice() {
@@ -349,7 +363,6 @@ export class TestMatchingAmm {
     async getPoolBalance() {
         return this.getBaseQuoteAddress(this.ins.address);
     }
-
 
 
     async getBaseQuoteAddress(address) {
