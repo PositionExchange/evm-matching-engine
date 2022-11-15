@@ -111,7 +111,7 @@ export async function deployAndCreateRouterHelper() {
             owner: deployer.address,
             positionLiquidity: deployer.address,
             spotHouse: deployer.address,
-            feeShareAmm: 6000
+            feeShareAmm: 0
         })
 
     testHelper = new TestMatchingAmm(matching, deployer, {

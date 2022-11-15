@@ -559,7 +559,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 ? ammState.lastPipRangeLiquidityIndex + 1
                 : ammState.lastPipRangeLiquidityIndex - 1;
 
-            ammState.index += 1;
+            ammState.index = crossPipState.skipIndex
+            ? ammState.index
+            : ammState.index + 1;
             if (
                 ammState.lastPipRangeLiquidityIndex < 0 ||
                 ammState.index + countSkipIndex >= 5
