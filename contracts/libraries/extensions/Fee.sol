@@ -25,25 +25,33 @@ abstract contract Fee is IFee {
         baseAsset = _baseAsset;
     }
 
-    function decreaseBaseFeeFunding(uint256 baseFee) external virtual {
+    function decreaseBaseFeeFunding(uint256 baseFee) public virtual {
         if (baseFee > 0) {
             baseFeeFunding -= baseFee;
         }
     }
 
-    function decreaseQuoteFeeFunding(uint256 quoteFee) external virtual {
+    function decreaseQuoteFeeFunding(uint256 quoteFee) public virtual {
         if (quoteFee > 0) {
             quoteFeeFunding -= quoteFee;
         }
     }
 
     function increaseBaseFeeFunding(uint256 baseFee) public virtual {
+        _increaseBaseFeeFunding(baseFee);
+    }
+
+    function increaseQuoteFeeFunding(uint256 quoteFee) public virtual {
+        _increaseQuoteFeeFunding(quoteFee);
+    }
+
+    function _increaseBaseFeeFunding(uint256 baseFee) internal virtual {
         if (baseFee > 0) {
             baseFeeFunding += baseFee;
         }
     }
 
-    function increaseQuoteFeeFunding(uint256 quoteFee) public virtual {
+    function _increaseQuoteFeeFunding(uint256 quoteFee) internal virtual {
         if (quoteFee > 0) {
             quoteFeeFunding += quoteFee;
         }

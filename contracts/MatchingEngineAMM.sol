@@ -206,9 +206,9 @@ contract MatchingEngineAMM is
         uint128 feeProtocol = feeProtocolAmm + feeLimitOrder;
 
         if ((isBuy && isBase) || (isBuy && !isBase)) {
-            increaseBaseFeeFunding(feeProtocol);
+            _increaseBaseFeeFunding(feeProtocol);
         } else if ((!isBuy && !isBase) || (!isBuy && isBase)) {
-            increaseQuoteFeeFunding(feeProtocol);
+            _increaseQuoteFeeFunding(feeProtocol);
         }
 
         console.log("[_calculateFee] feeLimitOrder: ", feeLimitOrder);
@@ -220,6 +220,7 @@ contract MatchingEngineAMM is
     function increaseQuoteFeeFunding(uint256 quoteFee)
         public
         override(Fee, IFee)
+        onlyCounterParty
     {
         super.increaseQuoteFeeFunding(quoteFee);
     }
@@ -227,8 +228,25 @@ contract MatchingEngineAMM is
     function increaseBaseFeeFunding(uint256 baseFee)
         public
         override(Fee, IFee)
+        onlyCounterParty
     {
         super.increaseBaseFeeFunding(baseFee);
+    }
+
+    function decreaseBaseFeeFunding(uint256 quoteFee)
+        public
+        override(Fee, IFee)
+        onlyCounterParty
+    {
+        super.decreaseBaseFeeFunding(quoteFee);
+    }
+
+    function decreaseQuoteFeeFunding(uint256 baseFee)
+        public
+        override(Fee, IFee)
+        onlyCounterParty
+    {
+        super.decreaseQuoteFeeFunding(baseFee);
     }
 
     function accumulateClaimableAmount(
