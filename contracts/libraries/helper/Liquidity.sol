@@ -63,7 +63,7 @@ library Liquidity {
         if (isBuy) {
             self.feeGrowthBase += feeGrowth;
         } else {
-            self.feeGrowthQuote = feeGrowth;
+            self.feeGrowthQuote += feeGrowth;
         }
     }
 }
