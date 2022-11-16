@@ -12,7 +12,6 @@ import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Convert.sol";
 import "../libraries/helper/FixedPoint128.sol";
-import "hardhat/console.sol";
 
 abstract contract AutoMarketMakerCore is AMMCoreStorage {
     using Liquidity for Liquidity.Info;
@@ -59,11 +58,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         Liquidity.Info memory _liquidityInfo = liquidityInfo[
             params.indexedPipRange
         ];
-
-        console.log(
-            "_liquidityInfo.sqrtMinPip]getCurrentPip: ",
-            getCurrentPip()
-        );
 
         state.currentPrice = _calculateSqrtPrice(
             getCurrentPip(),
@@ -143,11 +137,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             ((params.indexedPipRange == currentIndexedPipRange) &&
                 (state.currentPrice == _liquidityInfo.sqrtMinPip))
         ) {
-            console.log(
-                "[_AutoMarketMakerCore][addLiquidity] state.currentPrice _liquidityInfo.sqrtMinPip: ",
-                state.currentPrice,
-                _liquidityInfo.sqrtMinPip
-            );
 
             _liquidityInfo.sqrtK = (LiquidityMath.calculateKWithBase(
                 _liquidityInfo.baseReal,
@@ -175,27 +164,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         liquidityInfo[params.indexedPipRange].updateAddLiquidity(
             _liquidityInfo
         );
-
-        console.log(
-            "[_AutoMarketMakerCore][addLiquidity]params.baseAmount: ",
-            params.baseAmount
-        );
-        console.log(
-            "[_AutoMarketMakerCore][addLiquidity]liquidity ",
-            _liquidityInfo.sqrtK - state.cacheSqrtK
-        );
-        console.log(
-            "[_AutoMarketMakerCore][addLiquidity]quoteReal ",
-            _liquidityInfo.quoteReal
-        );
-        console.log(
-            "[_AutoMarketMakerCore][addLiquidity]baseReal ",
-            _liquidityInfo.baseReal
-        );
-        console.log(
-            "[_AutoMarketMakerCore][addLiquidity]L",
-            _liquidityInfo.sqrtK
-        );
         return (
             params.baseAmount,
             params.quoteAmount,
@@ -215,27 +183,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         (baseAmount, quoteAmount, _liquidityInfo) = estimateRemoveLiquidity(
             params
         );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] before: _liquidityInfo.baseReal  _liquidityInfo.quoteReal",
-            _liquidityInfo.baseReal,
-            _liquidityInfo.quoteReal
-        );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] baseAmount, quoteAmount: ",
-            baseAmount,
-            quoteAmount
-        );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] indexedPipRange",
-            params.indexedPipRange
-        );
         liquidityInfo[params.indexedPipRange].updateAddLiquidity(
             _liquidityInfo
-        );
-        console.log(
-            "[AutoMarketMakerCore][removeLiquidity] after: _liquidityInfo.baseReal  _liquidityInfo.quoteReal",
-            liquidityInfo[params.indexedPipRange].baseReal,
-            liquidityInfo[params.indexedPipRange].quoteReal
         );
     }
 
@@ -400,7 +349,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                     crossPipState.skipIndex = true;
                 }
             }
-            console.log("crossPipState.skipIndex", crossPipState.skipIndex);
 
             if (!crossPipState.skipIndex) {
                 if (i != crossPipState.indexedPipRange) {
@@ -619,9 +567,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         )
     {
         if (isBuy) {
-            console.log("isBuy: ", isBuy);
-            console.log("sqrtPriceTarget: ", sqrtPriceTarget);
-            console.log("sqrtCurrentPrice: ", sqrtCurrentPrice);
             baseOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
                 sqrtPriceTarget,
                 ammReserves.baseReserve,
@@ -774,7 +719,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint32 _feeShareAmm = feeShareAmm;
         uint128 feeEachIndex;
         uint256 feeShareAmm;
-        console.log("feeShareAmm: ", _feeShareAmm);
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -788,36 +732,14 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 FixedPoint128.BASIC_POINT_FEE;
             totalFeeAmm += feeEachIndex;
 
-            console.log(
-                "feeEachIndex, indexedPipRange : ",
-                feeEachIndex,
-                indexedPipRange
-            );
-
             feeShareAmm = ((feeEachIndex * _feeShareAmm) /
                 FixedPoint128.BASIC_POINT_FEE);
-            console.log(
-                "fee shared amm, indexedPipRange: ",
-                feeShareAmm,
-                indexedPipRange
-            );
-            console.log("liquidity: ", ammReserves.sqrtK);
 
             //            uint256 feeGrowth = Math.mulDiv(
             //                ((feeEachIndex * _feeShareAmm) / FixedPoint128.BASIC_POINT_FEE),
             //                FixedPoint128.Q_POW18,
             //                ammReserves.sqrtK
             //            );
-
-            console.log(
-                "feeGrowth: ",
-                Math.mulDiv(
-                    ((feeEachIndex * _feeShareAmm) /
-                        FixedPoint128.BASIC_POINT_FEE),
-                    FixedPoint128.Q_POW18,
-                    ammReserves.sqrtK
-                )
-            );
             liquidityInfo[indexedPipRange].updateAMMReserve(
                 ammReserves.quoteReserve,
                 ammReserves.baseReserve,
@@ -830,8 +752,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 isBuy
             );
         }
-
-        console.log("totalFeeAmm: ", totalFeeAmm);
 
         feeProtocolAmm =
             (totalFeeAmm * (FixedPoint128.BASIC_POINT_FEE - _feeShareAmm)) /

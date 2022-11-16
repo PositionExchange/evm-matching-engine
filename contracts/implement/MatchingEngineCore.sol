@@ -13,7 +13,6 @@ import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
-import "hardhat/console.sol";
 
 abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
     // Define using library
@@ -414,12 +413,16 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
                 !state.isBuy
             );
 
-            console.log(
-                "[MatchingEngineCore][_internalOpenMarketOrder] gasUsed find liquidity, state.pip, step.pipNext: ",
-                startGas - gasleft(),
-                state.pip,
-                step.pipNext
-            );
+            // TODO less code in if
+            if (_isNeedSetPipNext()) {
+                if (
+                    (_maxPip != 0 && step.pipNext == 0) &&
+                    ((!state.isBuy && state.pip >= _maxPip) ||
+                        (state.isBuy && state.pip <= _maxPip))
+                ) {
+                    step.pipNext = _maxPip;
+                }
+            }
 
             // updated findHasLiquidityInMultipleWords, save more gas
             // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
@@ -436,14 +439,9 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
                     isBase: _isBase,
                     amount: uint128(state.remainingSize),
                     basisPoint: state.basisPoint,
-                    currentPip: state.pip,
-                    maxPip: _maxPip
+                    currentPip: state.pip
                 }),
                 state.ammState
-            );
-            console.log(
-                "[MatchingEngineCore][_internalOpenMarketOrder] gasUsed _onCrossPipHook: ",
-                startGas - gasleft()
             );
 
             if (
@@ -590,13 +588,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
 
-        console.log(
-            "singleSlot.pip, flipSideOut, state.remainingSize: ",
-            singleSlot.pip,
-            flipSideOut,
-            state.remainingSize
-        );
-
         fee = _calculateFee(
             state.ammState,
             singleSlot.pip,
@@ -623,6 +614,11 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
     //*
     // HOOK HERE *
     //*
+
+    function _isNeedSetPipNext() internal view virtual returns (bool) {
+        return false;
+    }
+
     function _emitLimitOrderUpdatedHook(
         address spotManager,
         uint64 orderId,
@@ -637,7 +633,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         uint128 amount;
         uint32 basisPoint;
         uint128 currentPip;
-        uint128 maxPip;
     }
 
     function _onCrossPipHook(

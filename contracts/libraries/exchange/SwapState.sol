@@ -79,7 +79,8 @@ library SwapState {
     ) internal pure returns (bool) {
         return
             (state.isBuy && _pipNext > _maxPip && _maxPip != 0) ||
-            (!state.isBuy && _pipNext < _maxPip && _maxPip != 0);
+            (!state.isBuy && _pipNext < _maxPip && _maxPip != 0) ||
+            (_maxPip != 0 && _pipNext == 0);
     }
 
     function moveBack1Pip(State memory state) internal pure {

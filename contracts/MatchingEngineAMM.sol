@@ -8,8 +8,7 @@ import "./implement/MatchingEngineCore.sol";
 import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
-
-import "hardhat/console.sol";
+import "./libraries/helper/Errors.sol";
 
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
@@ -25,7 +24,7 @@ contract MatchingEngineAMM is
         require(
             counterParty == _msgSender() ||
                 positionConcentratedLiquidity == _msgSender(),
-            "VL_ONLY_COUNTERPARTY"
+            Errors.VL_ONLY_COUNTERPARTY
         );
         _;
     }
@@ -75,8 +74,6 @@ contract MatchingEngineAMM is
     }
 
     function approve() public {
-        console.log("quoteAsset: ", address(quoteAsset));
-        console.log("baseAsset: ", address(baseAsset));
         quoteAsset.approve(counterParty, type(uint256).max);
         baseAsset.approve(counterParty, type(uint256).max);
 
@@ -92,13 +89,6 @@ contract MatchingEngineAMM is
     ) internal override {}
 
     function _onCrossPipHook(
-        //        uint128 pipNext,
-        //        bool isBuy,
-        //        bool isBase,
-        //        uint128 amount,
-        //        uint32 basisPoint,
-        //        uint128 currentPip,
-        //        uint128 maxPip,
         CrossPipParams memory params,
         SwapState.AmmState memory ammState
     )
@@ -106,11 +96,6 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
     {
-        console.log("params.maxPip: ", params.maxPip);
-        console.log("params.pipNext: ", params.maxPip);
-        if (params.maxPip != 0 && params.pipNext == 0) {
-            params.pipNext = params.maxPip;
-        }
         if (params.pipNext == params.currentPip) {
             return crossPipResult;
         }
@@ -218,10 +203,16 @@ contract MatchingEngineAMM is
             _increaseQuoteFeeFunding(feeProtocol);
         }
 
-        console.log("[_calculateFee] feeLimitOrder: ", feeLimitOrder);
-        console.log("[_calculateFee] totalFeeAmm: ", totalFeeAmm);
-
         return totalFeeAmm + feeLimitOrder;
+    }
+
+    function _isNeedSetPipNext()
+        internal
+        view
+        override(MatchingEngineCore)
+        returns (bool)
+    {
+        return true;
     }
 
     function increaseQuoteFeeFunding(uint256 quoteFee)
