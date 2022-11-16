@@ -10,8 +10,6 @@ import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 import "./libraries/helper/Errors.sol";
 
-import "hardhat/console.sol";
-
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
     Fee,
@@ -76,8 +74,6 @@ contract MatchingEngineAMM is
     }
 
     function approve() public {
-        console.log("quoteAsset: ", address(quoteAsset));
-        console.log("baseAsset: ", address(baseAsset));
         quoteAsset.approve(counterParty, type(uint256).max);
         baseAsset.approve(counterParty, type(uint256).max);
 
@@ -206,9 +202,6 @@ contract MatchingEngineAMM is
         } else if ((!isBuy && !isBase) || (!isBuy && isBase)) {
             _increaseQuoteFeeFunding(feeProtocol);
         }
-
-        console.log("[_calculateFee] feeLimitOrder: ", feeLimitOrder);
-        console.log("[_calculateFee] totalFeeAmm: ", totalFeeAmm);
 
         return totalFeeAmm + feeLimitOrder;
     }
