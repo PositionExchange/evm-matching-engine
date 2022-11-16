@@ -424,12 +424,10 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
             // TODO less code in if
             if (_isNeedSetPipNext()) {
                 if (
-                    ((_maxPip != 0 && step.pipNext == 0) &&
-                        (!state.isBuy && state.pip >= _maxPip)) ||
-                    ((_maxPip != 0 && step.pipNext == 0) &&
+                    (_maxPip != 0 && step.pipNext == 0) &&
+                    ((!state.isBuy && state.pip >= _maxPip) ||
                         (state.isBuy && state.pip <= _maxPip))
                 ) {
-                    console.log("set max pip");
                     step.pipNext = _maxPip;
                 }
             }

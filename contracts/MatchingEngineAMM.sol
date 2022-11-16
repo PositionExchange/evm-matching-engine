@@ -8,6 +8,7 @@ import "./implement/MatchingEngineCore.sol";
 import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
+import "./libraries/helper/Errors.sol";
 
 import "hardhat/console.sol";
 
@@ -25,7 +26,7 @@ contract MatchingEngineAMM is
         require(
             counterParty == _msgSender() ||
                 positionConcentratedLiquidity == _msgSender(),
-            "VL_ONLY_COUNTERPARTY"
+            Errors.VL_ONLY_COUNTERPARTY
         );
         _;
     }
@@ -92,13 +93,6 @@ contract MatchingEngineAMM is
     ) internal override {}
 
     function _onCrossPipHook(
-        //        uint128 pipNext,
-        //        bool isBuy,
-        //        bool isBase,
-        //        uint128 amount,
-        //        uint32 basisPoint,
-        //        uint128 currentPip,
-        //        uint128 maxPip,
         CrossPipParams memory params,
         SwapState.AmmState memory ammState
     )
@@ -106,11 +100,6 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
     {
-        //        console.log("params.maxPip: ", params.maxPip);
-        //        console.log("params.pipNext: ", params.maxPip);
-        //        if (params.maxPip != 0 && params.pipNext == 0) {
-        //            params.pipNext = params.maxPip;
-        //        }
         if (params.pipNext == params.currentPip) {
             return crossPipResult;
         }
