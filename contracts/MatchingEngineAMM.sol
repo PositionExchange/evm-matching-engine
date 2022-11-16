@@ -108,9 +108,9 @@ contract MatchingEngineAMM is
     {
         console.log("params.maxPip: ", params.maxPip);
         console.log("params.pipNext: ", params.maxPip);
-        if (params.maxPip != 0 && params.pipNext == 0) {
-            params.pipNext = params.maxPip;
-        }
+        //        if (params.maxPip != 0 && params.pipNext == 0) {
+        //            params.pipNext = params.maxPip;
+        //        }
         if (params.pipNext == params.currentPip) {
             return crossPipResult;
         }
@@ -222,6 +222,15 @@ contract MatchingEngineAMM is
         console.log("[_calculateFee] totalFeeAmm: ", totalFeeAmm);
 
         return totalFeeAmm + feeLimitOrder;
+    }
+
+    function _isNeedSetPipNext()
+        internal
+        view
+        override(MatchingEngineCore)
+        returns (bool)
+    {
+        return true;
     }
 
     function increaseQuoteFeeFunding(uint256 quoteFee)

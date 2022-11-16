@@ -421,9 +421,23 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
                 step.pipNext
             );
 
+            // TODO less code in if
+            if (_isNeedSetPipNext()) {
+                if (
+                    ((_maxPip != 0 && step.pipNext == 0) &&
+                        (!state.isBuy && state.pip >= _maxPip)) ||
+                    ((_maxPip != 0 && step.pipNext == 0) &&
+                        (state.isBuy && state.pip <= _maxPip))
+                ) {
+                    console.log("set max pip");
+                    step.pipNext = _maxPip;
+                }
+            }
+
             // updated findHasLiquidityInMultipleWords, save more gas
             // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
             if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
+                console.log("break isReachedMaxPip");
                 break;
             }
 
@@ -436,8 +450,7 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
                     isBase: _isBase,
                     amount: uint128(state.remainingSize),
                     basisPoint: state.basisPoint,
-                    currentPip: state.pip,
-                    maxPip: _maxPip
+                    currentPip: state.pip
                 }),
                 state.ammState
             );
@@ -623,6 +636,11 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
     //*
     // HOOK HERE *
     //*
+
+    function _isNeedSetPipNext() internal view virtual returns (bool) {
+        return false;
+    }
+
     function _emitLimitOrderUpdatedHook(
         address spotManager,
         uint64 orderId,
@@ -637,7 +655,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         uint128 amount;
         uint32 basisPoint;
         uint128 currentPip;
-        uint128 maxPip;
     }
 
     function _onCrossPipHook(
