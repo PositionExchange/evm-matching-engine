@@ -106,6 +106,8 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
     {
+        console.log("params.maxPip: ", params.maxPip);
+        console.log("params.pipNext: ", params.maxPip);
         if (params.maxPip != 0 && params.pipNext == 0) {
             params.pipNext = params.maxPip;
         }

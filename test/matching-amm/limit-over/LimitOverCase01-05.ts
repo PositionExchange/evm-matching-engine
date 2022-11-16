@@ -210,4 +210,144 @@ describe("LimitOver01_Case05", async function(){
     Price: 30000
     `)
     })
+    it ("Case #03", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action:
+    Price: 165000
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 5
+    Asset: base
+    BaseVirtual: 10
+    QuoteVirtual: 180.3765750184
+  Expect:
+    Pool:
+      Liquidity: 954.1923883101
+      BaseVirtual: 10
+      QuoteVirtual: 180.3765750184
+      BaseReal: 234.9059275164
+      QuoteReal: 3875.9478040214
+      IndexPipRange: 5 
+      MaxPip: 179999 
+      MinPip: 150000 
+      FeeGrowthBase: 0 
+      FeeGrowthQuote: 0
+- S2: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 5
+    Asset: base
+    BaseVirtual: 10
+    QuoteVirtual: 180.3765750184
+  Expect:
+    Pool:
+      Liquidity: 1908.3847766203
+      BaseVirtual: 20
+      QuoteVirtual: 360.7531500368
+      BaseReal: 469.8118550329
+      QuoteReal: 7751.8956080428
+      IndexPipRange: 5 
+      MaxPip: 179999 
+      MinPip: 150000 
+      FeeGrowthBase: 0 
+      FeeGrowthQuote: 0
+- S3: OpenLimit
+  Action:
+    Id: 2
+    Asset: base
+    Side: 1
+    Quantity: 121
+    Price: 190000
+  Expect:
+    PendingOrder:
+      OrderId: 1
+      Price: 190000
+      Size : 121
+      Side: 1
+- S4: OpenLimit
+  Action:
+    Id: 3
+    Asset: base
+    Side: 0
+    Quantity: 20
+    Price: 190000
+  Expect:
+    Pool: 
+      Liquidity: 1908.3847766203
+      BaseVirtual: 0
+      QuoteVirtual: 705.4259514006
+      BaseReal: 449.8118550329
+      QuoteReal: 8096.5684094067
+      IndexPipRange: 5
+      MaxPip: 179999 
+      MinPip: 150000 
+      FeeGrowthBase: 0
+      FeeGrowthQuote: 0
+- S5: OpenLimit
+  Action:
+    Id: 3
+    Asset: base
+    Side: 0
+    Quantity: 120
+    Price: 200000
+- S6: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 6
+    Asset: base
+    BaseVirtual: 10
+    QuoteVirtual: 103.8268212413
+  Expect:
+    Pool:
+      Liquidity: 893.0705176328
+      BaseVirtual: 10
+      QuoteVirtual: 103.8268212413
+      BaseReal: 204.8844282009
+      QuoteReal: 3892.8041358168
+      IndexPipRange: 6 
+      MaxPip: 209999 
+      MinPip: 180000 
+      FeeGrowthBase: 0
+      FeeGrowthQuote: 0
+- S7: OpenLimit
+  Action:
+    Id: 2
+    Asset: base
+    Side: 1
+    Quantity: 121
+    Price: 220000
+  Expect:
+    PendingOrder:
+      OrderId: 1
+      Price: 220000
+      Size : 121
+      Side: 1
+- S7.1: CancelLimitOrder
+  Action:
+    Id: 2
+    Price: 190000
+    OrderId: 1
+- S8: OpenLimit
+  Action:
+    Id: 3
+    Asset: base
+    Side: 0
+    Quantity: 10
+    Price: 210000
+  Expect:
+    Pool: 
+      Liquidity: 893.0705176328
+      BaseVirtual: 0
+      QuoteVirtual: 303.5761892003
+      BaseReal: 194.8844282009
+      QuoteReal: 4092.5535037758
+      IndexPipRange: 6
+      MaxPip: 209999 
+      MinPip: 180000 
+      FeeGrowthBase: 0
+      FeeGrowthQuote: 0
+    `)
+    })
 })

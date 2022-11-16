@@ -426,9 +426,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
             if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
                 break;
             }
-            //            if (_maxPip != 0) {
-            //
-            //            }
 
             startGas = gasleft();
 
@@ -592,6 +589,13 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         mainSideOut = _size - state.remainingSize;
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
+
+        console.log(
+            "singleSlot.pip, flipSideOut, state.remainingSize: ",
+            singleSlot.pip,
+            flipSideOut,
+            state.remainingSize
+        );
 
         fee = _calculateFee(
             state.ammState,
