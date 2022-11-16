@@ -560,8 +560,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 : ammState.lastPipRangeLiquidityIndex - 1;
 
             ammState.index = crossPipState.skipIndex
-            ? ammState.index
-            : ammState.index + 1;
+                ? ammState.index
+                : ammState.index + 1;
             if (
                 ammState.lastPipRangeLiquidityIndex < 0 ||
                 ammState.index + countSkipIndex >= 5
@@ -772,6 +772,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         )
     {
         uint32 _feeShareAmm = feeShareAmm;
+        uint128 feeEachIndex;
+        uint256 feeShareAmm;
         console.log("feeShareAmm: ", _feeShareAmm);
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
@@ -781,7 +783,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             if (ammReserves.sqrtK == 0) break;
             totalFilledAmm += ammReserves.amountFilled;
 
-            uint128 feeEachIndex = (ammReserves.amountFilled * feePercent) /
+            feeEachIndex =
+                (ammReserves.amountFilled * feePercent) /
                 FixedPoint128.BASIC_POINT_FEE;
             totalFeeAmm += feeEachIndex;
 
@@ -791,7 +794,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 indexedPipRange
             );
 
-            uint256 feeShareAmm = ((feeEachIndex * _feeShareAmm) /
+            feeShareAmm = ((feeEachIndex * _feeShareAmm) /
                 FixedPoint128.BASIC_POINT_FEE);
             console.log(
                 "fee shared amm, indexedPipRange: ",
@@ -800,17 +803,30 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             );
             console.log("liquidity: ", ammReserves.sqrtK);
 
-            uint256 feeGrowth = Math.mulDiv(
-                ((feeEachIndex * _feeShareAmm) / FixedPoint128.BASIC_POINT_FEE),
-                FixedPoint128.Q_POW18,
-                ammReserves.sqrtK
-            );
+            //            uint256 feeGrowth = Math.mulDiv(
+            //                ((feeEachIndex * _feeShareAmm) / FixedPoint128.BASIC_POINT_FEE),
+            //                FixedPoint128.Q_POW18,
+            //                ammReserves.sqrtK
+            //            );
 
-            console.log("feeGrowth: ", feeGrowth);
+            console.log(
+                "feeGrowth: ",
+                Math.mulDiv(
+                    ((feeEachIndex * _feeShareAmm) /
+                        FixedPoint128.BASIC_POINT_FEE),
+                    FixedPoint128.Q_POW18,
+                    ammReserves.sqrtK
+                )
+            );
             liquidityInfo[indexedPipRange].updateAMMReserve(
                 ammReserves.quoteReserve,
                 ammReserves.baseReserve,
-                feeGrowth,
+                Math.mulDiv(
+                    ((feeEachIndex * _feeShareAmm) /
+                        FixedPoint128.BASIC_POINT_FEE),
+                    FixedPoint128.Q_POW18,
+                    ammReserves.sqrtK
+                ),
                 isBuy
             );
         }

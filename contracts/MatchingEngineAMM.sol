@@ -92,24 +92,31 @@ contract MatchingEngineAMM is
     ) internal override {}
 
     function _onCrossPipHook(
-        uint128 pipNext,
-        bool isBuy,
-        bool isBase,
-        uint128 amount,
-        uint32 basisPoint,
-        uint128 currentPip,
+        //        uint128 pipNext,
+        //        bool isBuy,
+        //        bool isBase,
+        //        uint128 amount,
+        //        uint32 basisPoint,
+        //        uint128 currentPip,
+        //        uint128 maxPip,
+        CrossPipParams memory params,
         SwapState.AmmState memory ammState
     )
         internal
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
     {
-        if (pipNext == currentPip) {
+        console.log("params.maxPip: ", params.maxPip);
+        console.log("params.pipNext: ", params.maxPip);
+        if (params.maxPip != 0 && params.pipNext == 0) {
+            params.pipNext = params.maxPip;
+        }
+        if (params.pipNext == params.currentPip) {
             return crossPipResult;
         }
 
         int256 indexPip = int256(
-            LiquidityMath.calculateIndexPipRange(currentPip, pipRange)
+            LiquidityMath.calculateIndexPipRange(params.currentPip, pipRange)
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
             if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
@@ -121,26 +128,26 @@ contract MatchingEngineAMM is
         // then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
         // because ammStates is passed by an underlying pointer
         // let's try it in Remix
-        crossPipResult = pipNext != 0
+        crossPipResult = params.pipNext != 0
             ? _onCrossPipAMMTargetPrice(
                 OnCrossPipParams(
-                    pipNext,
-                    isBuy,
-                    isBase,
-                    amount,
-                    basisPoint,
-                    currentPip
+                    params.pipNext,
+                    params.isBuy,
+                    params.isBase,
+                    params.amount,
+                    params.basisPoint,
+                    params.currentPip
                 ),
                 ammState
             )
             : _onCrossPipAMMNoTargetPrice(
                 OnCrossPipParams(
-                    pipNext,
-                    isBuy,
-                    isBase,
-                    amount,
-                    basisPoint,
-                    currentPip
+                    params.pipNext,
+                    params.isBuy,
+                    params.isBase,
+                    params.amount,
+                    params.basisPoint,
+                    params.currentPip
                 ),
                 ammState
             );

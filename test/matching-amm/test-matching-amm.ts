@@ -332,6 +332,13 @@ export class TestMatchingAmm {
 
     }
 
+    async cancelLimitOrder(pip: number, orderId: SNumber, idSender : number, opts?: CallOptions) {
+
+        console.group(`CancelLimitOrder`);
+        await  this.ins.connect(this.users[idSender]).cancelLimitOrder( pip, orderId);
+        console.groupEnd();
+    }
+
     async getOrderBook(limit = 10) {
         const currentPip = await this.ins.getCurrentPip();
         console.log("currentPip: ", currentPip.toString());

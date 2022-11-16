@@ -422,22 +422,23 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
             );
 
             // updated findHasLiquidityInMultipleWords, save more gas
-            if (_maxPip != 0) {
-                // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
-                if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
-                    break;
-                }
+            // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
+            if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
+                break;
             }
 
             startGas = gasleft();
 
             CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
-                step.pipNext,
-                state.isBuy,
-                _isBase,
-                uint128(state.remainingSize),
-                state.basisPoint,
-                state.pip,
+                CrossPipParams({
+                    pipNext: step.pipNext,
+                    isBuy: state.isBuy,
+                    isBase: _isBase,
+                    amount: uint128(state.remainingSize),
+                    basisPoint: state.basisPoint,
+                    currentPip: state.pip,
+                    maxPip: _maxPip
+                }),
                 state.ammState
             );
             console.log(
@@ -589,6 +590,13 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
 
+        console.log(
+            "singleSlot.pip, flipSideOut, state.remainingSize: ",
+            singleSlot.pip,
+            flipSideOut,
+            state.remainingSize
+        );
+
         fee = _calculateFee(
             state.ammState,
             singleSlot.pip,
@@ -622,13 +630,18 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         uint256 size
     ) internal virtual {}
 
+    struct CrossPipParams {
+        uint128 pipNext;
+        bool isBuy;
+        bool isBase;
+        uint128 amount;
+        uint32 basisPoint;
+        uint128 currentPip;
+        uint128 maxPip;
+    }
+
     function _onCrossPipHook(
-        uint128 pipNext,
-        bool isBuy,
-        bool isBase,
-        uint128 amount,
-        uint32 basisPoint,
-        uint128 currentPip,
+        CrossPipParams memory params,
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult.Result memory crossPipResult) {}
 
