@@ -1,11 +1,10 @@
 /**
  * @author Musket
  */
-// SPDX-License-Identifier: BUSL-1.1 
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
 contract ReserveSnapshots {
-
     struct ReserveSnapshot {
         uint128 pip;
         uint64 timestamp;
@@ -14,17 +13,17 @@ contract ReserveSnapshots {
 
     ReserveSnapshot[] public reserveSnapshots;
 
-
     event ReserveSnapshotted(uint128 pip, uint256 timestamp);
-
-
 
     function _initReserveSnapshot(uint128 _initialPip) internal {
         reserveSnapshots.push(
-            ReserveSnapshot(_initialPip, uint64(block.timestamp), uint64(block.number))
+            ReserveSnapshot(
+                _initialPip,
+                uint64(block.timestamp),
+                uint64(block.number)
+            )
         );
     }
-
 
     function _blockNumber() internal view virtual returns (uint64) {
         return uint64(block.number);
@@ -37,7 +36,7 @@ contract ReserveSnapshots {
     function _addReserveSnapshot() internal virtual {
         uint128 currentPip = _getCurrentPip();
         uint64 currentBlock = _blockNumber();
-            ReserveSnapshot memory latestSnapshot = reserveSnapshots[
+        ReserveSnapshot memory latestSnapshot = reserveSnapshots[
             reserveSnapshots.length - 1
         ];
         if (currentBlock == latestSnapshot.blockNumber) {
@@ -50,10 +49,5 @@ contract ReserveSnapshots {
         emit ReserveSnapshotted(currentPip, _blockTimestamp());
     }
 
-
-    function _getCurrentPip() internal virtual view  returns (uint128) {}
-
-
-
-
+    function _getCurrentPip() internal view virtual returns (uint128) {}
 }

@@ -14,7 +14,7 @@ import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 
-abstract contract MatchingEngineCore is  MatchingEngineCoreStorage {
+abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
@@ -425,7 +425,6 @@ abstract contract MatchingEngineCore is  MatchingEngineCoreStorage {
             if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
                 break;
             }
-
 
             CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
                 CrossPipParams({
