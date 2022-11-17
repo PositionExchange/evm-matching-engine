@@ -401,6 +401,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     ) internal returns (CrossPipResult.Result memory result) {
         CrossPipState memory crossPipState;
         uint8 countSkipIndex;
+        Liquidity.Info memory _liquidity;
         params.currentPip = _calculateSqrtPrice(
             params.currentPip,
             FixedPoint128.BUFFER
@@ -508,7 +509,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             (params.isBase && params.amount <= baseOut) ||
             (!params.isBase && params.amount <= quoteOut)
         ) {
-            (uint128 quoteAmount, uint128 baseAmount) = _findPriceTarget(
+            (uint128 quoteAmount, uint128 baseAmount) = _calculateAmountFilled(
                 params,
                 _ammReserves
             );
@@ -570,7 +571,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         }
     }
 
-    function _findPriceTarget(
+    function _calculateAmountFilled(
         OnCrossPipParams memory params,
         SwapState.AmmReserves memory ammReserves
     ) internal pure returns (uint128 quoteAmount, uint128 baseAmount) {
@@ -641,7 +642,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             /// So, baseReal != 0 and quoteReal == 0
             /// We need calculate the first baseReal with formula:
             /// (x + a) * (y + b) = k => (y + b) = k/(x+a) = quoteReal
-
             ammReserves.baseReserve -= baseAmount;
             ammReserves.quoteReserve = uint128(
                 (uint256(ammReserves.sqrtK)**2) /
@@ -693,12 +693,11 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     {
         uint32 _feeShareAmm = feeShareAmm;
         uint128 feeEachIndex;
-        //        uint256 feeShareAmm;
+        uint256 indexedPipRange;
+        SwapState.AmmReserves memory ammReserves;
         for (uint8 i = 0; i <= ammState.index; i++) {
-            uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
-            SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
-                uint256(i)
-            ];
+            indexedPipRange = ammState.pipRangesIndex[uint256(i)];
+            ammReserves = ammState.ammReserves[uint256(i)];
             if (ammReserves.sqrtK == 0) break;
             totalFilledAmm += ammReserves.amountFilled;
 
@@ -707,14 +706,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 FixedPoint128.BASIC_POINT_FEE;
             totalFeeAmm += feeEachIndex;
 
-            //            feeShareAmm = ((feeEachIndex * _feeShareAmm) /
-            //                FixedPoint128.BASIC_POINT_FEE);
-
-            //            uint256 feeGrowth = Math.mulDiv(
-            //                ((feeEachIndex * _feeShareAmm) / FixedPoint128.BASIC_POINT_FEE),
-            //                FixedPoint128.Q_POW18,
-            //                ammReserves.sqrtK
-            //            );
             liquidityInfo[indexedPipRange].updateAMMReserve(
                 ammReserves.quoteReserve,
                 ammReserves.baseReserve,

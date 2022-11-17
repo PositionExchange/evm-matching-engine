@@ -68,6 +68,7 @@ contract MatchingEngineAMM is
     function removeLiquidity(RemoveLiquidity calldata params)
         public
         override(AutoMarketMakerCore, IAutoMarketMakerCore)
+        onlyCounterParty
         returns (uint128, uint128)
     {
         return super.removeLiquidity(params);
@@ -309,7 +310,28 @@ contract MatchingEngineAMM is
         uint256 _baseAmount,
         uint256 _quoteAmount,
         address _trader
-    ) internal override(MatchingEngineCore) {}
+    ) internal override(MatchingEngineCore) {
+        uint256 amount0In;
+        uint256 amount1In;
+        uint256 amount0Out;
+        uint256 amount1Out;
+
+        if (isBuy) {
+            amount1In = _quoteAmount;
+            amount0Out = _baseAmount;
+        } else {
+            amount0In = _baseAmount;
+            amount1Out = _quoteAmount;
+        }
+        emit Swap(
+            msg.sender,
+            amount0In,
+            amount1In,
+            amount0Out,
+            amount1Out,
+            _trader
+        );
+    }
 
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
