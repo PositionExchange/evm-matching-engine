@@ -98,17 +98,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             state.currentPrice
         );
 
-        //        liquidity = state.baseReal != 0
-        //            ? LiquidityMath.calculateLiquidity(
-        //                state.baseReal,
-        //                state.currentPrice,
-        //                true
-        //            )
-        //            : LiquidityMath.calculateLiquidity(
-        //                state.quoteReal,
-        //                state.currentPrice,
-        //                false
-        //            );
 
         _liquidityInfo.baseReal += state.baseReal;
         _liquidityInfo.quoteReal += state.quoteReal;
@@ -126,12 +115,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 (uint256(_liquidityInfo.sqrtK)**2) /
                     uint256(_liquidityInfo.quoteReal)
             );
-            //            if (params.indexedPipRange < currentIndexedPipRange) {
-            //                _liquidityInfo.baseReal = uint128(
-            //                    (uint256(_liquidityInfo.sqrtK)**2) /
-            //                        uint256(_liquidityInfo.quoteReal)
-            //                );
-            //            }
+
         } else if (
             (params.indexedPipRange > currentIndexedPipRange) ||
             ((params.indexedPipRange == currentIndexedPipRange) &&
@@ -146,12 +130,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 (uint256(_liquidityInfo.sqrtK)**2) /
                     uint256(_liquidityInfo.baseReal)
             );
-            //            if (params.indexedPipRange > currentIndexedPipRange) {
-            //                _liquidityInfo.quoteReal = uint128(
-            //                    (uint256(_liquidityInfo.sqrtK)**2) /
-            //                        uint256(_liquidityInfo.baseReal)
-            //                );
-            //            }
+
         } else if (params.indexedPipRange == currentIndexedPipRange) {
             _liquidityInfo.sqrtK = LiquidityMath
                 .calculateKWithBaseAndQuote(
@@ -718,7 +697,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     {
         uint32 _feeShareAmm = feeShareAmm;
         uint128 feeEachIndex;
-        uint256 feeShareAmm;
+//        uint256 feeShareAmm;
         for (uint8 i = 0; i <= ammState.index; i++) {
             uint256 indexedPipRange = ammState.pipRangesIndex[uint256(i)];
             SwapState.AmmReserves memory ammReserves = ammState.ammReserves[
@@ -732,8 +711,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 FixedPoint128.BASIC_POINT_FEE;
             totalFeeAmm += feeEachIndex;
 
-            feeShareAmm = ((feeEachIndex * _feeShareAmm) /
-                FixedPoint128.BASIC_POINT_FEE);
+//            feeShareAmm = ((feeEachIndex * _feeShareAmm) /
+//                FixedPoint128.BASIC_POINT_FEE);
 
             //            uint256 feeGrowth = Math.mulDiv(
             //                ((feeEachIndex * _feeShareAmm) / FixedPoint128.BASIC_POINT_FEE),

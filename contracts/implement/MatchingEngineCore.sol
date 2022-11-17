@@ -14,7 +14,7 @@ import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 
-abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
+abstract contract MatchingEngineCore is  MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
@@ -27,9 +27,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
         uint128 _maxFindingWordsIndex,
         uint128 _initialPip
     ) internal {
-        reserveSnapshots.push(
-            ReserveSnapshot(_initialPip, _blockTimestamp(), _blockNumber())
-        );
         singleSlot.pip = _initialPip;
         basisPoint = _basisPoint;
         maxFindingWordsIndex = _maxFindingWordsIndex;
@@ -406,7 +403,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
 
         while (state.remainingSize != 0) {
             StepComputations memory step;
-            uint256 startGas = gasleft();
             (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
                 state.pip,
                 _maxFindingWordsIndex,
@@ -430,7 +426,6 @@ abstract contract MatchingEngineCore is Block, MatchingEngineCoreStorage {
                 break;
             }
 
-            startGas = gasleft();
 
             CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
                 CrossPipParams({

@@ -36,13 +36,6 @@ abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
         uint128 pipNext;
     }
 
-    struct ReserveSnapshot {
-        uint128 pip;
-        uint64 timestamp;
-        uint64 blockNumber;
-    }
-
-    ReserveSnapshot[] public reserveSnapshots;
 
     SingleSlot public singleSlot;
     mapping(uint128 => TickPosition.Data) public tickPosition;
