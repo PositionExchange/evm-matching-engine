@@ -39,18 +39,20 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     //*
 
     function updatePartialFilledOrder(uint128 _pip, uint64 _orderId)
-        external
+        public
         virtual
     {
+        _onlyCounterParty();
         uint256 newSize = tickPosition[_pip].updateOrderWhenClose(_orderId);
         _emitLimitOrderUpdatedHook(address(this), _orderId, _pip, newSize);
     }
 
     function cancelLimitOrder(uint128 _pip, uint64 _orderId)
-        external
+        public
         virtual
         returns (uint256 remainingSize, uint256 partialFilled)
     {
+        _onlyCounterParty();
         TickPosition.Data storage _tickPosition = tickPosition[_pip];
         require(
             hasLiquidity(_pip) && _orderId >= _tickPosition.filledIndex,
@@ -67,7 +69,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint256 quoteAmountIn,
         uint16 feePercent
     )
-        external
+        public
         virtual
         returns (
             uint64 orderId,
@@ -76,6 +78,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
+        _onlyCounterParty();
         (
             orderId,
             baseAmountFilled,
@@ -99,7 +102,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         address trader,
         uint16 feePercent
     )
-        external
+        public
         virtual
         returns (
             uint256 baseOut,
@@ -107,6 +110,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
+        _onlyCounterParty();
         return
             _internalOpenMarketOrder(
                 size,
@@ -125,7 +129,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         address _trader,
         uint16 feePercent
     )
-        external
+        public
         virtual
         returns (
             uint256 sizeOutQuote,
@@ -133,6 +137,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
+        _onlyCounterParty();
         (sizeOutQuote, baseAmount, fee) = _internalOpenMarketOrder(
             quoteAmount,
             _isBuy,
@@ -702,4 +707,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     }
 
     function _addReserveSnapshot() internal virtual {}
+
+    function _onlyCounterParty() internal virtual {}
 }

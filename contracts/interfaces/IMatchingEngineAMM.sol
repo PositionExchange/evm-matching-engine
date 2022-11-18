@@ -51,6 +51,8 @@ interface IMatchingEngineAMM is
 
     function initialize(InitParams memory params) external;
 
+    function approveCounterParty(IERC20 asset, address spender) external;
+
     function accumulateClaimableAmount(
         uint128 _pip,
         uint64 _orderId,

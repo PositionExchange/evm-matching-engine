@@ -54,6 +54,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             uint256 feeGrowthQuote
         )
     {
+        _onlyCounterParty();
+
         AddLiquidityState memory state;
         Liquidity.Info memory _liquidityInfo = liquidityInfo[
             params.indexedPipRange
@@ -153,6 +155,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         virtual
         returns (uint128 baseAmount, uint128 quoteAmount)
     {
+        _onlyCounterParty();
         Liquidity.Info memory _liquidityInfo;
 
         (baseAmount, quoteAmount, _liquidityInfo) = estimateRemoveLiquidity(
@@ -756,4 +759,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     function getPipRange() external view override returns (uint128) {
         return pipRange;
     }
+
+    function _onlyCounterParty() internal virtual {}
 }

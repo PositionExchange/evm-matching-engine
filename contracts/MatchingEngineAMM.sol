@@ -20,14 +20,6 @@ contract MatchingEngineAMM is
     bool isInitialized;
     address public counterParty;
     address public positionConcentratedLiquidity;
-    modifier onlyCounterParty() {
-        require(
-            counterParty == _msgSender() ||
-                positionConcentratedLiquidity == _msgSender(),
-            Errors.VL_ONLY_COUNTERPARTY
-        );
-        _;
-    }
 
     function initialize(InitParams memory params) external {
         require(!isInitialized, "Initialized");
@@ -50,36 +42,23 @@ contract MatchingEngineAMM is
         _initFee(params.quoteAsset, params.baseAsset);
     }
 
-    function addLiquidity(AddLiquidity calldata params)
+    function approveCounterParty(IERC20 asset, address spender)
         public
-        override(AutoMarketMakerCore, IAutoMarketMakerCore)
-        onlyCounterParty
-        returns (
-            uint128,
-            uint128,
-            uint256,
-            uint256,
-            uint256
-        )
+        override(IMatchingEngineAMM)
     {
-        return super.addLiquidity(params);
+        _onlyCounterParty();
+        asset.approve(spender, type(uint256).max);
     }
 
-    function removeLiquidity(RemoveLiquidity calldata params)
-        public
-        override(AutoMarketMakerCore, IAutoMarketMakerCore)
-        onlyCounterParty
-        returns (uint128, uint128)
+    function _onlyCounterParty()
+        internal
+        override(MatchingEngineCore, AutoMarketMakerCore)
     {
-        return super.removeLiquidity(params);
-    }
-
-    function approve() public {
-        quoteAsset.approve(counterParty, type(uint256).max);
-        baseAsset.approve(counterParty, type(uint256).max);
-
-        quoteAsset.approve(positionConcentratedLiquidity, type(uint256).max);
-        baseAsset.approve(positionConcentratedLiquidity, type(uint256).max);
+        require(
+            counterParty == _msgSender() ||
+                positionConcentratedLiquidity == _msgSender(),
+            Errors.VL_ONLY_COUNTERPARTY
+        );
     }
 
     function _emitLimitOrderUpdatedHook(
@@ -219,32 +198,32 @@ contract MatchingEngineAMM is
     function increaseQuoteFeeFunding(uint256 quoteFee)
         public
         override(Fee, IFee)
-        onlyCounterParty
     {
+        _onlyCounterParty();
         super.increaseQuoteFeeFunding(quoteFee);
     }
 
     function increaseBaseFeeFunding(uint256 baseFee)
         public
         override(Fee, IFee)
-        onlyCounterParty
     {
+        _onlyCounterParty();
         super.increaseBaseFeeFunding(baseFee);
     }
 
     function decreaseBaseFeeFunding(uint256 quoteFee)
         public
         override(Fee, IFee)
-        onlyCounterParty
     {
+        _onlyCounterParty();
         super.decreaseBaseFeeFunding(quoteFee);
     }
 
     function decreaseQuoteFeeFunding(uint256 baseFee)
         public
         override(Fee, IFee)
-        onlyCounterParty
     {
+        _onlyCounterParty();
         super.decreaseQuoteFeeFunding(baseFee);
     }
 
