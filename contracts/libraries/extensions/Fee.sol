@@ -62,11 +62,7 @@ abstract contract Fee is IFee {
         quoteFeeFunding -= quoteFee;
     }
 
-    function getFee()
-        external
-        view
-        returns (uint256 baseFeeFunding, uint256 quoteFeeFunding)
-    {
+    function getFee() external view returns (uint256, uint256) {
         return (baseFeeFunding, quoteFeeFunding);
     }
 }

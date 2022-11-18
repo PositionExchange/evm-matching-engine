@@ -43,15 +43,6 @@ library LiquidityMath {
         uint128 quoteReal,
         uint128 sqrtCurrentPrice
     ) internal pure returns (uint128) {
-        //        return uint128(((10**18 * uint256(quoteReal)) / uint256(sqrtPriceTarget) ) * (10**18 *((uint256(quoteReal) *
-        //        (uint256(sqrtCurrentPrice) -
-        //        uint256(sqrtPriceTarget))))/uint256(sqrtCurrentPrice)**2));
-
-        //        uint256 a = (10**18 *
-        //            (uint256(quoteReal) *
-        //                (uint256(sqrtCurrentPrice) - uint256(sqrtPriceTarget))));
-        //        uint256 b = (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2);
-
         return
             uint128(
                 (FixedPoint128.BUFFER *
@@ -108,9 +99,6 @@ library LiquidityMath {
         returns (uint256)
     {
         return uint256(pip / pipRange);
-        //            pip % pipRange == 0
-        //                ? uint256((pip / pipRange) )
-        //                : uint256(pip / pipRange);
     }
 
     function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)
