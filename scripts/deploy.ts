@@ -1,23 +1,32 @@
-import { ethers } from "hardhat";
+import {task} from "hardhat/config";
+import {verifyContract} from "./utils";
 
-async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = ethers.utils.parseEther("1");
+task('deploy-matching-template-testnet', 'How is your girl friend?', async (taskArgs, hre) => {
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
 
-  await lock.deployed();
+    const matchingTemplate = await hre.ethers.getContractFactory("MatchingEngineAMM")
 
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
-}
+    const contractArgs: string[] = [
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000"
+    ];
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+
+    const hardhatDeployContract = await matchingTemplate.deploy();
+
+    await hardhatDeployContract.deployTransaction.wait(5);
+
+    const address = hardhatDeployContract.address
+    console.log("matching template deployed address: ", address);
+
+    await verifyContract(hre, address, [], "contracts/MatchingEngineAMM.sol:MatchingEngineAMM");
+})

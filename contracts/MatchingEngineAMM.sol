@@ -40,14 +40,12 @@ contract MatchingEngineAMM is
             params.initialPip
         );
         _initFee(params.quoteAsset, params.baseAsset);
-    }
 
-    function approveCounterParty(IERC20 asset, address spender)
-        public
-        override(IMatchingEngineAMM)
-    {
-        _onlyCounterParty();
-        asset.approve(spender, type(uint256).max);
+        _approveCounterParty(params.quoteAsset, params.positionLiquidity);
+        _approveCounterParty(params.baseAsset, params.positionLiquidity);
+
+        _approveCounterParty(params.quoteAsset, params.spotHouse);
+        _approveCounterParty(params.baseAsset, params.spotHouse);
     }
 
     function _onlyCounterParty()
@@ -193,6 +191,10 @@ contract MatchingEngineAMM is
         returns (bool)
     {
         return true;
+    }
+
+    function _approveCounterParty(IERC20 asset, address spender) internal {
+        asset.approve(spender, type(uint256).max);
     }
 
     function increaseQuoteFeeFunding(uint256 quoteFee)
