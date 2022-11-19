@@ -54,7 +54,7 @@ contract MatchingEngineAMM is
     {
         require(
             counterParty == _msgSender() ||
-            positionManagerLiquidity == _msgSender(),
+                positionManagerLiquidity == _msgSender(),
             Errors.VL_ONLY_COUNTERPARTY
         );
     }
