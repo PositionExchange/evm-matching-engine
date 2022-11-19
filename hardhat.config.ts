@@ -5,6 +5,7 @@ import "@nomicfoundation/hardhat-chai-matchers";
 import "hardhat-gas-reporter"
 import 'hardhat-log-remover';
 import "./scripts/deploy";
+import "hardhat-docgen";
 
 const config: HardhatUserConfig = {
   networks: {
@@ -85,6 +86,11 @@ const config: HardhatUserConfig = {
   mocha: {
     timeout: 100000,
   },
+  docgen: {
+    path: './docs',
+    clear: true,
+    runOnCompile: true,
+  }
 };
 
 export default config;

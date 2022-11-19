@@ -25,7 +25,7 @@ const interfaceEvent = new ethers.utils.Interface(["event MarketFilled(bool isBu
 
 export const shouldOpenLimitAndVerify = async function (pip: number, size: number, expectOut: number, isBuy: boolean = true) {
   const [caller] = await ethers.getSigners()
-  const tx = await pairManager.openLimit(pip, size, isBuy, caller.address,0)
+  const tx = await pairManager.openLimit(pip, size, isBuy, caller.address,0, 0)
   const receipt = await ethers.provider.getTransactionReceipt(tx.hash)
 
   const interfaceEvent = new ethers.utils.Interface(["event MarketFilled(bool isBuy, uint256 indexed amount, uint128 toPip, uint256 startPip, uint128 remainingLiquidity, uint64 filledIndex)"]);
@@ -84,7 +84,7 @@ export async function createLimitOrderAndVerifyAfter(
 export async function createLimitOrder(pip: number, size: number, isBuy: boolean) {
   const [caller] = await ethers.getSigners();
 
-  return pairManager.openLimit(pip, size, isBuy, caller.address,0);
+  return pairManager.openLimit(pip, size, isBuy, caller.address,0,0);
 }
 
 export async function cancelLimitOrder(pip: number, orderId: number) {
@@ -151,7 +151,7 @@ export async function cancelLimitOrderAndVerify(
 
 export async function marketBuy(size: number, isBuy: boolean = true) {
   const [caller] = await ethers.getSigners();
-  return pairManager.openMarket(size, isBuy,caller.address );
+  return pairManager.openMarket(size, isBuy,caller.address,0 );
 }
 
 export const shouldBuyMarketAndVerify = async function(
