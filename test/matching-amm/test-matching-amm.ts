@@ -92,17 +92,20 @@ export async function deployAndCreateRouterHelper() {
     let matching: MockMatchingEngineAMM
     let testHelper: TestMatchingAmm;
 
+    let mockToken : MockToken
+
 
     let users: any[] = [];
     users = await getAccount() as unknown as any[];
     const deployer = users[0];
     matching = await deployContract("MockMatchingEngineAMM", deployer);
+    mockToken = await deployContract("MockToken",deployer, "MockToken", "MT")
     await matching.setCounterParty();
 
     await matching.initialize(
         {
-            quoteAsset: deployer.address,
-            baseAsset: deployer.address,
+            quoteAsset: mockToken.address,
+            baseAsset: mockToken.address,
             basisPoint: BASIS_POINT,
             maxFindingWordsIndex: 1000,
             initialPip: 100000,
@@ -335,7 +338,7 @@ export class TestMatchingAmm {
     async cancelLimitOrder(pip: number, orderId: SNumber, idSender : number, opts?: CallOptions) {
 
         console.group(`CancelLimitOrder`);
-        await  this.ins.connect(this.users[idSender]).cancelLimitOrder( pip, orderId);
+        await  this.ins.cancelLimitOrder( pip, orderId);
         console.groupEnd();
     }
 

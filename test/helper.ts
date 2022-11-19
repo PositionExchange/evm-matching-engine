@@ -7,28 +7,6 @@ import { deployContract } from "./utils/utils";
 
 export let quoteAsset: MockToken, baseAsset: MockToken, pairManager: MatchingEngineAMM;
 
-export async function initilizeData(){
-  // deploy mock token
-    quoteAsset = await deployMockToken("Quote Asset");
-    baseAsset = await deployMockToken("Base Asset");
-
-    const [deployer] = await ethers.getSigners();
-
-    pairManager = await deployContract("MatchingEngineAMM", deployer);
-    await pairManager.initializeFactory(
-      quoteAsset.address,
-      baseAsset.address,
-      deployer.address,
-      BigNumber.from(1),
-      BigNumber.from(100),
-      BigNumber.from(1800),
-      BigNumber.from(200),
-      BigNumber.from(0),
-      baseAsset.address,
-      deployer.address
-    );
-}
-
 interface CreateLimitOrderAndVerifyAfterArg {
   pip: number;
   size: number;
