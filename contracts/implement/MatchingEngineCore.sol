@@ -8,7 +8,6 @@ import "../libraries/types/MatchingEngineCoreStorage.sol";
 import "../libraries/helper/Timers.sol";
 import "../libraries/helper/TradeConvert.sol";
 import "../libraries/exchange/TickPosition.sol";
-import "./Block.sol";
 import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";

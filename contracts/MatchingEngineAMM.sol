@@ -19,13 +19,13 @@ contract MatchingEngineAMM is
     using Math for uint128;
     bool isInitialized;
     address public counterParty;
-    address public positionConcentratedLiquidity;
+    address public positionManagerLiquidity;
 
     function initialize(InitParams memory params) external {
         require(!isInitialized, "Initialized");
         isInitialized = true;
 
-        positionConcentratedLiquidity = params.positionLiquidity;
+        positionManagerLiquidity = params.positionLiquidity;
         counterParty = params.spotHouse;
 
         _initializeAMM(
@@ -54,7 +54,7 @@ contract MatchingEngineAMM is
     {
         require(
             counterParty == _msgSender() ||
-                positionConcentratedLiquidity == _msgSender(),
+            positionManagerLiquidity == _msgSender(),
             Errors.VL_ONLY_COUNTERPARTY
         );
     }
