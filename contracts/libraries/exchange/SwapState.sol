@@ -125,7 +125,11 @@ library SwapState {
                 pipNext,
                 state.basisPoint
             )
-            : tradedQuantity;
+            : TradeConvert.quoteToBase(
+                tradedQuantity,
+                pipNext,
+                state.basisPoint
+            );
     }
 
     function reverseIsFullBuy(State memory state) internal pure {
