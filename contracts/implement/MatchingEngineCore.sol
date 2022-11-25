@@ -412,7 +412,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 !state.isBuy
             );
 
-            // TODO less code in if
             if (_isNeedSetPipNext()) {
                 if (
                     (_maxPip != 0 && step.pipNext == 0) &&
@@ -463,7 +462,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     crossPipResult.quoteCrossPipOut > 0
                 ) {
                     if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
-                        // TODO verify me
                         if (
                             (state.isBuy && crossPipResult.toPip > state.pip) ||
                             (!state.isBuy && crossPipResult.toPip < state.pip)

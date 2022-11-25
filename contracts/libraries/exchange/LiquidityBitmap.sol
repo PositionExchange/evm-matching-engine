@@ -235,39 +235,37 @@ library LiquidityBitmap {
     }
 
     function unsetBitsRange(
-        mapping(uint128 => uint256) storage self,
-        uint128 fromPip,
-        uint128 toPip
+        mapping(uint128 => uint256) storage _self,
+        uint128 _fromPip,
+        uint128 _toPip
     ) internal {
-        if (fromPip == toPip) return toggleSingleBit(self, fromPip, false);
-        fromPip++;
-        toPip++;
-        if (toPip < fromPip) {
-            uint128 n = fromPip;
-            fromPip = toPip;
-            toPip = n;
+        if (_fromPip == _toPip) return toggleSingleBit(_self, _fromPip, false);
+        _fromPip++;
+        _toPip++;
+        if (_toPip < _fromPip) {
+            uint128 n = _fromPip;
+            _fromPip = _toPip;
+            _toPip = n;
         }
-        (uint128 fromMapIndex, uint8 fromBitPos) = position(fromPip);
-        (uint128 toMapIndex, uint8 toBitPos) = position(toPip);
+        (uint128 fromMapIndex, uint8 fromBitPos) = position(_fromPip);
+        if (fromBitPos == 0) {
+            toggleSingleBit(_self, _fromPip - 1, false);
+        }
+        (uint128 toMapIndex, uint8 toBitPos) = position(_toPip);
         if (toMapIndex == fromMapIndex) {
-            //            if(fromBitPos > toBitPos){
-            //                uint8 n = fromBitPos;
-            //                fromBitPos = toBitPos;
-            //                toBitPos = n;
-            //            }
-            self[toMapIndex] &= unsetBitsFromLToR(
+            _self[toMapIndex] &= unsetBitsFromLToR(
                 MAX_UINT256,
                 fromBitPos,
                 toBitPos
             );
         } else {
-            //TODO check overflow here
-            fromBitPos--;
-            self[fromMapIndex] &= ~toggleLastMBits(MAX_UINT256, fromBitPos);
+            if (fromBitPos != 0)
+                fromBitPos--;
+            _self[fromMapIndex] &= ~toggleLastMBits(MAX_UINT256, fromBitPos);
             for (uint128 i = fromMapIndex + 1; i < toMapIndex; i++) {
-                self[i] = 0;
+                _self[i] = 0;
             }
-            self[toMapIndex] &= toggleLastMBits(MAX_UINT256, toBitPos);
+            _self[toMapIndex] &= toggleLastMBits(MAX_UINT256, toBitPos);
         }
     }
 
