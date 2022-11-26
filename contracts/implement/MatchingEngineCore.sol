@@ -523,6 +523,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         state.updateTradedSize(liquidity, step.pipNext);
                         state.pip = step.pipNext;
                         state.isFullBuy = 0;
+                        tickPosition[step.pipNext].fullyFullFillLiquidity();
                     }
                 } else {
                     state.isSkipFirstPip = false;

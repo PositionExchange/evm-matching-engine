@@ -101,6 +101,11 @@ library TickPosition {
         }
     }
 
+    function fullyFullFillLiquidity(TickPosition.Data storage _self) internal {
+        _self.liquidity = 0;
+        _self.filledIndex = _self.currentIndex;
+    }
+
     function calculatingFilledIndex(TickPosition.Data storage self)
         internal
         view
