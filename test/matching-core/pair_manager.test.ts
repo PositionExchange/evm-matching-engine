@@ -226,7 +226,7 @@ describe("MockMatchingEngineCore", async function () {
 
             if ( expectOut == 0) {
                 const data = await marketBuy(size, isBuy);
-                console.log("data ", data);
+                // console.log("data ", data);
             }else{
                 await expect(marketBuy(size, isBuy))
                     .to.emit(matchingEngineCore, "Swap")
@@ -338,6 +338,32 @@ describe("MockMatchingEngineCore", async function () {
     }
 
     describe("single market buy limit sell", function () {
+
+        it("should market full fill limit buy and update liquidity same price ", async function () {
+            await createLimitOrderAndVerify(200, 10, true);
+            await shouldBuyMarketAndVerify(10, 0, false, 0);
+            await createLimitOrderAndVerify(200, 10, false);
+        })
+        it("should market full fill limit sell and update liquidity same price", async function () {
+            await createLimitOrderAndVerify(200, 10, false);
+            await shouldBuyMarketAndVerify(10, 0, true, 0);
+            await createLimitOrderAndVerify(200, 10, false);
+        })
+
+
+        it("should market full fill limit sell and update liquidity != price", async function () {
+            await createLimitOrderAndVerify(210, 10, false);
+            await shouldBuyMarketAndVerify(5, 0, true, 0);
+            await shouldBuyMarketAndVerify(5, 0, true, 0);
+            await createLimitOrderAndVerify(210, 10, false);
+
+            await createLimitOrderAndVerify(190, 10, true);
+            await shouldBuyMarketAndVerify(5, 0, false, 0);
+            await shouldBuyMarketAndVerify(5, 0, false, 0);
+            await createLimitOrderAndVerify(190, 10, true);
+
+        })
+
         it("should create limit order", async function () {
             await createLimitOrderAndVerify(105, 10, true);
             await createLimitOrderAndVerify(105, 15, true);
