@@ -259,8 +259,7 @@ library LiquidityBitmap {
                 toBitPos
             );
         } else {
-            if (fromBitPos != 0)
-                fromBitPos--;
+            if (fromBitPos != 0) fromBitPos--;
             _self[fromMapIndex] &= ~toggleLastMBits(MAX_UINT256, fromBitPos);
             for (uint128 i = fromMapIndex + 1; i < toMapIndex; i++) {
                 _self[i] = 0;
