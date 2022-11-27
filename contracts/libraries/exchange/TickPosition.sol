@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./LimitOrder.sol";
+import "hardhat/console.sol";
 
 /*
  * A library storing data and logic at a pip
@@ -62,6 +63,9 @@ library TickPosition {
         )
     {
         (isBuy, size, partialFilled) = self.orderQueue[orderId].getData();
+
+        console.log("isBuy, size, partialFilled: ", isBuy, size, partialFilled);
+        console.log("self.filledIndex: ", self.filledIndex);
         if (self.filledIndex > orderId && size != 0) {
             isFilled = true;
         } else if (self.filledIndex < orderId) {
@@ -102,8 +106,12 @@ library TickPosition {
     }
 
     function fullyFullFillLiquidity(TickPosition.Data storage _self) internal {
+        uint64 _currentIndex = _self.currentIndex;
         _self.liquidity = 0;
-        _self.filledIndex = _self.currentIndex;
+        _self.filledIndex = _currentIndex;
+        _self.orderQueue[_currentIndex].partialFilled = _self
+            .orderQueue[_currentIndex]
+            .size;
     }
 
     function calculatingFilledIndex(TickPosition.Data storage self)
