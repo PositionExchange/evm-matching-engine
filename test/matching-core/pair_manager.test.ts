@@ -424,7 +424,7 @@ describe("MockMatchingEngineCore", async function () {
                 sellPip,
                 Number(orderId).toString()
             );
-            expect(orderDetail.partialFilled.toNumber()).eq(0);
+            expect(orderDetail.partialFilled.toNumber()).eq(10);
             expect(orderDetail.isFilled).eq(true);
             expect((await matchingEngineCore.getCurrentPip()).toNumber()).eq(240);
         });
@@ -455,7 +455,7 @@ describe("MockMatchingEngineCore", async function () {
                 await verifyLimitOrderDetail({
                     pip: 240,
                     orderId: orderIds[240],
-                    partialFilled: 0,
+                    partialFilled: 5,
                     isFilled: true
                 });
                 await verifyLimitOrderDetail({
@@ -496,7 +496,7 @@ describe("MockMatchingEngineCore", async function () {
                 await verifyLimitOrderDetail({
                     pip: 241,
                     orderId: orderIds[241],
-                    partialFilled: 0,
+                    partialFilled: 3,
                     isFilled: true
                 });
                 await verifyLimitOrderDetail({
@@ -565,7 +565,7 @@ describe("MockMatchingEngineCore", async function () {
                 await verifyLimitOrderDetail({
                     pip: 242,
                     orderId: orderIds[242],
-                    partialFilled: 0,
+                    partialFilled: 2,
                     isFilled: true
                 });
                 await checkLiquidityAtPip(240, false);
@@ -701,7 +701,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false],
                 reachPip: 100,
                 orders,
-                partialFilledAmounts: [0, 0, 0],
+                partialFilledAmounts: [10, 0, 0],
                 isFilledAmounts: [true, true, true],
                 isBuy: false,
                 quoteAmount: 30 * 102 + 20 * 101 + 10 * 100
@@ -737,7 +737,9 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, false, false, true],
                 reachPip: 257,
                 orders,
-                partialFilledAmounts: [...pips].fill(0),
+                partialFilledAmounts: [...pips].fill(0, 0, pips.length - 2)
+                    .fill(10, pips.length - 2, pips.length - 1)
+                    .fill(0, pips.length - 1),
                 isFilledAmounts: [true, true, true, true, true, true, false],
                 quoteAmount: 10 * (250 + 253 + 254 + 255 + 256 + 257)
             });
@@ -756,7 +758,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, false, true, true],
                 reachPip: 254,
                 orders,
-                partialFilledAmounts: [...pips].fill(0),
+                partialFilledAmounts:[0, 0, 0, 0, 10, 0, 0] ,
                 isFilledAmounts: [true, true, true, true, true, false, false],
                 isBuy: false,
                 quoteAmount: 10 * (258 + 257 + 256 + 255 + 254)
@@ -807,7 +809,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, false, false, false],
                 reachPip: 218,
                 orders,
-                partialFilledAmounts: [...pips].fill(0),
+                partialFilledAmounts: [0, 0, 0, 0, 0, 0, 7],
                 isFilledAmounts: [true, true, true, true, true, true, true]
             })
         })
@@ -826,7 +828,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, false, false, false, false],
                 reachPip: 218,
                 orders,
-                partialFilledAmounts: [...pips].fill(0),
+                partialFilledAmounts: [0, 0, 0, 0, 0, 0, 0, 7], //[...pips].fill(0),
                 isFilledAmounts: [true, true, true, true, true, true, true, true],
                 isBuy: true
             })
@@ -883,7 +885,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, true, true, true],
                 reachPip: 205,
                 orders,
-                partialFilledAmounts: [0, 0, 0, 0, 0, 0, 0],
+                partialFilledAmounts:[0, 0, 0, 4, 0, 0, 0], //[0, 0, 0, 0, 0, 0, 0],
                 isFilledAmounts: [true, true, true, true, false, false, false],
                 isBuy: true
             })
@@ -917,7 +919,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, false, false, false],
                 reachPip: 182,
                 orders,
-                partialFilledAmounts: [...pips].fill(0),
+                partialFilledAmounts: [0, 0, 0, 0, 0, 0, 7],//[...pips].fill(0),
                 isFilledAmounts: [true, true, true, true, true, true, true],
                 isBuy: false
             })
@@ -937,7 +939,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, false, false, false, false],
                 reachPip: 182,
                 orders,
-                partialFilledAmounts: [...pips].fill(0),
+                partialFilledAmounts:[0, 0, 0, 0, 0, 0, 0, 7] ,//[...pips].fill(0),
                 isFilledAmounts: [true, true, true, true, true, true, true, true],
                 isBuy: false
             })
@@ -994,7 +996,7 @@ describe("MockMatchingEngineCore", async function () {
                 pipsHasLiquidity: [false, false, false, false, true, true, true],
                 reachPip: 195,
                 orders,
-                partialFilledAmounts: [0, 0, 0, 0, 0, 0, 0],
+                partialFilledAmounts: [0, 0, 0, 4, 0, 0, 0],//[0, 0, 0, 0, 0, 0, 0],
                 isFilledAmounts: [true, true, true, true, false, false, false],
                 isBuy: false
             })

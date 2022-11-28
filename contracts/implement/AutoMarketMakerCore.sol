@@ -536,15 +536,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 sqrtPriceTarget,
         uint128 sqrtCurrentPrice,
         uint32 basisPoint
-    )
-        internal
-        view
-        returns (
-            // TODO change view to pure
-            uint128 baseOut,
-            uint128 quoteOut
-        )
-    {
+    ) internal pure returns (uint128 baseOut, uint128 quoteOut) {
         if (isBuy) {
             baseOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
                 sqrtPriceTarget,
@@ -627,7 +619,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             (ammReserves.baseReserve == 0) ||
             (params.currentPip == ammReserves.sqrtMaxPip)
         ) {
-            /// In case into the new pip range have never been reached when when sell
+            /// In case into the new pip range have never been reached when sell
             /// So, quoteReal != 0 and baseReal == 0
             /// We need calculate the first baseReal with formula:
             /// (x + a) * (y + b) = k => (x + a) = k/(y+b) = baseReal
@@ -656,7 +648,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             /// By quote or by base
             /// In this function, we choose to update by quote
         } else if (
-            ((ammReserves.baseReserve != 0 && ammReserves.quoteReserve != 0))
+            ammReserves.baseReserve != 0 && ammReserves.quoteReserve != 0
         ) {
             if (params.isBuy) {
                 ammReserves.baseReserve -= baseAmount;
