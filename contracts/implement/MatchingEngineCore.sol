@@ -446,7 +446,10 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             ) {
                 break;
             }
-            if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
+//            if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
+//                step.pipNext = crossPipResult.toPip;
+//            }
+            if (crossPipResult.toPip != 0) {
                 step.pipNext = crossPipResult.toPip;
             }
             /// In this line, step.pipNext still is 0, that means no liquidity for this order
@@ -523,7 +526,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         state.updateTradedSize(liquidity, step.pipNext);
                         state.pip = step.pipNext;
                         state.isFullBuy = 0;
-                        tickPosition[step.pipNext].fullyFullFillLiquidity();
+                        tickPosition[step.pipNext].fullFillLiquidity();
                     }
                 } else {
                     state.isSkipFirstPip = false;
@@ -601,7 +604,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 singleSlot.pip,
                 state.startPip,
                 state.remainingLiquidity,
-                tickPosition[singleSlot.pip].calculatingFilledIndex()
+                0
             );
             emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
         }
