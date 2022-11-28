@@ -110,17 +110,17 @@ library TickPosition {
             .size;
     }
 
-//    function calculatingFilledIndex(TickPosition.Data storage self)
-//        internal
-//        view
-//        returns (uint64)
-//    {
-//        if (self.filledIndex == self.currentIndex && self.currentIndex > 0) {
-//            return self.filledIndex - 1;
-//        }
-//
-//        return self.filledIndex;
-//    }
+    //    function calculatingFilledIndex(TickPosition.Data storage self)
+    //        internal
+    //        view
+    //        returns (uint64)
+    //    {
+    //        if (self.filledIndex == self.currentIndex && self.currentIndex > 0) {
+    //            return self.filledIndex - 1;
+    //        }
+    //
+    //        return self.filledIndex;
+    //    }
 
     function cancelLimitOrder(TickPosition.Data storage self, uint64 orderId)
         internal

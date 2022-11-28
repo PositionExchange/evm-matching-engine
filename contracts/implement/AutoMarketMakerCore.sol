@@ -536,14 +536,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 sqrtPriceTarget,
         uint128 sqrtCurrentPrice,
         uint32 basisPoint
-    )
-        internal
-        pure
-        returns (
-            uint128 baseOut,
-            uint128 quoteOut
-        )
-    {
+    ) internal pure returns (uint128 baseOut, uint128 quoteOut) {
         if (isBuy) {
             baseOut = LiquidityMath.calculateBaseWithPriceWhenBuy(
                 sqrtPriceTarget,
