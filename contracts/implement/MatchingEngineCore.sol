@@ -446,10 +446,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             ) {
                 break;
             }
-            //            if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
-            //                step.pipNext = crossPipResult.toPip;
-            //            }
-            if (crossPipResult.toPip != 0) {
+            if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
             /// In this line, step.pipNext still is 0, that means no liquidity for this order
