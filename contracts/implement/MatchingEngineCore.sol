@@ -611,7 +611,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // HOOK HERE *
     //*
 
-    function _isNeedSetPipNext() internal view virtual returns (bool) {
+    function _isNeedSetPipNext() internal pure virtual returns (bool) {
         return false;
     }
 
@@ -705,5 +705,5 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     function _addReserveSnapshot() internal virtual {}
 
-    function _onlyCounterParty() internal virtual {}
+    function _onlyCounterParty() internal view virtual {}
 }

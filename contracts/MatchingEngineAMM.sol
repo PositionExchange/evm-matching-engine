@@ -50,6 +50,7 @@ contract MatchingEngineAMM is
 
     function _onlyCounterParty()
         internal
+        view
         override(MatchingEngineCore, AutoMarketMakerCore)
     {
         require(
@@ -186,7 +187,7 @@ contract MatchingEngineAMM is
 
     function _isNeedSetPipNext()
         internal
-        view
+        pure
         override(MatchingEngineCore)
         returns (bool)
     {
