@@ -304,7 +304,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         TradeConvert.quoteToBase(
                             _params.quoteDeposited - quoteAmountFilled,
                             _params.pip,
-                            _singleSlot.pip
+                            basisPoint
                         )
                     );
                 } else {
