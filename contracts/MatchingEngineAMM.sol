@@ -22,7 +22,7 @@ contract MatchingEngineAMM is
     address public positionManagerLiquidity;
 
     function initialize(InitParams memory params) external {
-        require(!isInitialized, "Initialized");
+        require(!isInitialized, Errors.ME_INITIALIZED);
         isInitialized = true;
 
         positionManagerLiquidity = params.positionLiquidity;
@@ -56,7 +56,7 @@ contract MatchingEngineAMM is
         require(
             counterParty == _msgSender() ||
                 positionManagerLiquidity == _msgSender(),
-            Errors.VL_ONLY_COUNTERPARTY
+            Errors.ME_ONLY_COUNTERPARTY
         );
     }
 

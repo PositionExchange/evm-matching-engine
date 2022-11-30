@@ -11,6 +11,7 @@ import "../libraries/helper/Convert.sol";
 import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
+import "../libraries/helper/Errors.sol";
 
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
@@ -54,7 +55,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         TickPosition.Data storage _tickPosition = tickPosition[_pip];
         require(
             hasLiquidity(_pip) && _orderId >= _tickPosition.filledIndex,
-            "VL_ONLY_PENDING_ORDER"
+            Errors.ME_ONLY_PENDING_ORDER
         );
         return _internalCancelLimitOrder(_tickPosition, _pip, _orderId);
     }
@@ -225,7 +226,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
-        require(_params.size != 0, "6");
+        require(_params.size != 0, Errors.ME_INVALID_SIZE);
         SingleSlot memory _singleSlot = singleSlot;
         uint256 underlyingPip = uint256(getUnderlyingPriceInPip());
         {
@@ -234,9 +235,15 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     int128(maxWordRangeForLimitOrder * 250);
 
                 if (maxPip > 0) {
-                    require(int128(_params.pip) >= maxPip, "24.2");
+                    require(
+                        int128(_params.pip) >= maxPip,
+                        Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
+                    );
                 } else {
-                    require(_params.pip >= 1, "24.2");
+                    require(
+                        _params.pip >= 1,
+                        Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
+                    );
                 }
             } else {
                 require(
@@ -259,7 +266,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     require(
                         _params.pip <=
                             underlyingPip + maxWordRangeForMarketOrder * 250,
-                        "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
+                        Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 } else {
                     // lower pip when short must higher than max word range for market order long
@@ -267,7 +274,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         int128(_params.pip) >=
                             (int256(underlyingPip) -
                                 int128(maxWordRangeForMarketOrder * 250)),
-                        "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
+                        Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 }
                 (
