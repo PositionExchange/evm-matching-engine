@@ -12,6 +12,7 @@ import "../interfaces/IMatchingEngineCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Errors.sol";
+import "../libraries/helper/Require.sol";
 
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
@@ -53,7 +54,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     {
         _onlyCounterParty();
         TickPosition.Data storage _tickPosition = tickPosition[_pip];
-        require(
+
+        Require._require(
             hasLiquidity(_pip) && _orderId >= _tickPosition.filledIndex,
             Errors.ME_ONLY_PENDING_ORDER
         );
@@ -226,7 +228,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
-        require(_params.size != 0, Errors.ME_INVALID_SIZE);
+        Require._require(_params.size != 0, Errors.ME_INVALID_SIZE);
         SingleSlot memory _singleSlot = singleSlot;
         uint256 underlyingPip = uint256(getUnderlyingPriceInPip());
         {
@@ -235,21 +237,21 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     int128(maxWordRangeForLimitOrder * 250);
 
                 if (maxPip > 0) {
-                    require(
+                    Require._require(
                         int128(_params.pip) >= maxPip,
                         Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                     );
                 } else {
-                    require(
+                    Require._require(
                         _params.pip >= 1,
                         Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                     );
                 }
             } else {
-                require(
+                Require._require(
                     _params.pip <=
                         (underlyingPip + maxWordRangeForLimitOrder * 250),
-                    "4"
+                    Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                 );
             }
         }
@@ -263,14 +265,14 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 // open market
                 if (_params.isBuy) {
                     // higher pip when long must lower than max word range for market order short
-                    require(
+                    Require._require(
                         _params.pip <=
                             underlyingPip + maxWordRangeForMarketOrder * 250,
                         Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 } else {
                     // lower pip when short must higher than max word range for market order long
-                    require(
+                    Require._require(
                         int128(_params.pip) >=
                             (int256(underlyingPip) -
                                 int128(maxWordRangeForMarketOrder * 250)),
@@ -614,6 +616,10 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
     }
 
+    //    function Require._require(bool condition, string memory reason) internal {
+    //        require(condition, reason);
+    //    }
+
     //*
     // HOOK HERE *
     //*
@@ -712,5 +718,5 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     function _addReserveSnapshot() internal virtual {}
 
-    function _onlyCounterParty() internal view virtual {}
+    function _onlyCounterParty() internal virtual {}
 }

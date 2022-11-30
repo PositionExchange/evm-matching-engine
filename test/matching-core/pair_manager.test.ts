@@ -787,7 +787,7 @@ describe("MockMatchingEngineCore", async function () {
 
     describe("revert errors", async () => {
         it("VL_SHORT_PRICE_LESS_CURRENT_PRICE", async () => {
-            await expect(createLimitOrder(450201, 20, false)).to.revertedWith("4");
+            await expect(createLimitOrder(450201, 20, false)).to.revertedWith("ME_08");
         });
     });
 

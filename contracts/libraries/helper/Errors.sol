@@ -1,11 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1
+// spdx-license-identifier: busl-1.1
 pragma solidity ^0.8.9;
 
-/**
- *  - VL = ValidationLogic
- *  - MATH = Math libraries
-
- */
 library Errors {
     string public constant ME_INITIALIZED = "ME_01";
     string public constant ME_ONLY_COUNTERPARTY = "ME_02";
