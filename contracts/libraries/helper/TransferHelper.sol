@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./Require.sol";
 
 library TransferHelper {
     /// @notice Transfers tokens from the targeted address to the given destination
@@ -24,7 +25,7 @@ library TransferHelper {
                 value
             )
         );
-        require(
+        Require._require(
             success && (data.length == 0 || abi.decode(data, (bool))),
             "STF"
         );
@@ -41,7 +42,7 @@ library TransferHelper {
 
     function safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
-        require(
+        Require._require(
             success,
             "TransferHelper::safeTransferETH: ETH transfer failed"
         );

@@ -9,6 +9,7 @@ import "./implement/AutoMarketMakerCore.sol";
 import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 import "./libraries/helper/Errors.sol";
+import "./libraries/helper/Require.sol";
 
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
@@ -22,9 +23,8 @@ contract MatchingEngineAMM is
     address public positionManagerLiquidity;
 
     function initialize(InitParams memory params) external {
-        require(!isInitialized, Errors.ME_INITIALIZED);
+        Require._require(!isInitialized, Errors.ME_INITIALIZED);
         isInitialized = true;
-
         positionManagerLiquidity = params.positionLiquidity;
         counterParty = params.spotHouse;
 
@@ -50,10 +50,9 @@ contract MatchingEngineAMM is
 
     function _onlyCounterParty()
         internal
-        view
         override(MatchingEngineCore, AutoMarketMakerCore)
     {
-        require(
+        Require._require(
             counterParty == _msgSender() ||
                 positionManagerLiquidity == _msgSender(),
             Errors.ME_ONLY_COUNTERPARTY
