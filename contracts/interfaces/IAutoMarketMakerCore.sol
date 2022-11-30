@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "../libraries/helper/Liquidity.sol";
+import "../libraries/amm/Liquidity.sol";
 
 interface IAutoMarketMakerCore {
     // TODO add guard
