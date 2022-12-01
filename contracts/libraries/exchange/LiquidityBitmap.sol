@@ -285,7 +285,7 @@ library LiquidityBitmap {
         uint256 _n,
         uint8 _l,
         uint8 _r
-    ) private returns (uint256) {
+    ) private pure returns (uint256) {
         if (_l == 0) {
             // NOTE this code support unset at index 0 only
             // avoid overflow in the next line (_l - 1)
@@ -306,7 +306,11 @@ library LiquidityBitmap {
     }
 
     // Function to toggle the last m bits
-    function toggleLastMBits(uint256 n, uint8 m) private returns (uint256) {
+    function toggleLastMBits(uint256 n, uint8 m)
+        private
+        pure
+        returns (uint256)
+    {
         // Calculating a number 'num' having
         // 'm' bits and all are set
         uint256 num = (1 << m) - 1;

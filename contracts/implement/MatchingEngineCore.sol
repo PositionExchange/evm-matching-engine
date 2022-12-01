@@ -255,7 +255,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 );
             }
         }
-        bool hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
+        bool _hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
         //save gas
         {
             bool canOpenMarketWithMaxPip = (_params.isBuy &&
@@ -290,7 +290,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     _params.trader,
                     _params.feePercent
                 );
-                hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
+                _hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
                 // reassign _singleSlot after _openMarketPositionWithMaxPip
                 _singleSlot = singleSlot;
             }
@@ -329,10 +329,10 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
                 orderId = tickPosition[_params.pip].insertLimitOrder(
                     remainingSize,
-                    hasLiquidity,
+                    _hasLiquidity,
                     _params.isBuy
                 );
-                if (!hasLiquidity) {
+                if (!_hasLiquidity) {
                     //set the bit to mark it has liquidity
                     liquidityBitmap.toggleSingleBit(_params.pip, true);
                 }
@@ -615,10 +615,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
         }
     }
-
-    //    function Require._require(bool condition, string memory reason) internal {
-    //        require(condition, reason);
-    //    }
 
     //*
     // HOOK HERE *
