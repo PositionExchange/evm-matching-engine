@@ -10,7 +10,13 @@ interface IMatchingEngineCore {
         uint256 liquidity;
     }
 
-    // TODO add guard
+    /// @notice Emitted when market order filled
+    /// @param isBuy side of order
+    /// @param amount amount filled
+    /// @param toPip fill to pip
+    /// @param startPip fill start pip
+    /// @param remainingLiquidity remaining liquidity in pip
+    /// @param filledIndex number of index filled
     event MarketFilled(
         bool isBuy,
         uint256 indexed amount,
@@ -19,6 +25,12 @@ interface IMatchingEngineCore {
         uint128 remainingLiquidity,
         uint64 filledIndex
     );
+
+    /// @notice Emitted when market order filled
+    /// @param orderId side of order
+    /// @param pip amount filled
+    /// @param size fill to pip
+    /// @param isBuy fill start pip
     event LimitOrderCreated(
         uint64 orderId,
         uint128 pip,
@@ -26,6 +38,11 @@ interface IMatchingEngineCore {
         bool isBuy
     );
 
+    /// @notice Emitted limit order cancel
+    /// @param size size of order
+    /// @param pip of order
+    /// @param orderId id of order cancel
+    /// @param isBuy fill start pip
     event LimitOrderCancelled(
         bool isBuy,
         uint64 orderId,
@@ -33,29 +50,50 @@ interface IMatchingEngineCore {
         uint256 size
     );
 
+    /// @notice Emitted when update max finding word
+    /// @param pairManager address of pair
+    /// @param newMaxFindingWordsIndex new value
     event UpdateMaxFindingWordsIndex(
-        address spotManager,
+        address pairManager,
         uint128 newMaxFindingWordsIndex
     );
 
+    /// @notice Emitted when update max finding word for limit order
+    /// @param newMaxWordRangeForLimitOrder new value
     event MaxWordRangeForLimitOrderUpdated(
         uint128 newMaxWordRangeForLimitOrder
     );
+
+    /// @notice Emitted when update max finding word for market order
+    /// @param newMaxWordRangeForMarketOrder new value
     event MaxWordRangeForMarketOrderUpdated(
         uint128 newMaxWordRangeForMarketOrder
     );
-    event UpdateBasisPoint(address spotManager, uint256 newBasicPoint);
-    event UpdateBaseBasicPoint(address spotManager, uint256 newBaseBasisPoint);
+
+    /// @notice Emitted when snap shot reserve
+    /// @param pip pip snap shot
+    /// @param timestamp time snap shot
     event ReserveSnapshotted(uint128 pip, uint256 timestamp);
+
+    /// @notice Emitted when limit order updated
+    /// @param pairManager address of pair
+    /// @param orderId id of order
+    /// @param pip at order
+    /// @param size of order
     event LimitOrderUpdated(
-        address spotManager,
+        address pairManager,
         uint64 orderId,
         uint128 pip,
         uint256 size
     );
-    event UpdateExpireTime(address spotManager, uint64 newExpireTime);
-    event UpdateCounterParty(address spotManager, address newCounterParty);
-    event LiquidityPoolAllowanceUpdate(address liquidityPool, bool value);
+
+    /// @notice Emitted when order fill for swap
+    /// @param sender address of trader
+    /// @param amount0In amount 0 int
+    /// @param amount1In amount 1 in
+    /// @param amount0Out amount 0 out
+    /// @param amount1Out amount 1 out
+    /// @param to swap for address
     event Swap(
         address indexed sender,
         uint256 amount0In,

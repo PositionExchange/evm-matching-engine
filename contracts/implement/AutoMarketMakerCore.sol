@@ -747,9 +747,5 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
 
     function _basisPoint() internal view virtual returns (uint256) {}
 
-    function getPipRange() external view override returns (uint128) {
-        return pipRange;
-    }
-
     function _onlyCounterParty() internal virtual {}
 }

@@ -28,7 +28,6 @@ interface IMatchingEngineAMM is
         address spotHouse;
         uint32 feeShareAmm;
     }
-    // TODO add guard
 
     struct ExchangedData {
         uint256 baseAmount;
@@ -37,23 +36,23 @@ interface IMatchingEngineAMM is
         uint256 feeBaseAmount;
     }
 
-    event PairManagerInitialized(
-        address quoteAsset,
-        address baseAsset,
-        address counterParty,
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint64 expireTime,
-        address owner
-    );
-
+    /// @notice init the pair right after cloned
+    /// @param params the init params with struct InitParams
+    /// @dev save storage the init data
     function initialize(InitParams memory params) external;
 
+    /// @notice get the base and quote amount can claim
+    /// @param pip the pip of the order
+    /// @param orderId id of order in pip
+    /// @param exData the base amount
+    /// @param basisPoint the basis point of price
+    /// @param fee the fee percent
+    /// @param feeBasis the basis fee froe calculate
+    /// @return the Exchanged data
+    /// @dev calculate the base and quote from order and pip
     function accumulateClaimableAmount(
-        uint128 _pip,
-        uint64 _orderId,
+        uint128 pip,
+        uint64 orderId,
         ExchangedData memory exData,
         uint256 basisPoint,
         uint16 fee,
