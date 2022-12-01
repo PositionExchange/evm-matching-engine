@@ -131,7 +131,7 @@ interface IMatchingEngineCore {
         uint128 fromPip,
         uint256 dataLength,
         bool toHigher
-    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128);
+    ) external view returns (LiquidityOfEachPip[] memory, uint128);
 
     function getAmountEstimate(
         uint256 size,

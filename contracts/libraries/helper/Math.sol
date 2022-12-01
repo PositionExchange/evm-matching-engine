@@ -10,7 +10,7 @@ library Math {
         uint256 _amount,
         uint16 _fee,
         uint128 _feeBasis
-    ) internal view returns (uint256 feeCalculatedAmount) {
+    ) internal pure returns (uint256 feeCalculatedAmount) {
         if (_fee == 0) {
             return 0;
         }
@@ -21,7 +21,7 @@ library Math {
         uint256 _amount,
         uint16 _fee,
         uint128 _feeBasis
-    ) internal view returns (uint256 feeRefund) {
+    ) internal pure returns (uint256 feeRefund) {
         feeRefund = (_amount * _fee) / (_feeBasis - _fee);
     }
 

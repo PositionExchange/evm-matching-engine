@@ -50,6 +50,7 @@ contract MatchingEngineAMM is
 
     function _onlyCounterParty()
         internal
+        view
         override(MatchingEngineCore, AutoMarketMakerCore)
     {
         Require._require(
@@ -71,6 +72,7 @@ contract MatchingEngineAMM is
         SwapState.AmmState memory ammState
     )
         internal
+        view
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
     {
@@ -249,7 +251,6 @@ contract MatchingEngineAMM is
             if (isBuy) {
                 //BUY => can claim base asset
                 exData.baseAmount += filledSize;
-                //                );
             } else {
                 // SELL => can claim quote asset
                 exData.quoteAmount += TradeConvert.baseToQuote(

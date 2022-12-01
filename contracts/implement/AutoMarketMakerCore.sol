@@ -294,7 +294,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     function _onCrossPipAMMTargetPrice(
         OnCrossPipParams memory params,
         SwapState.AmmState memory ammState
-    ) internal returns (CrossPipResult.Result memory result) {
+    ) internal view returns (CrossPipResult.Result memory result) {
         CrossPipState memory crossPipState;
         // Have target price
         crossPipState.sqrtTargetPip = _calculateSqrtPrice(
@@ -401,10 +401,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     function _onCrossPipAMMNoTargetPrice(
         OnCrossPipParams memory params,
         SwapState.AmmState memory ammState
-    ) internal returns (CrossPipResult.Result memory result) {
+    ) internal view returns (CrossPipResult.Result memory result) {
         CrossPipState memory crossPipState;
         uint8 countSkipIndex;
-        Liquidity.Info memory _liquidity;
         params.currentPip = _calculateSqrtPrice(
             params.currentPip,
             FixedPoint128.BUFFER
@@ -507,7 +506,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 baseOut,
         uint128 quoteOut,
         CrossPipResult.Result memory result
-    ) internal returns (bool) {
+    ) internal pure returns (bool) {
         if (
             (params.isBase && params.amount <= baseOut) ||
             (!params.isBase && params.amount <= quoteOut)
@@ -722,7 +721,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     function _initCrossAmmReserves(
         Liquidity.Info memory _liquidity,
         SwapState.AmmState memory ammState
-    ) internal returns (SwapState.AmmReserves memory) {
+    ) internal pure returns (SwapState.AmmReserves memory) {
         ammState.ammReserves[ammState.index] = SwapState.AmmReserves({
             baseReserve: _liquidity.baseReal,
             quoteReserve: _liquidity.quoteReal,

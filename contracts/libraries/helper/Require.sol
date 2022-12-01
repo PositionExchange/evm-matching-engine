@@ -5,7 +5,7 @@
 pragma solidity ^0.8.9;
 
 library Require {
-    function _require(bool condition, string memory reason) internal {
+    function _require(bool condition, string memory reason) internal pure {
         require(condition, reason);
     }
 }
