@@ -32,6 +32,7 @@ interface IAutoMarketMakerCore {
             uint256 feeGrowthQuote
         );
 
+    /// @notice the struct for remove liquidity avoid deep stack
     struct RemoveLiquidity {
         uint128 liquidity;
         uint32 indexedPipRange;

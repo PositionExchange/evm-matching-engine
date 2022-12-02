@@ -43,6 +43,8 @@ library SwapState {
         AmmState ammState;
     }
 
+    /// @notice init amm stare when start market fill
+    /// @return amm state after init value
     function newAMMState() internal pure returns (AmmState memory) {
         AmmReserves[5] memory _ammReserves;
         uint256[5] memory _pipRangesIndex;
@@ -55,6 +57,8 @@ library SwapState {
             });
     }
 
+    /// @notice check condition to skip first pip before market fill
+    /// @param state the state of market fill
     function beforeExecute(State memory state) internal pure {
         // Check need to skip first pip
         CurrentLiquiditySide currentLiquiditySide = CurrentLiquiditySide(
@@ -72,6 +76,11 @@ library SwapState {
         }
     }
 
+    /// @notice check is reach max pip when have limit fill market
+    /// @param state the state of market fill
+    /// @param _pipNext the next pip
+    /// @param _maxPip the max pip can reach
+    /// @return true if reach max pip
     function isReachedMaxPip(
         State memory state,
         uint128 _pipNext,
@@ -83,6 +92,8 @@ library SwapState {
             (_maxPip != 0 && _pipNext == 0);
     }
 
+    /// @notice increase or decrease pip back 1 pip depends on buy or sell
+    /// @param state the state of market fill
     function moveBack1Pip(State memory state) internal pure {
         if (state.isBuy) {
             state.pip--;
@@ -91,6 +102,9 @@ library SwapState {
         }
     }
 
+    /// @notice increase or decrease pip foward 1 pip depends on buy or sell
+    /// @param state the state of market fill
+    /// @param pipNext the next pip
     function moveForward1Pip(State memory state, uint128 pipNext)
         internal
         pure
@@ -102,6 +116,10 @@ library SwapState {
         }
     }
 
+    /// @notice update the main size out and flip side out when market fill
+    /// @param state the state of market fill
+    /// @param tradedQuantity then quan of trade
+    /// @param pipNext the next pip reach to
     function updateTradedSize(
         State memory state,
         uint256 tradedQuantity,
@@ -132,6 +150,7 @@ library SwapState {
             );
     }
 
+    /// @notice update the state with flag buy or sell
     function reverseIsFullBuy(State memory state) internal pure {
         if (!state.isBuy) {
             state.isFullBuy = uint8(1);
@@ -140,6 +159,10 @@ library SwapState {
         }
     }
 
+    /// @notice udpate the amm traded when fill amm
+    /// @param state the state of market fill
+    /// @param baseAmount fill with amm
+    /// @param quoteAmount fill with amm
     function updateAMMTradedSize(
         State memory state,
         uint128 baseAmount,
@@ -154,6 +177,10 @@ library SwapState {
         }
     }
 
+    /// @notice update the amm will full fill active range
+    /// @param state the state of market fill
+    /// @param baseAmount fill with amm
+    /// @param quoteAmount fill with amm
     function ammFillAll(
         State memory state,
         uint128 baseAmount,

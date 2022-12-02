@@ -25,32 +25,38 @@ abstract contract Fee is IFee {
         baseAsset = _baseAsset;
     }
 
+    /// @inheritdoc IFee
     function decreaseBaseFeeFunding(uint256 baseFee) public virtual {
         if (baseFee > 0) {
             baseFeeFunding -= baseFee;
         }
     }
 
+    /// @inheritdoc IFee
     function decreaseQuoteFeeFunding(uint256 quoteFee) public virtual {
         if (quoteFee > 0) {
             quoteFeeFunding -= quoteFee;
         }
     }
 
+    /// @inheritdoc IFee
     function increaseBaseFeeFunding(uint256 baseFee) public virtual {
         _increaseBaseFeeFunding(baseFee);
     }
 
+    /// @inheritdoc IFee
     function increaseQuoteFeeFunding(uint256 quoteFee) public virtual {
         _increaseQuoteFeeFunding(quoteFee);
     }
 
+    /// @notice increase the fee base with internal when fill amm and share fee
     function _increaseBaseFeeFunding(uint256 baseFee) internal virtual {
         if (baseFee > 0) {
             baseFeeFunding += baseFee;
         }
     }
 
+    /// @notice increase the fee base with internal when fill amm and share fee
     function _increaseQuoteFeeFunding(uint256 quoteFee) internal virtual {
         if (quoteFee > 0) {
             quoteFeeFunding += quoteFee;

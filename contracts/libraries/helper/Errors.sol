@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
+/// @notice Mapping error code to error message
 library Errors {
     string public constant ME_INITIALIZED = "ME_01";
     string public constant ME_ONLY_COUNTERPARTY = "ME_02";

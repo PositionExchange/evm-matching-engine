@@ -9,11 +9,9 @@ abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
 
+    /// @inheritdoc IMatchingEngineCore
     // the smallest number of the price. Eg. 100 for 0.01
     uint256 public override basisPoint;
-
-    //    // demoninator of the basis point. Eg. 10000 for 0.01
-    //    uint256 public BASE_BASIC_POINT;
 
     // Max finding word can be 3500
     uint128 public maxFindingWordsIndex;

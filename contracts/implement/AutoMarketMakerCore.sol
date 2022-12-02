@@ -20,6 +20,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     using Convert for uint256;
     using CrossPipResult for CrossPipResult.Result;
 
+    /// @notice init the amm when deploy contract
+    /// @notice can call only one time
     function _initializeAMM(
         uint128 _pipRange,
         uint32 _tickSpace,
@@ -36,6 +38,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         );
     }
 
+    /// @notice the struct of when add liquidity avoid deep stack
     struct AddLiquidityState {
         uint128 currentPrice;
         uint128 quoteReal;
@@ -43,6 +46,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 cacheSqrtK;
     }
 
+    /// @inheritdoc IAutoMarketMakerCore
     function addLiquidity(AddLiquidity calldata params)
         public
         virtual
@@ -150,6 +154,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         );
     }
 
+    /// @inheritdoc IAutoMarketMakerCore
     function removeLiquidity(RemoveLiquidity calldata params)
         public
         virtual
@@ -166,6 +171,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         );
     }
 
+    /// @inheritdoc IAutoMarketMakerCore
     function estimateRemoveLiquidity(RemoveLiquidity calldata params)
         public
         view
@@ -272,8 +278,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         }
     }
 
-    function getCurrentPip() public view virtual returns (uint128) {}
-
     struct OnCrossPipParams {
         uint128 pipNext;
         bool isBuy;
@@ -291,6 +295,10 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         bool skipIndex;
     }
 
+    /// @notice calculate amount fill amm when have target pip need reach to
+    /// @param params the struct OnCrossPipParams
+    /// @param ammState the state of amm, alive when market fill
+    /// @return result the  struct result after fill
     function _onCrossPipAMMTargetPrice(
         OnCrossPipParams memory params,
         SwapState.AmmState memory ammState
@@ -398,6 +406,10 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         }
     }
 
+    /// @notice calculate amount fill amm when have no target pip need reach to
+    /// @param params the struct OnCrossPipParams
+    /// @param ammState the state of amm, alive when market fill
+    /// @return result the  struct result after fill
     function _onCrossPipAMMNoTargetPrice(
         OnCrossPipParams memory params,
         SwapState.AmmState memory ammState
@@ -499,6 +511,13 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         }
     }
 
+    /// @notice check amount traded reach the pip or not
+    /// @param params the struct OnCrossPipParams
+    /// @param _ammReserves the struct SwapState.AmmReserves
+    /// @param ammState the state of amm, alive when market fill
+    /// @param baseOut the amount base if reach pip
+    /// @param quoteOut the amount quote if reach the pip
+    /// @return the flag reach pip or not
     function _notReachPip(
         OnCrossPipParams memory params,
         SwapState.AmmReserves memory _ammReserves,
@@ -529,6 +548,13 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         return false;
     }
 
+    /// @notice calculate the amount filled if can reach to the tart pip we want
+    /// @param isBuy the flag buy or sell
+    /// @param sqrtPriceTarget the sqrt of target price
+    /// @param sqrtCurrentPrice the sqrt of current price
+    /// @param basisPoint the basis point of the pip
+    /// @return baseOut the amount base if reach pip
+    /// @return quoteOut the amount quote if reach the pip
     function _calculateAmountOut(
         SwapState.AmmReserves memory ammReserves,
         bool isBuy,
@@ -565,6 +591,11 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         }
     }
 
+    /// @notice calculate the amount if not reach pip target
+    /// @param params the struct OnCrossPipParams
+    /// @param ammReserves the struct SwapState.AmmReserves
+    /// @return quoteAmount if not reached pip target
+    /// @return baseAmount if not reached pip target
     function _calculateAmountFilled(
         OnCrossPipParams memory params,
         SwapState.AmmReserves memory ammReserves
@@ -608,6 +639,12 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         }
     }
 
+    /// @notice amm state when the step amm fill to the pip target
+    /// @param params the struct OnCrossPipParams
+    /// @param ammReserves the struct SwapState.AmmReserves
+    /// @param baseAmount the amount base filled
+    /// @param quoteAmount the amount quote filled
+    /// @return price the pip reach to
     function _updateAmmState(
         OnCrossPipParams memory params,
         SwapState.AmmReserves memory ammReserves,
@@ -673,6 +710,13 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             ammReserves.baseReserve;
     }
 
+    /// @notice update the amm and save to storage
+    /// @param ammState the struct AmmState
+    /// @param isBuy the side of order
+    /// @param feePercent the fee percent of fee of order
+    /// @return totalFeeAmm the total fee of amm
+    /// @return feeProtocolAmm the fee of protocol of amm
+    /// @return totalFilledAmm the total filled of order
     function _updateAMMStateAfterTrade(
         SwapState.AmmState memory ammState,
         bool isBuy,
@@ -718,6 +762,10 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             FixedPoint128.BASIC_POINT_FEE;
     }
 
+    /// @notice init amm state when the order is first time
+    /// @param _liquidity the information of liquidity
+    /// @param ammState the struct SwapState.AmmState, and store memory
+    /// @return the amm reserve after init
     function _initCrossAmmReserves(
         Liquidity.Info memory _liquidity,
         SwapState.AmmState memory ammState
@@ -737,6 +785,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         return ammState.ammReserves[ammState.index];
     }
 
+    /// @notice calculate the sqrt of price
+    /// @param pip the pip need to sqrt
+    /// @param curve the buffer to sqrt
     function _calculateSqrtPrice(uint128 pip, uint256 curve)
         internal
         pure
@@ -745,7 +796,12 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         return (uint256(pip) * curve).sqrt().Uint256ToUint128();
     }
 
+    /// @notice hook function to get basis point of pair
     function _basisPoint() internal view virtual returns (uint256) {}
 
+    /// @notice hook function to get current pip
+    function getCurrentPip() public view virtual returns (uint128) {}
+
+    /// @notice hook function to require only counter can call
     function _onlyCounterParty() internal virtual {}
 }
