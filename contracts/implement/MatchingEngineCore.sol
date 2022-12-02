@@ -1,153 +1,121 @@
 /**
  * @author Musket
  */
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 import "../libraries/exchange/LimitOrder.sol";
-import "../libraries/types/PairManagerCoreStorage.sol";
-import "../libraries/helper/Timers.sol";
+import "../libraries/types/MatchingEngineCoreStorage.sol";
 import "../libraries/helper/TradeConvert.sol";
 import "../libraries/exchange/TickPosition.sol";
-import "../interfaces/IPairManager.sol";
-import "./Block.sol";
 import "../libraries/helper/Convert.sol";
+import "../interfaces/IMatchingEngineCore.sol";
+import "../libraries/exchange/SwapState.sol";
+import "../libraries/amm/CrossPipResult.sol";
+import "../libraries/helper/Errors.sol";
+import "../libraries/helper/Require.sol";
 
-abstract contract PairManagerCore is Block, PairManagerCoreStorage {
-    event MarketFilled(
-        bool isBuy,
-        uint256 indexed amount,
-        uint128 toPip,
-        uint256 startPip,
-        uint128 remainingLiquidity,
-        uint64 filledIndex
-    );
-    event LimitOrderCreated(
-        uint64 orderId,
-        uint128 pip,
-        uint128 size,
-        bool isBuy
-    );
-
-    event PairManagerInitialized(
-        address quoteAsset,
-        address baseAsset,
-        address counterParty,
-        uint256 basisPoint,
-        uint256 BASE_BASIC_POINT,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip,
-        uint64 expireTime,
-        address owner
-    );
-    event LimitOrderCancelled(
-        bool isBuy,
-        uint64 orderId,
-        uint128 pip,
-        uint256 size
-    );
-
-    event UpdateMaxFindingWordsIndex(
-        address spotManager,
-        uint128 newMaxFindingWordsIndex
-    );
-
-    event MaxWordRangeForLimitOrderUpdated(
-        uint128 newMaxWordRangeForLimitOrder
-    );
-    event MaxWordRangeForMarketOrderUpdated(
-        uint128 newMaxWordRangeForMarketOrder
-    );
-    event UpdateBasisPoint(address spotManager, uint256 newBasicPoint);
-    event UpdateBaseBasicPoint(address spotManager, uint256 newBaseBasisPoint);
-    event ReserveSnapshotted(uint128 pip, uint256 timestamp);
-    event LimitOrderUpdated(
-        address spotManager,
-        uint64 orderId,
-        uint128 pip,
-        uint256 size
-    );
-    event UpdateExpireTime(address spotManager, uint64 newExpireTime);
-    event UpdateCounterParty(address spotManager, address newCounterParty);
-    event LiquidityPoolAllowanceUpdate(address liquidityPool, bool value);
-
+abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
     using Convert for uint256;
     using Convert for int256;
+    using SwapState for SwapState.State;
 
     function _initializeCore(
-        uint256 basisPoint,
-        uint256 baseBasisPoint,
-        uint128 maxFindingWordsIndex,
-        uint128 initialPip
+        uint256 _basisPoint,
+        uint128 _maxFindingWordsIndex,
+        uint128 _initialPip
     ) internal {
-        reserveSnapshots.push(
-            ReserveSnapshot(initialPip, _blockTimestamp(), _blockNumber())
-        );
-        singleSlot.pip = initialPip;
-        basisPoint = basisPoint;
-        BASE_BASIC_POINT = baseBasisPoint;
-        maxFindingWordsIndex = maxFindingWordsIndex;
-        maxWordRangeForLimitOrder = maxFindingWordsIndex;
-        maxWordRangeForMarketOrder = maxFindingWordsIndex;
+        singleSlot.pip = _initialPip;
+        basisPoint = _basisPoint;
+        maxFindingWordsIndex = _maxFindingWordsIndex;
+        maxWordRangeForLimitOrder = _maxFindingWordsIndex;
+        maxWordRangeForMarketOrder = _maxFindingWordsIndex;
     }
 
     //*
     //*** Virtual functions
     //*
 
+    /// @inheritdoc IMatchingEngineCore
     function updatePartialFilledOrder(uint128 _pip, uint64 _orderId)
-        external
+        public
         virtual
     {
+        _onlyCounterParty();
         uint256 newSize = tickPosition[_pip].updateOrderWhenClose(_orderId);
         _emitLimitOrderUpdatedHook(address(this), _orderId, _pip, newSize);
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function cancelLimitOrder(uint128 _pip, uint64 _orderId)
-        external
+        public
         virtual
         returns (uint256 remainingSize, uint256 partialFilled)
     {
+        _onlyCounterParty();
         TickPosition.Data storage _tickPosition = tickPosition[_pip];
-        require(
+
+        Require._require(
             hasLiquidity(_pip) && _orderId >= _tickPosition.filledIndex,
-            "VL_ONLY_PENDING_ORDER"
+            Errors.ME_ONLY_PENDING_ORDER
         );
         return _internalCancelLimitOrder(_tickPosition, _pip, _orderId);
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function openLimit(
         uint128 pip,
         uint128 baseAmountIn,
         bool isBuy,
         address trader,
-        uint256 quoteAmountIn
+        uint256 quoteAmountIn,
+        uint16 feePercent
     )
-        external
+        public
         virtual
         returns (
             uint64 orderId,
             uint256 baseAmountFilled,
-            uint256 quoteAmountFilled
+            uint256 quoteAmountFilled,
+            uint256 fee
         )
     {
-        (orderId, baseAmountFilled, quoteAmountFilled) = _internalOpenLimit(
+        _onlyCounterParty();
+        (
+            orderId,
+            baseAmountFilled,
+            quoteAmountFilled,
+            fee
+        ) = _internalOpenLimit(
             ParamsInternalOpenLimit({
                 pip: pip,
                 size: baseAmountIn,
                 isBuy: isBuy,
                 trader: trader,
-                quoteDeposited: quoteAmountIn
+                quoteDeposited: quoteAmountIn,
+                feePercent: feePercent
             })
         );
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function openMarket(
         uint256 size,
         bool isBuy,
-        address trader
-    ) external virtual returns (uint256 sizeOut, uint256 quoteAmount) {
+        address trader,
+        uint16 feePercent
+    )
+        public
+        virtual
+        returns (
+            uint256 mainSideOut,
+            uint256 flipSideOut,
+            uint256 fee
+        )
+    {
+        _onlyCounterParty();
         return
             _internalOpenMarketOrder(
                 size,
@@ -155,17 +123,48 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 0,
                 trader,
                 true,
-                maxWordRangeForLimitOrder
+                maxWordRangeForLimitOrder,
+                feePercent
             );
+    }
+
+    /// @inheritdoc IMatchingEngineCore
+    function openMarketWithQuoteAsset(
+        uint256 quoteAmount,
+        bool isBuy,
+        address trader,
+        uint16 feePercent
+    )
+        public
+        virtual
+        returns (
+            uint256 mainSideOut,
+            uint256 flipSideOut,
+            uint256 fee
+        )
+    {
+        _onlyCounterParty();
+        (mainSideOut, flipSideOut, fee) = _internalOpenMarketOrder(
+            quoteAmount,
+            isBuy,
+            0,
+            trader,
+            false,
+            maxWordRangeForLimitOrder,
+            feePercent
+        );
     }
 
     //*
     // Public view functions
     //*
+
+    /// @inheritdoc IMatchingEngineCore
     function hasLiquidity(uint128 _pip) public view returns (bool) {
         return liquidityBitmap.hasLiquidity(_pip);
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function getPendingOrderDetail(uint128 pip, uint64 orderId)
         public
         view
@@ -188,10 +187,19 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         }
     }
 
+    /// @inheritdoc IMatchingEngineCore
+    function getLiquidityInCurrentPip() public view returns (uint128) {
+        return
+            liquidityBitmap.hasLiquidity(singleSlot.pip)
+                ? tickPosition[singleSlot.pip].liquidity
+                : 0;
+    }
+
     //*
     // Private functions
     //*
 
+    /// @notice cancel limit order
     function _internalCancelLimitOrder(
         TickPosition.Data storage _tickPosition,
         uint128 _pip,
@@ -218,43 +226,47 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         bool isBuy;
         address trader;
         uint256 quoteDeposited;
+        uint16 feePercent;
     }
 
+    /// @notice open limit order
     function _internalOpenLimit(ParamsInternalOpenLimit memory _params)
         private
         returns (
             uint64 orderId,
             uint256 baseAmountFilled,
-            uint256 quoteAmountFilled
+            uint256 quoteAmountFilled,
+            uint256 fee
         )
     {
-        require(_params.size != 0, "VL_INVALID_SIZE");
+        Require._require(_params.size != 0, Errors.ME_INVALID_SIZE);
         SingleSlot memory _singleSlot = singleSlot;
-        uint256 underlyingPip = getUnderlyingPriceInPip();
+        uint256 underlyingPip = uint256(getUnderlyingPriceInPip());
         {
             if (_params.isBuy && _singleSlot.pip != 0) {
                 int256 maxPip = int256(underlyingPip) -
                     int128(maxWordRangeForLimitOrder * 250);
+
                 if (maxPip > 0) {
-                    require(
+                    Require._require(
                         int128(_params.pip) >= maxPip,
-                        "VL_MUST_CLOSE_TO_INDEX_PRICE_LONG"
+                        Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                     );
                 } else {
-                    require(
+                    Require._require(
                         _params.pip >= 1,
-                        "VL_MUST_CLOSE_TO_INDEX_PRICE_LONG"
+                        Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                     );
                 }
             } else {
-                require(
+                Require._require(
                     _params.pip <=
                         (underlyingPip + maxWordRangeForLimitOrder * 250),
-                    "VL_MUST_CLOSE_TO_INDEX_PRICE_SHORT"
+                    Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                 );
             }
         }
-        bool hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
+        bool _hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
         //save gas
         {
             bool canOpenMarketWithMaxPip = (_params.isBuy &&
@@ -264,27 +276,32 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 // open market
                 if (_params.isBuy) {
                     // higher pip when long must lower than max word range for market order short
-                    require(
+                    Require._require(
                         _params.pip <=
                             underlyingPip + maxWordRangeForMarketOrder * 250,
-                        "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
+                        Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 } else {
                     // lower pip when short must higher than max word range for market order long
-                    require(
+                    Require._require(
                         int128(_params.pip) >=
                             (int256(underlyingPip) -
                                 int128(maxWordRangeForMarketOrder * 250)),
-                        "VL_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE"
+                        Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 }
-                (baseAmountFilled, quoteAmountFilled) = _openMarketWithMaxPip(
+                (
+                    baseAmountFilled,
+                    quoteAmountFilled,
+                    fee
+                ) = _openMarketWithMaxPip(
                     _params.size,
                     _params.isBuy,
                     _params.pip,
-                    _params.trader
+                    _params.trader,
+                    _params.feePercent
                 );
-                hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
+                _hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
                 // reassign _singleSlot after _openMarketPositionWithMaxPip
                 _singleSlot = singleSlot;
             }
@@ -307,7 +324,7 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                         TradeConvert.quoteToBase(
                             _params.quoteDeposited - quoteAmountFilled,
                             _params.pip,
-                            _singleSlot.pip
+                            basisPoint
                         )
                     );
                 } else {
@@ -323,10 +340,10 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
 
                 orderId = tickPosition[_params.pip].insertLimitOrder(
                     remainingSize,
-                    hasLiquidity,
+                    _hasLiquidity,
                     _params.isBuy
                 );
-                if (!hasLiquidity) {
+                if (!_hasLiquidity) {
                     //set the bit to mark it has liquidity
                     liquidityBitmap.toggleSingleBit(_params.pip, true);
                 }
@@ -340,12 +357,22 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         }
     }
 
+    /// @notice open market order with max pip
+    /// @notice  open limit can call this function if limit order is part of market order
     function _openMarketWithMaxPip(
         uint256 size,
         bool isBuy,
         uint128 maxPip,
-        address _trader
-    ) internal returns (uint256 sizeOut, uint256 quoteAmount) {
+        address _trader,
+        uint16 feePercent
+    )
+        internal
+        returns (
+            uint256 baseOut,
+            uint256 quoteOut,
+            uint256 fee
+        )
+    {
         // plus 1 avoid  (singleSlot.pip - maxPip)/250 = 0
         uint128 _maxFindingWordsIndex = ((
             isBuy ? maxPip - singleSlot.pip : singleSlot.pip - maxPip
@@ -357,29 +384,13 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 maxPip,
                 address(0),
                 true,
-                _maxFindingWordsIndex
+                _maxFindingWordsIndex,
+                feePercent
             );
     }
 
-    struct SwapState {
-        uint256 remainingSize;
-        // the tick associated with the current price
-        uint128 pip;
-        uint32 basisPoint;
-        uint32 baseBasisPoint;
-        uint128 startPip;
-        uint128 remainingLiquidity;
-        uint8 isFullBuy;
-        bool isSkipFirstPip;
-        uint128 lastMatchedPip;
-        bool isBuy;
-        int8 lastPipRangeLiquidityIndex;
-    }
-
-    struct AmmState {
-        int128 deltaBase;
-        int128 deltaQuote;
-    }
+    /// @notice open market order
+    /// @notice this function fill market with limit order and amm
 
     function _internalOpenMarketOrder(
         uint256 _size,
@@ -387,44 +398,37 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         uint128 _maxPip,
         address _trader,
         bool _isBase,
-        uint128 _maxFindingWordsIndex
-    ) internal virtual returns (uint256 sizeOut, uint256 openOtherSide) {
-        uint8 _pipRangeLiquidityIndex = 0;
-        // only support up to 5 pip ranges
-        uint8[] memory _pipRanges = new uint8[](5);
-        AmmState[] memory _ammState = new AmmState[](5);
-
+        uint128 _maxFindingWordsIndex,
+        uint16 feePercent
+    )
+        internal
+        virtual
+        returns (
+            uint256 mainSideOut,
+            uint256 flipSideOut,
+            uint256 fee
+        )
+    {
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
+
         //save gas
-        SwapState memory state = SwapState({
+        SwapState.State memory state = SwapState.State({
             remainingSize: _size,
             pip: _initialSingleSlot.pip,
             basisPoint: basisPoint.Uint256ToUint32(),
-            baseBasisPoint: BASE_BASIC_POINT.Uint256ToUint32(),
             startPip: 0,
             remainingLiquidity: 0,
-            isFullBuy: 0,
+            isFullBuy: _initialSingleSlot.isFullBuy,
             isSkipFirstPip: false,
             lastMatchedPip: _initialSingleSlot.pip,
-            lastPipRangeLiquidityIndex: -1,
-            isBuy: _isBuy
+            isBuy: _isBuy,
+            isBase: _isBase,
+            flipSideOut: 0,
+            ammState: SwapState.newAMMState()
         });
-        {
-            CurrentLiquiditySide currentLiquiditySide = CurrentLiquiditySide(
-                _initialSingleSlot.isFullBuy
-            );
-            if (currentLiquiditySide != CurrentLiquiditySide.NotSet) {
-                if (state.isBuy)
-                    // if buy and latest liquidity is buy. skip current pip
-                    state.isSkipFirstPip =
-                        currentLiquiditySide == CurrentLiquiditySide.Buy;
-                    // if sell and latest liquidity is sell. skip current pip
-                else
-                    state.isSkipFirstPip =
-                        currentLiquiditySide == CurrentLiquiditySide.Sell;
-            }
-        }
+        state.beforeExecute();
+
         while (state.remainingSize != 0) {
             StepComputations memory step;
             (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
@@ -433,21 +437,41 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 !state.isBuy
             );
 
-            // updated findHasLiquidityInMultipleWords, save more gas
-            if (_maxPip != 0) {
-                // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
+            if (_isNeedSetPipNext()) {
                 if (
-                    (state.isBuy && step.pipNext > _maxPip) ||
-                    (!state.isBuy && step.pipNext < _maxPip)
+                    (_maxPip != 0 && step.pipNext == 0) &&
+                    ((!state.isBuy && state.pip >= _maxPip) ||
+                        (state.isBuy && state.pip <= _maxPip))
                 ) {
-                    break;
+                    step.pipNext = _maxPip;
                 }
             }
-            CrossPipResult memory crossPipResult = _onCrossPipHook(
-                step.pipNext,
-                state.isBuy
+
+            // updated findHasLiquidityInMultipleWords, save more gas
+            // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
+            if (state.isReachedMaxPip(step.pipNext, _maxPip)) {
+                break;
+            }
+
+            CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
+                CrossPipParams({
+                    pipNext: step.pipNext,
+                    isBuy: state.isBuy,
+                    isBase: _isBase,
+                    amount: uint128(state.remainingSize),
+                    basisPoint: state.basisPoint,
+                    currentPip: state.pip
+                }),
+                state.ammState
             );
-            if (crossPipResult.hookBaseCrossPip > 0 && step.pipNext == 0) {
+
+            if (
+                state.ammState.index >= 5 ||
+                state.ammState.lastPipRangeLiquidityIndex == -2
+            ) {
+                break;
+            }
+            if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
             /// In this line, step.pipNext still is 0, that means no liquidity for this order
@@ -455,51 +479,31 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
             if (step.pipNext == 0) {
                 // no more next pip
                 // state pip back 1 pip
-                if (state.isBuy) {
-                    state.pip--;
-                } else {
-                    state.pip++;
-                }
+                state.moveBack1Pip();
                 break;
             } else {
-                uint256 _remainingBase = _isBase
-                    ? state.remainingSize
-                    : TradeConvert.quoteToBase(
-                        state.remainingSize,
-                        step.pipNext,
-                        state.basisPoint
-                    );
-                if (crossPipResult.hookBaseCrossPip > 0) {
-                    if (
-                        state.lastPipRangeLiquidityIndex !=
-                        int8(crossPipResult.pipRangeLiquidityIndex)
-                    ) {
-                        if (state.lastPipRangeLiquidityIndex != int8(-1)) {
-                            _pipRangeLiquidityIndex++;
+                if (
+                    crossPipResult.baseCrossPipOut > 0 &&
+                    crossPipResult.quoteCrossPipOut > 0
+                ) {
+                    if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
+                        if (
+                            (state.isBuy && crossPipResult.toPip > state.pip) ||
+                            (!state.isBuy && crossPipResult.toPip < state.pip)
+                        ) {
+                            state.pip = crossPipResult.toPip;
                         }
-                        if (_pipRangeLiquidityIndex > 5) {
-                            revert("Not enough liquidity");
-                        }
-                        state.lastPipRangeLiquidityIndex = int8(
-                            crossPipResult.pipRangeLiquidityIndex
+                        state.ammFillAll(
+                            crossPipResult.baseCrossPipOut,
+                            crossPipResult.quoteCrossPipOut
                         );
-                        // set pip ranges at pipRangesIndex to _pipRangeLiquidityIndex
-                        _pipRanges[_pipRangeLiquidityIndex] = crossPipResult
-                            .pipRangeLiquidityIndex;
-                    }
-
-                    _ammState[_pipRangeLiquidityIndex]
-                        .deltaBase += crossPipResult.hookBaseCrossPip;
-                    _ammState[_pipRangeLiquidityIndex]
-                        .deltaQuote += crossPipResult.hookQuoteCrossPip;
-
-                    if (
-                        crossPipResult.hookBaseCrossPip >=
-                        int256(state.remainingSize)
-                    ) {
-                        // Break the loop
+                        break;
                     } else {
-                        // minus the remaining size
+                        state.updateAMMTradedSize(
+                            crossPipResult.baseCrossPipOut,
+                            crossPipResult.quoteCrossPipOut
+                        );
+                        state.isSkipFirstPip = false;
                     }
                 }
 
@@ -511,82 +515,48 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                     if (_maxPip != 0) {
                         state.lastMatchedPip = step.pipNext;
                     }
-                    uint256 baseAmount = _isBase
+                    uint256 remainingQuantity = state.isBase
                         ? state.remainingSize
                         : TradeConvert.quoteToBase(
                             state.remainingSize,
                             step.pipNext,
                             state.basisPoint
                         );
-                    if (liquidity > baseAmount) {
+                    if (liquidity > remainingQuantity) {
                         // pip position will partially filled and stop here
                         tickPosition[step.pipNext].partiallyFill(
-                            baseAmount.Uint256ToUint128()
+                            remainingQuantity.Uint256ToUint128()
                         );
-                        if (_isBase)
-                            openOtherSide += TradeConvert.baseToQuote(
-                                state.remainingSize,
-                                step.pipNext,
-                                state.basisPoint
-                            );
-                        else openOtherSide += baseAmount;
-
+                        state.updateTradedSize(
+                            state.remainingSize,
+                            step.pipNext
+                        );
                         // remaining liquidity at current pip
                         state.remainingLiquidity =
                             liquidity -
-                            baseAmount.Uint256ToUint128();
-                        state.remainingSize = 0;
+                            remainingQuantity.Uint256ToUint128();
                         state.pip = step.pipNext;
-                        state.isFullBuy = uint8(
-                            !state.isBuy
-                                ? CurrentLiquiditySide.Buy
-                                : CurrentLiquiditySide.Sell
-                        );
-                    } else if (baseAmount > liquidity) {
+                        state.reverseIsFullBuy();
+                    } else if (remainingQuantity > liquidity) {
                         // order in that pip will be fulfilled
-                        if (_isBase) {
-                            state.remainingSize -= liquidity;
-                            openOtherSide += TradeConvert.baseToQuote(
-                                liquidity,
-                                step.pipNext,
-                                state.basisPoint
-                            );
-                        } else {
-                            state.remainingSize -= TradeConvert.baseToQuote(
-                                liquidity,
-                                step.pipNext,
-                                state.basisPoint
-                            );
-                            openOtherSide += liquidity;
-                        }
-                        state.pip = state.isBuy
-                            ? step.pipNext + 1
-                            : step.pipNext - 1;
+                        state.updateTradedSize(liquidity, step.pipNext);
+                        state.moveForward1Pip(step.pipNext);
                     } else {
                         // remaining size = liquidity
                         // only 1 pip should be toggled, so we call it directly here
                         liquidityBitmap.toggleSingleBit(step.pipNext, false);
-                        if (_isBase) {
-                            openOtherSide += TradeConvert.baseToQuote(
-                                state.remainingSize,
-                                step.pipNext,
-                                state.basisPoint
-                            );
-                        } else {
-                            openOtherSide += liquidity;
-                        }
-                        state.remainingSize = 0;
+                        state.updateTradedSize(liquidity, step.pipNext);
                         state.pip = step.pipNext;
                         state.isFullBuy = 0;
+                        tickPosition[step.pipNext].fullFillLiquidity();
                     }
                 } else {
                     state.isSkipFirstPip = false;
-                    state.pip = state.isBuy
-                        ? step.pipNext + 1
-                        : step.pipNext - 1;
+                    state.moveForward1Pip(step.pipNext);
                 }
             }
         }
+
         {
             if (
                 _initialSingleSlot.pip != state.pip &&
@@ -595,11 +565,12 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
                 // all ticks in shifted range must be marked as filled
                 if (
                     !(state.remainingLiquidity > 0 &&
-                        state.startPip == state.pip)
+                        state.startPip == state.pip) && state.startPip != 0
                 ) {
                     if (_maxPip != 0) {
                         state.pip = state.lastMatchedPip;
                     }
+
                     liquidityBitmap.unsetBitsRange(
                         state.startPip,
                         state.remainingLiquidity > 0
@@ -634,37 +605,44 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
             }
         }
 
-        sizeOut = _size - state.remainingSize;
+        mainSideOut = _size - state.remainingSize;
+        flipSideOut = state.flipSideOut;
         _addReserveSnapshot();
 
-        if (sizeOut != 0) {
-            if (_isBase) {
-                emit MarketFilled(
-                    state.isBuy,
-                    sizeOut,
-                    singleSlot.pip,
-                    state.startPip,
-                    state.remainingLiquidity,
-                    tickPosition[singleSlot.pip].calculatingFilledIndex()
-                );
-            } else {
-                emit MarketFilled(
-                    state.isBuy,
-                    openOtherSide,
-                    singleSlot.pip,
-                    state.startPip,
-                    state.remainingLiquidity,
-                    tickPosition[singleSlot.pip].calculatingFilledIndex()
-                );
-            }
+        fee = _calculateFee(
+            state.ammState,
+            singleSlot.pip,
+            state.isBuy,
+            state.isBase,
+            mainSideOut,
+            flipSideOut,
+            feePercent
+        );
 
-            emitEventSwap(state.isBuy, sizeOut, openOtherSide, _trader);
+        if (mainSideOut != 0) {
+            emit MarketFilled(
+                state.isBuy,
+                _isBase ? mainSideOut : flipSideOut,
+                singleSlot.pip,
+                state.startPip,
+                state.remainingLiquidity,
+                0
+            );
+            emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
         }
     }
 
     //*
     // HOOK HERE *
     //*
+
+    /// @notice hook function check need set next pip
+    /// @notice need set if the inheri contract is amm
+    function _isNeedSetPipNext() internal pure virtual returns (bool) {
+        return false;
+    }
+
+    /// @notice hook function emit event order book updated
     function _emitLimitOrderUpdatedHook(
         address spotManager,
         uint64 orderId,
@@ -672,20 +650,50 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         uint256 size
     ) internal virtual {}
 
-    struct CrossPipResult {
-        int128 hookBaseCrossPip;
-        int128 hookQuoteCrossPip;
-        uint8 pipRangeLiquidityIndex;
-        uint128 toPip;
+    struct CrossPipParams {
+        uint128 pipNext;
+        bool isBuy;
+        bool isBase;
+        uint128 amount;
+        uint32 basisPoint;
+        uint128 currentPip;
     }
 
-    function _onCrossPipHook(uint128 pipNext, bool isBuy)
+    /// @notice hook function call out side thi matching core and inherit contract call to amm contract
+    function _onCrossPipHook(
+        CrossPipParams memory params,
+        SwapState.AmmState memory ammState
+    ) internal virtual returns (CrossPipResult.Result memory crossPipResult) {}
+
+    /// @notice hook function update amm state after swap
+    /// @notice the inherit contract will call to amm contract and update
+    function _updateAMMState(
+        SwapState.AmmState memory ammState,
+        uint128 currentPip,
+        bool isBuy,
+        uint16 feePercent
+    )
         internal
-        view
         virtual
-        returns (CrossPipResult memory crossPipResult)
+        returns (
+            uint128 totalFeeAmm,
+            uint128 feeProtocolAmm,
+            uint128 totalFilledAmm
+        )
     {}
 
+    /// @notice hook function calculate fee for amm
+    function _calculateFee(
+        SwapState.AmmState memory ammState,
+        uint128 currentPip,
+        bool isBuy,
+        bool isBase,
+        uint256 mainSideOut,
+        uint256 flipSideOut,
+        uint16 feePercent
+    ) internal virtual returns (uint256) {}
+
+    /// @notice hook function emit event swap
     function emitEventSwap(
         bool isBuy,
         uint256 _baseAmount,
@@ -693,20 +701,51 @@ abstract contract PairManagerCore is Block, PairManagerCoreStorage {
         address _trader
     ) internal virtual {}
 
-    function _updateAmmState() external virtual {}
-
+    /// @notice hoook function get liquidity in pip range
     function getLiquidityInPipRange(
         uint128 fromPip,
         uint256 dataLength,
         bool toHigher
     ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
 
-    function getUnderlyingPriceInPip()
-        internal
+    // TODO Must implement this function
+    /// @notice hook function get amount estmate
+    function getAmountEstimate(
+        uint256 size,
+        bool isBuy,
+        bool isBase
+    ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
+
+    // TODO Must implement this function
+    /// @notice hook function calculate quote amount
+    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
+        external
         view
         virtual
         returns (uint256)
     {}
 
+    /// @notice hook function get basis point
+    function getBasisPoint() external view virtual returns (uint256) {}
+
+    /// @notice hook function get currnet pip
+    function getCurrentPip() external view virtual returns (uint128) {}
+
+    // @notice hook function calculate quote to base
+    function quoteToBase(uint256 quoteAmount, uint128 pip)
+        external
+        view
+        returns (uint256)
+    {}
+
+    /// @notice hook function get pip
+    function getUnderlyingPriceInPip() internal view virtual returns (uint256) {
+        return uint256(singleSlot.pip);
+    }
+
+    /// @notice hook function snap shot reserve
     function _addReserveSnapshot() internal virtual {}
+
+    /// @notice hook function require only counter party
+    function _onlyCounterParty() internal virtual {}
 }

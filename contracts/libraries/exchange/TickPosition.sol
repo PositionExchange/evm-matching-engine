@@ -4,8 +4,6 @@ pragma solidity ^0.8.9;
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./LimitOrder.sol";
 
-import "hardhat/console.sol";
-
 /*
  * A library storing data and logic at a pip
  */
@@ -23,56 +21,72 @@ library TickPosition {
         mapping(uint64 => LimitOrder.Data) orderQueue;
     }
 
+    /// @notice insert the limit order to queue in the pip
+    /// @param _size the size of order
+    /// @param _isBuy the side of order
+    /// @param _hasLiquidity the flag check pip have liquidity before insert
+    /// @return _orderId the id of order
     function insertLimitOrder(
-        TickPosition.Data storage self,
-        uint128 size,
-        bool hasLiquidity,
-        bool isBuy
+        TickPosition.Data storage _self,
+        uint128 _size,
+        bool _hasLiquidity,
+        bool _isBuy
     ) internal returns (uint64) {
-        self.currentIndex++;
+        _self.currentIndex++;
         if (
-            !hasLiquidity &&
-            self.filledIndex != self.currentIndex &&
-            self.liquidity != 0
+            !_hasLiquidity &&
+            _self.filledIndex != _self.currentIndex &&
+            _self.liquidity != 0
         ) {
             // means it has liquidity but is not set currentIndex yet
             // reset the filledIndex to fill all
-            self.filledIndex = self.currentIndex;
-            self.liquidity = size;
+            _self.filledIndex = _self.currentIndex;
+            _self.liquidity = _size;
         } else {
-            self.liquidity = self.liquidity + size;
+            _self.liquidity = _self.liquidity + _size;
         }
-        self.orderQueue[self.currentIndex].update(isBuy, size);
-        return self.currentIndex;
+        _self.orderQueue[_self.currentIndex].update(_isBuy, _size);
+        return _self.currentIndex;
     }
 
+    /// @notice update the order when claim asset of partial order
+    /// @param _orderId the id of order
+    /// @return the remaining size of order
     function updateOrderWhenClose(
-        TickPosition.Data storage self,
-        uint64 orderId
+        TickPosition.Data storage _self,
+        uint64 _orderId
     ) internal returns (uint256) {
-        return self.orderQueue[orderId].updateWhenClose();
+        return _self.orderQueue[_orderId].updateWhenClose();
     }
 
-    function getQueueOrder(TickPosition.Data storage self, uint64 orderId)
+    /// @notice Get the order by order id
+    /// @param _orderId the id of order
+    /// @return _isFilled the flag show order is filled
+    /// @return _isBuy the side of order
+    /// @return _size the _size of order
+    /// @return _partialFilled the _size of order filled
+    function getQueueOrder(TickPosition.Data storage _self, uint64 _orderId)
         internal
         view
         returns (
-            bool isFilled,
-            bool isBuy,
-            uint256 size,
-            uint256 partialFilled
+            bool _isFilled,
+            bool _isBuy,
+            uint256 _size,
+            uint256 _partialFilled
         )
     {
-        (isBuy, size, partialFilled) = self.orderQueue[orderId].getData();
-        if (self.filledIndex > orderId && size != 0) {
-            isFilled = true;
-        } else if (self.filledIndex < orderId) {
-            isFilled = false;
+        (_isBuy, _size, _partialFilled) = _self.orderQueue[_orderId].getData();
+        if (_self.filledIndex > _orderId && _size != 0) {
+            _isFilled = true;
+        } else if (_self.filledIndex < _orderId) {
+            _isFilled = false;
         } else {
-            isFilled = partialFilled >= size && size != 0 ? true : false;
+            _isFilled = _partialFilled >= _size && _size != 0 ? true : false;
         }
     }
 
+    /// @notice update the order to partial fill when market trade
+    /// @param _amount the amount fill
     function partiallyFill(TickPosition.Data storage _self, uint128 _amount)
         internal
     {
@@ -103,19 +117,19 @@ library TickPosition {
         }
     }
 
-    function calculatingFilledIndex(TickPosition.Data storage self)
-        internal
-        view
-        returns (uint64)
-    {
-        if (self.filledIndex == self.currentIndex && self.currentIndex > 0) {
-            return self.filledIndex - 1;
-        }
-
-        return self.filledIndex;
+    /// @notice update the order to full fill when market trade
+    function fullFillLiquidity(TickPosition.Data storage _self) internal {
+        uint64 _currentIndex = _self.currentIndex;
+        _self.liquidity = 0;
+        _self.filledIndex = _currentIndex;
+        _self.orderQueue[_currentIndex].partialFilled = _self
+            .orderQueue[_currentIndex]
+            .size;
     }
 
-    function cancelLimitOrder(TickPosition.Data storage self, uint64 orderId)
+    /// @notice update the order when cancel limit order
+    /// @param _orderId the id of order
+    function cancelLimitOrder(TickPosition.Data storage _self, uint64 _orderId)
         internal
         returns (
             uint256,
@@ -123,14 +137,14 @@ library TickPosition {
             bool
         )
     {
-        (bool isBuy, uint256 size, uint256 partialFilled) = self
-            .orderQueue[orderId]
+        (bool _isBuy, uint256 _size, uint256 _partialFilled) = _self
+            .orderQueue[_orderId]
             .getData();
-        if (self.liquidity >= uint128(size - partialFilled)) {
-            self.liquidity = self.liquidity - uint128(size - partialFilled);
+        if (_self.liquidity >= uint128(_size - _partialFilled)) {
+            _self.liquidity = _self.liquidity - uint128(_size - _partialFilled);
         }
-        self.orderQueue[orderId].update(isBuy, partialFilled);
+        _self.orderQueue[_orderId].update(_isBuy, _partialFilled);
 
-        return (size - partialFilled, partialFilled, isBuy);
+        return (_size - _partialFilled, _partialFilled, _isBuy);
     }
 }

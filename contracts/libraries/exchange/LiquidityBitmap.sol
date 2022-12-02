@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
-
 import "./BitMath.sol";
 
 library LiquidityBitmap {
@@ -196,6 +194,8 @@ library LiquidityBitmap {
         return allPip;
     }
 
+    /// @notice check at this pip has liquidity
+    /// @param pip The current pip index
     function hasLiquidity(mapping(uint128 => uint256) storage self, uint128 pip)
         internal
         view
@@ -236,43 +236,46 @@ library LiquidityBitmap {
         }
     }
 
+    /// @notice Set all bits to false in a given range
+    /// @param _fromPip the pip to set from
+    /// @param _toPip the pip to set to
     function unsetBitsRange(
-        mapping(uint128 => uint256) storage self,
-        uint128 fromPip,
-        uint128 toPip
+        mapping(uint128 => uint256) storage _self,
+        uint128 _fromPip,
+        uint128 _toPip
     ) internal {
-        if (fromPip == toPip) return toggleSingleBit(self, fromPip, false);
-        fromPip++;
-        toPip++;
-        if (toPip < fromPip) {
-            uint128 n = fromPip;
-            fromPip = toPip;
-            toPip = n;
+        if (_fromPip == _toPip) return toggleSingleBit(_self, _fromPip, false);
+        _fromPip++;
+        _toPip++;
+        if (_toPip < _fromPip) {
+            uint128 n = _fromPip;
+            _fromPip = _toPip;
+            _toPip = n;
         }
-        (uint128 fromMapIndex, uint8 fromBitPos) = position(fromPip);
-        (uint128 toMapIndex, uint8 toBitPos) = position(toPip);
+        (uint128 fromMapIndex, uint8 fromBitPos) = position(_fromPip);
+        if (fromBitPos == 0) {
+            toggleSingleBit(_self, _fromPip - 1, false);
+        }
+        (uint128 toMapIndex, uint8 toBitPos) = position(_toPip);
         if (toMapIndex == fromMapIndex) {
-            //            if(fromBitPos > toBitPos){
-            //                uint8 n = fromBitPos;
-            //                fromBitPos = toBitPos;
-            //                toBitPos = n;
-            //            }
-            self[toMapIndex] &= unsetBitsFromLToR(
+            _self[toMapIndex] &= unsetBitsFromLToR(
                 MAX_UINT256,
                 fromBitPos,
                 toBitPos
             );
         } else {
-            //TODO check overflow here
-            fromBitPos--;
-            self[fromMapIndex] &= ~toggleLastMBits(MAX_UINT256, fromBitPos);
+            if (fromBitPos != 0) fromBitPos--;
+            _self[fromMapIndex] &= ~toggleLastMBits(MAX_UINT256, fromBitPos);
             for (uint128 i = fromMapIndex + 1; i < toMapIndex; i++) {
-                self[i] = 0;
+                _self[i] = 0;
             }
-            self[toMapIndex] &= toggleLastMBits(MAX_UINT256, toBitPos);
+            _self[toMapIndex] &= toggleLastMBits(MAX_UINT256, toBitPos);
         }
     }
 
+    /// @notice toggle a single bit to true or false
+    /// @param pip the pip to toggle
+    /// @param isSet true to set, false to unset
     function toggleSingleBit(
         mapping(uint128 => uint256) storage self,
         uint128 pip,
@@ -286,11 +289,15 @@ library LiquidityBitmap {
         }
     }
 
+    /// @notice unset bit from left to right
+    /// @param _n the number to unset bits
+    /// @param _l the bit to unset from left
+    /// @param _r the bit to unset to right
     function unsetBitsFromLToR(
         uint256 _n,
         uint8 _l,
         uint8 _r
-    ) private returns (uint256) {
+    ) private pure returns (uint256) {
         if (_l == 0) {
             // NOTE this code support unset at index 0 only
             // avoid overflow in the next line (_l - 1)
@@ -310,8 +317,14 @@ library LiquidityBitmap {
         return (_n ^ num);
     }
 
-    // Function to toggle the last m bits
-    function toggleLastMBits(uint256 n, uint8 m) private returns (uint256) {
+    /// @notice Function to toggle the last m bits
+    /// @param n the number to toggle bits
+    /// @param m the number of bits to toggle
+    function toggleLastMBits(uint256 n, uint8 m)
+        private
+        pure
+        returns (uint256)
+    {
         // Calculating a number 'num' having
         // 'm' bits and all are set
         uint256 num = (1 << m) - 1;

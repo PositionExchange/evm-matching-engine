@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "hardhat/console.sol";
-
 library LimitOrder {
     struct Data {
         // Type order LONG or SHORT
@@ -12,6 +10,10 @@ library LimitOrder {
         uint120 partialFilled;
     }
 
+    /// @notice get data or order in queue
+    /// @return isBuy the side of order
+    /// @return size the size of order
+    /// @return partialFilled the partial filled of order
     function getData(LimitOrder.Data storage self)
         internal
         view
@@ -26,6 +28,9 @@ library LimitOrder {
         partialFilled = uint256(self.partialFilled);
     }
 
+    /// @notice update the order when pill
+    /// @param isBuy the side of order
+    /// @param size the size of order
     function update(
         LimitOrder.Data storage self,
         bool isBuy,
@@ -35,6 +40,8 @@ library LimitOrder {
         self.size = uint120(size);
     }
 
+    /// @notice update the order when to partial pill
+    /// @param _remainSize remain size of order
     function updatePartialFill(
         LimitOrder.Data storage _self,
         uint120 _remainSize
@@ -43,6 +50,8 @@ library LimitOrder {
         _self.partialFilled += (_self.size - _self.partialFilled - _remainSize);
     }
 
+    /// @notice reset the order to empty when cancel order
+    /// @return the remain size of order
     function updateWhenClose(LimitOrder.Data storage self)
         internal
         returns (uint256)
@@ -50,14 +59,5 @@ library LimitOrder {
         self.size -= self.partialFilled;
         self.partialFilled = 0;
         return (uint256(self.size));
-    }
-
-    function getPartialFilled(LimitOrder.Data storage self)
-        internal
-        view
-        returns (bool isPartial, uint256 remainingSize)
-    {
-        remainingSize = self.size - self.partialFilled;
-        isPartial = remainingSize > 0;
     }
 }

@@ -1,21 +1,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../exchange/TickPosition.sol";
 import "../exchange/LiquidityBitmap.sol";
-import "../helper/Timers.sol";
-import "../../interfaces/IPairManager.sol";
+import "../../interfaces/IMatchingEngineCore.sol";
 
-abstract contract PairManagerCoreStorage {
+abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
     using TickPosition for TickPosition.Data;
     using LiquidityBitmap for mapping(uint128 => uint256);
 
+    /// @inheritdoc IMatchingEngineCore
     // the smallest number of the price. Eg. 100 for 0.01
-    uint256 public basisPoint;
-
-    // demoninator of the basis point. Eg. 10000 for 0.01
-    uint256 public BASE_BASIC_POINT;
+    uint256 public override basisPoint;
 
     // Max finding word can be 3500
     uint128 public maxFindingWordsIndex;
@@ -33,28 +29,9 @@ abstract contract PairManagerCoreStorage {
         uint8 isFullBuy;
     }
 
-    enum CurrentLiquiditySide {
-        NotSet,
-        Buy,
-        Sell
-    }
-
-    struct LiquidityOfEachPip {
-        uint128 pip;
-        uint256 liquidity;
-    }
-
     struct StepComputations {
         uint128 pipNext;
     }
-
-    struct ReserveSnapshot {
-        uint128 pip;
-        uint64 timestamp;
-        uint64 blockNumber;
-    }
-
-    ReserveSnapshot[] public reserveSnapshots;
 
     SingleSlot public singleSlot;
     mapping(uint128 => TickPosition.Data) public tickPosition;

@@ -1,26 +1,26 @@
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.9;
 
-abstract contract AMMCoreStorage {
-    uint256 pipRange;
+import "../../interfaces/IAutoMarketMakerCore.sol";
 
-    uint256 liquidity;
+abstract contract AMMCoreStorage is IAutoMarketMakerCore {
+    /// @inheritdoc IAutoMarketMakerCore
+    /// @notice the range of liquidity
+    uint128 public override pipRange;
 
-    uint32 tickSpace;
+    /// @inheritdoc IAutoMarketMakerCore
+    /// @notice the tick space of external bulid order book
+    uint32 public override tickSpace;
 
-    struct RealReserve {
-        uint256 baseReal;
-        uint256 quoteReal;
-    }
+    /// @inheritdoc IAutoMarketMakerCore
+    /// @notice the current index pip active
+    uint256 public override currentIndexedPipRange;
 
-    struct PipRangeInfo {
-        uint128 sqrtMaxPip;
-        uint128 sqrtMinPip;
-        uint256 quoteVirtual;
-        uint256 baseVirtual;
-        uint32 indexedPipRanger;
-        uint128 feeGrowthBase;
-        uint128 feeGrowthQuote;
-    }
+    /// @inheritdoc IAutoMarketMakerCore
+    /// @notice the mapping with index and the liquidity of index
+    mapping(uint256 => Liquidity.Info) public override liquidityInfo;
 
-    mapping(uint128 => PipRangeInfo) public pipRangeInfo;
+    /// @inheritdoc IAutoMarketMakerCore
+    /// @notice the percent fee share when fill amm
+    uint32 public override feeShareAmm;
 }

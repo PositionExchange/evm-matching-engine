@@ -37,7 +37,7 @@ library Convert {
         return uint128(x);
     }
 
-    function Uint256ToUint40(uint256 x) internal returns (uint40) {
+    function Uint256ToUint40(uint256 x) internal pure returns (uint40) {
         return uint40(x);
     }
 }
