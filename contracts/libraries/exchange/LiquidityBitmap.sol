@@ -194,6 +194,8 @@ library LiquidityBitmap {
         return allPip;
     }
 
+    /// @notice check at this pip has liquidity
+    /// @param pip The current pip index
     function hasLiquidity(mapping(uint128 => uint256) storage self, uint128 pip)
         internal
         view
@@ -234,6 +236,9 @@ library LiquidityBitmap {
         }
     }
 
+    /// @notice Set all bits to false in a given range
+    /// @param _fromPip the pip to set from
+    /// @param _toPip the pip to set to
     function unsetBitsRange(
         mapping(uint128 => uint256) storage _self,
         uint128 _fromPip,
@@ -268,6 +273,9 @@ library LiquidityBitmap {
         }
     }
 
+    /// @notice toggle a single bit to true or false
+    /// @param pip the pip to toggle
+    /// @param isSet true to set, false to unset
     function toggleSingleBit(
         mapping(uint128 => uint256) storage self,
         uint128 pip,
@@ -281,6 +289,10 @@ library LiquidityBitmap {
         }
     }
 
+    /// @notice unset bit from left to right
+    /// @param _n the number to unset bits
+    /// @param _l the bit to unset from left
+    /// @param _r the bit to unset to right
     function unsetBitsFromLToR(
         uint256 _n,
         uint8 _l,
@@ -305,7 +317,9 @@ library LiquidityBitmap {
         return (_n ^ num);
     }
 
-    // Function to toggle the last m bits
+    /// @notice Function to toggle the last m bits
+    /// @param n the number to toggle bits
+    /// @param m the number of bits to toggle
     function toggleLastMBits(uint256 n, uint8 m)
         private
         pure

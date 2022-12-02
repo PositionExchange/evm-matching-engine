@@ -11,6 +11,10 @@ library CrossPipResult {
         uint128 toPip;
     }
 
+    /// @notice update amount quote and base when fill amm
+    /// @param self the result of cross pip
+    /// @param baseCrossPipOut amount base cross pip out
+    /// @param quoteCrossPipOut amount quote cross pip out
     function updateAmountResult(
         Result memory self,
         uint128 baseCrossPipOut,
@@ -20,6 +24,9 @@ library CrossPipResult {
         self.quoteCrossPipOut += quoteCrossPipOut;
     }
 
+    /// @notice update the pip when fill amm
+    /// @param self the result of cross pip
+    /// @param toPip the pip reach to
     function updatePipResult(Result memory self, uint128 toPip) internal pure {
         self.toPip = toPip;
     }

@@ -22,6 +22,9 @@ contract MatchingEngineAMM is
     address public counterParty;
     address public positionManagerLiquidity;
 
+    /// @notice initialize the contract right after deploy
+    /// @notice only call once time
+    /// @dev initialize the sub contract, approve contract
     function initialize(InitParams memory params) external {
         Require._require(!isInitialized, Errors.ME_INITIALIZED);
         isInitialized = true;
@@ -48,6 +51,8 @@ contract MatchingEngineAMM is
         _approveCounterParty(params.baseAsset, params.spotHouse);
     }
 
+    /// @notice implement hook function
+    /// @notice require only counter party can call
     function _onlyCounterParty()
         internal
         view
@@ -67,6 +72,8 @@ contract MatchingEngineAMM is
         uint256 size
     ) internal override {}
 
+    /// @notice implement hook function
+    /// @notice call to amm contract
     function _onCrossPipHook(
         CrossPipParams memory params,
         SwapState.AmmState memory ammState
@@ -87,12 +94,12 @@ contract MatchingEngineAMM is
             if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
             ammState.lastPipRangeLiquidityIndex = indexPip;
         }
-        // Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
-        // Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
-        // if you change ammStates[0] = 1
-        // then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
-        // because ammStates is passed by an underlying pointer
-        // let's try it in Remix
+        /// Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
+        /// Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
+        /// if you change ammStates[0] = 1
+        /// then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
+        /// because ammStates is passed by an underlying pointer
+        /// let's try it in Remix
         crossPipResult = params.pipNext != 0
             ? _onCrossPipAMMTargetPrice(
                 OnCrossPipParams(
@@ -118,6 +125,7 @@ contract MatchingEngineAMM is
             );
     }
 
+    /// @notice implement update amm state
     function _updateAMMState(
         SwapState.AmmState memory ammState,
         uint128 currentPip,
@@ -144,6 +152,7 @@ contract MatchingEngineAMM is
         ) = _updateAMMStateAfterTrade(ammState, isBuy, feePercent);
     }
 
+    /// @notice implement calculate fee
     function _calculateFee(
         SwapState.AmmState memory ammState,
         uint128 currentPip,
@@ -186,6 +195,7 @@ contract MatchingEngineAMM is
         return totalFeeAmm + feeLimitOrder;
     }
 
+    /// @notice implement need set pip next
     function _isNeedSetPipNext()
         internal
         pure
@@ -195,10 +205,12 @@ contract MatchingEngineAMM is
         return true;
     }
 
+    /// @notice approve counter party
     function _approveCounterParty(IERC20 asset, address spender) internal {
         asset.approve(spender, type(uint256).max);
     }
 
+    /// @inheritdoc IFee
     function increaseQuoteFeeFunding(uint256 quoteFee)
         public
         override(Fee, IFee)
@@ -207,6 +219,7 @@ contract MatchingEngineAMM is
         super.increaseQuoteFeeFunding(quoteFee);
     }
 
+    /// @inheritdoc IFee
     function increaseBaseFeeFunding(uint256 baseFee)
         public
         override(Fee, IFee)
@@ -215,6 +228,7 @@ contract MatchingEngineAMM is
         super.increaseBaseFeeFunding(baseFee);
     }
 
+    /// @inheritdoc IFee
     function decreaseBaseFeeFunding(uint256 quoteFee)
         public
         override(Fee, IFee)
@@ -223,6 +237,7 @@ contract MatchingEngineAMM is
         super.decreaseBaseFeeFunding(quoteFee);
     }
 
+    /// @inheritdoc IFee
     function decreaseQuoteFeeFunding(uint256 baseFee)
         public
         override(Fee, IFee)
@@ -231,6 +246,7 @@ contract MatchingEngineAMM is
         super.decreaseQuoteFeeFunding(baseFee);
     }
 
+    /// @inheritdoc IMatchingEngineAMM
     function accumulateClaimableAmount(
         uint128 _pip,
         uint64 _orderId,
@@ -267,6 +283,7 @@ contract MatchingEngineAMM is
         return msg.sender;
     }
 
+    /// @notice get basis point
     function _basisPoint()
         internal
         view
@@ -276,6 +293,7 @@ contract MatchingEngineAMM is
         return basisPoint;
     }
 
+    /// @notice get current pip
     function getCurrentPip()
         public
         view
@@ -285,6 +303,7 @@ contract MatchingEngineAMM is
         return singleSlot.pip;
     }
 
+    /// @notice implement emit event swap
     function emitEventSwap(
         bool isBuy,
         uint256 _baseAmount,
@@ -313,6 +332,7 @@ contract MatchingEngineAMM is
         );
     }
 
+    /// @notice implement calculate quote amount
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
         view

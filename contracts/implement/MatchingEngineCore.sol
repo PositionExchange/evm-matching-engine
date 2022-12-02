@@ -38,6 +38,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     //*** Virtual functions
     //*
 
+    /// @inheritdoc IMatchingEngineCore
     function updatePartialFilledOrder(uint128 _pip, uint64 _orderId)
         public
         virtual
@@ -47,6 +48,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         _emitLimitOrderUpdatedHook(address(this), _orderId, _pip, newSize);
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function cancelLimitOrder(uint128 _pip, uint64 _orderId)
         public
         virtual
@@ -62,6 +64,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         return _internalCancelLimitOrder(_tickPosition, _pip, _orderId);
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function openLimit(
         uint128 pip,
         uint128 baseAmountIn,
@@ -97,6 +100,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         );
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function openMarket(
         uint256 size,
         bool isBuy,
@@ -106,8 +110,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         public
         virtual
         returns (
-            uint256 baseOut,
-            uint256 quoteOut,
+            uint256 mainSideOut,
+            uint256 flipSideOut,
             uint256 fee
         )
     {
@@ -124,26 +128,27 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             );
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function openMarketWithQuoteAsset(
         uint256 quoteAmount,
-        bool _isBuy,
-        address _trader,
+        bool isBuy,
+        address trader,
         uint16 feePercent
     )
         public
         virtual
         returns (
-            uint256 sizeOutQuote,
-            uint256 baseAmount,
+            uint256 mainSideOut,
+            uint256 flipSideOut,
             uint256 fee
         )
     {
         _onlyCounterParty();
-        (sizeOutQuote, baseAmount, fee) = _internalOpenMarketOrder(
+        (mainSideOut, flipSideOut, fee) = _internalOpenMarketOrder(
             quoteAmount,
-            _isBuy,
+            isBuy,
             0,
-            _trader,
+            trader,
             false,
             maxWordRangeForLimitOrder,
             feePercent
@@ -153,10 +158,13 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     //*
     // Public view functions
     //*
+
+    /// @inheritdoc IMatchingEngineCore
     function hasLiquidity(uint128 _pip) public view returns (bool) {
         return liquidityBitmap.hasLiquidity(_pip);
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function getPendingOrderDetail(uint128 pip, uint64 orderId)
         public
         view
@@ -179,6 +187,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
     }
 
+    /// @inheritdoc IMatchingEngineCore
     function getLiquidityInCurrentPip() public view returns (uint128) {
         return
             liquidityBitmap.hasLiquidity(singleSlot.pip)
@@ -190,6 +199,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Private functions
     //*
 
+    /// @notice cancel limit order
     function _internalCancelLimitOrder(
         TickPosition.Data storage _tickPosition,
         uint128 _pip,
@@ -219,6 +229,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint16 feePercent;
     }
 
+    /// @notice open limit order
     function _internalOpenLimit(ParamsInternalOpenLimit memory _params)
         private
         returns (
@@ -346,6 +357,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
     }
 
+    /// @notice open market order with max pip
+    /// @notice  open limit can call this function if limit order is part of market order
     function _openMarketWithMaxPip(
         uint256 size,
         bool isBuy,
@@ -375,6 +388,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 feePercent
             );
     }
+
+    /// @notice open market order
+    /// @notice this function fill market with limit order and amm
 
     function _internalOpenMarketOrder(
         uint256 _size,
@@ -620,10 +636,13 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // HOOK HERE *
     //*
 
+    /// @notice hook function check need set next pip
+    /// @notice need set if the inheri contract is amm
     function _isNeedSetPipNext() internal pure virtual returns (bool) {
         return false;
     }
 
+    /// @notice hook function emit event order book updated
     function _emitLimitOrderUpdatedHook(
         address spotManager,
         uint64 orderId,
@@ -640,11 +659,14 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint128 currentPip;
     }
 
+    /// @notice hook function call out side thi matching core and inherit contract call to amm contract
     function _onCrossPipHook(
         CrossPipParams memory params,
         SwapState.AmmState memory ammState
     ) internal virtual returns (CrossPipResult.Result memory crossPipResult) {}
 
+    /// @notice hook function update amm state after swap
+    /// @notice the inherit contract will call to amm contract and update
     function _updateAMMState(
         SwapState.AmmState memory ammState,
         uint128 currentPip,
@@ -660,6 +682,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         )
     {}
 
+    /// @notice hook function calculate fee for amm
     function _calculateFee(
         SwapState.AmmState memory ammState,
         uint128 currentPip,
@@ -670,6 +693,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint16 feePercent
     ) internal virtual returns (uint256) {}
 
+    /// @notice hook function emit event swap
     function emitEventSwap(
         bool isBuy,
         uint256 _baseAmount,
@@ -677,6 +701,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         address _trader
     ) internal virtual {}
 
+    /// @notice hoook function get liquidity in pip range
     function getLiquidityInPipRange(
         uint128 fromPip,
         uint256 dataLength,
@@ -684,6 +709,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
 
     // TODO Must implement this function
+    /// @notice hook function get amount estmate
     function getAmountEstimate(
         uint256 size,
         bool isBuy,
@@ -691,6 +717,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
 
     // TODO Must implement this function
+    /// @notice hook function calculate quote amount
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
         view
@@ -698,21 +725,27 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         returns (uint256)
     {}
 
+    /// @notice hook function get basis point
     function getBasisPoint() external view virtual returns (uint256) {}
 
+    /// @notice hook function get currnet pip
     function getCurrentPip() external view virtual returns (uint128) {}
 
+    // @notice hook function calculate quote to base
     function quoteToBase(uint256 quoteAmount, uint128 pip)
         external
         view
         returns (uint256)
     {}
 
+    /// @notice hook function get pip
     function getUnderlyingPriceInPip() internal view virtual returns (uint256) {
         return uint256(singleSlot.pip);
     }
 
+    /// @notice hook function snap shot reserve
     function _addReserveSnapshot() internal virtual {}
 
+    /// @notice hook function require only counter party
     function _onlyCounterParty() internal virtual {}
 }

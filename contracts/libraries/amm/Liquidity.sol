@@ -16,6 +16,11 @@ library Liquidity {
         uint128 sqrtK;
     }
 
+    /// @notice Define the new pip range when the first time add liquidity
+    /// @param self the liquidity info
+    /// @param sqrtMaxPip the max pip
+    /// @param sqrtMinPip the min pip
+    /// @param indexedPipRange the index of liquidity info
     function initNewPipRange(
         Liquidity.Info storage self,
         uint128 sqrtMaxPip,
@@ -27,6 +32,9 @@ library Liquidity {
         self.indexedPipRange = indexedPipRange;
     }
 
+    /// @notice update the liquidity info when add liquidity
+    /// @param self the liquidity info
+    /// @param updater of struct Liquidity.Info, this is new value of liquidity info
     function updateAddLiquidity(
         Liquidity.Info storage self,
         Liquidity.Info memory updater
@@ -41,6 +49,10 @@ library Liquidity {
         self.sqrtK = updater.sqrtK;
     }
 
+    /// @notice growth fee base and quote
+    /// @param self the liquidity info
+    /// @param feeGrowthBase the growth of base
+    /// @param feeGrowthQuote the growth of base
     function updateFeeGrowth(
         Liquidity.Info storage self,
         uint256 feeGrowthBase,
@@ -50,6 +62,12 @@ library Liquidity {
         self.feeGrowthQuote = feeGrowthQuote;
     }
 
+    /// @notice update the liquidity info when after trade and save to storage
+    /// @param self the liquidity info
+    /// @param baseReserve the new value of baseReserve
+    /// @param quoteReserve the new value of quoteReserve
+    /// @param feeGrowth new growth value increase
+    /// @param isBuy the side of trade
     function updateAMMReserve(
         Liquidity.Info storage self,
         uint128 quoteReserve,
