@@ -732,7 +732,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         returns (uint256)
     {}
 
-
     /// @notice hook function get currnet pip
     function getCurrentPip() external view virtual returns (uint128) {}
 
