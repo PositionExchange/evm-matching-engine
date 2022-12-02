@@ -486,7 +486,14 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     crossPipResult.baseCrossPipOut > 0 &&
                     crossPipResult.quoteCrossPipOut > 0
                 ) {
-                    if (crossPipResult.baseCrossPipOut >= state.remainingSize) {
+                    if (
+                        (crossPipResult.baseCrossPipOut >=
+                            state.remainingSize &&
+                            state.isBase) ||
+                        (crossPipResult.quoteCrossPipOut >=
+                            state.remainingSize &&
+                            !state.isBase)
+                    ) {
                         if (
                             (state.isBuy && crossPipResult.toPip > state.pip) ||
                             (!state.isBuy && crossPipResult.toPip < state.pip)

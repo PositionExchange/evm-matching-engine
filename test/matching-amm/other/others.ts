@@ -32,4 +32,43 @@ describe("OtherCases", async function(){
     Quantity: 1
     `)
     })
+    it ("OpenMarketWithQuote-2", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action:
+    Price: 170000
+- S1: AddLiquidity
+  Action:
+    Id: 3
+    IndexPipRange: 5
+    BaseVirtual: 0.2704430339572
+    QuoteVirtual: 9.9
+- S2: OpenLimit
+  Action:
+    Id: 1
+    Asset: quote
+    Side: 0
+    Quantity: 50
+    Price: 150000
+- S3: OpenMarket
+  Action:
+    id: 2
+    asset: base
+    Side: 1
+    Quantity: 10
+- S4: OpenLimit
+  Action:
+    Id: 1
+    Asset: base
+    Side: 1
+    Quantity: 100
+    Price: 179999
+- S5: OpenMarket
+  Action:
+    id: 2
+    asset: quote
+    Side: 0
+    Quantity: 10
+    `)
+    })
 })
