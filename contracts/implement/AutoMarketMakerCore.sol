@@ -651,7 +651,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 baseAmount,
         uint128 quoteAmount
     ) internal pure returns (uint128 price) {
-
         /// In case both baseReal !=0 and quoteReal !=0
         /// We can choose many ways to update ammStates
         /// By quote or by base
@@ -660,16 +659,15 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             ammReserves.baseReserve -= baseAmount;
             ammReserves.quoteReserve = uint128(
                 (uint256(ammReserves.sqrtK)**2) /
-                uint256(ammReserves.baseReserve)
+                    uint256(ammReserves.baseReserve)
             );
         } else {
             ammReserves.baseReserve += baseAmount;
             ammReserves.quoteReserve = uint128(
                 (uint256(ammReserves.sqrtK)**2) /
-                uint256(ammReserves.baseReserve)
+                    uint256(ammReserves.baseReserve)
             );
         }
-
 
         ammReserves.amountFilled = params.isBuy
             ? ammReserves.amountFilled + baseAmount
