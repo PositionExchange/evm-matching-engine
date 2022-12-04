@@ -651,55 +651,25 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 baseAmount,
         uint128 quoteAmount
     ) internal pure returns (uint128 price) {
-        if (
-            (ammReserves.baseReserve == 0) ||
-            (params.currentPip == ammReserves.sqrtMaxPip)
-        ) {
-            /// In case into the new pip range have never been reached when sell
-            /// So, quoteReal != 0 and baseReal == 0
-            /// We need calculate the first baseReal with formula:
-            /// (x + a) * (y + b) = k => (x + a) = k/(y+b) = baseReal
 
-            ammReserves.quoteReserve -= quoteAmount;
-            ammReserves.baseReserve = uint128(
-                (uint256(ammReserves.sqrtK)**2) /
-                    uint256(ammReserves.quoteReserve)
-            );
-        } else if (
-            (ammReserves.quoteReserve == 0) ||
-            (params.currentPip == ammReserves.sqrtMinPip)
-        ) {
-            /// In case into the new pip range have never been reached when when buy
-            /// So, baseReal != 0 and quoteReal == 0
-            /// We need calculate the first baseReal with formula:
-            /// (x + a) * (y + b) = k => (y + b) = k/(x+a) = quoteReal
+        /// In case both baseReal !=0 and quoteReal !=0
+        /// We can choose many ways to update ammStates
+        /// By quote or by base
+        /// In this function, we choose to update by quote
+        if (params.isBuy) {
             ammReserves.baseReserve -= baseAmount;
             ammReserves.quoteReserve = uint128(
                 (uint256(ammReserves.sqrtK)**2) /
-                    uint256(ammReserves.baseReserve)
+                uint256(ammReserves.baseReserve)
             );
-
-            /// In case both baseReal !=0 and quoteReal !=0
-            /// We can choose many ways to update ammStates
-            /// By quote or by base
-            /// In this function, we choose to update by quote
-        } else if (
-            ammReserves.baseReserve != 0 && ammReserves.quoteReserve != 0
-        ) {
-            if (params.isBuy) {
-                ammReserves.baseReserve -= baseAmount;
-                ammReserves.quoteReserve = uint128(
-                    (uint256(ammReserves.sqrtK)**2) /
-                        uint256(ammReserves.baseReserve)
-                );
-            } else {
-                ammReserves.baseReserve += baseAmount;
-                ammReserves.quoteReserve = uint128(
-                    (uint256(ammReserves.sqrtK)**2) /
-                        uint256(ammReserves.baseReserve)
-                );
-            }
+        } else {
+            ammReserves.baseReserve += baseAmount;
+            ammReserves.quoteReserve = uint128(
+                (uint256(ammReserves.sqrtK)**2) /
+                uint256(ammReserves.baseReserve)
+            );
         }
+
 
         ammReserves.amountFilled = params.isBuy
             ? ammReserves.amountFilled + baseAmount
