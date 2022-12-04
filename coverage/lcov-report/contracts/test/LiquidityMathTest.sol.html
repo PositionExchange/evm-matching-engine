@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/test/LiquidityMathTest.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/test/</a> LiquidityMathTest.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">76.92% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>30/39</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">83.33% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>15/18</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">72.73% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>8/11</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">81.97% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>50/61</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line medium'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * @author Musket
+ */
+// SPDX-License-Identifier: BUSL-1.1
+pragma solidity ^0.8.9;
+import "../libraries/helper/LiquidityMath.sol";
+&nbsp;
+contract LiquidityMathTest {
+    uint256 public CURVE_PIP = 10**24;
+    uint128 public basisPoint = 10000;
+&nbsp;
+    function calculateBaseReal(
+        uint128 maxPip,
+        uint128 xVirtual,
+        uint128 currentPrice
+    ) public view returns (uint128) {
+        uint128 sqrtMaxPip = _calculateSqrtPrice(maxPip, CURVE_PIP);
+        uint128 sqrtCurrentPrice = _calculateSqrtPrice(currentPrice, CURVE_PIP);
+&nbsp;
+        return
+            LiquidityMath.calculateBaseReal(
+                sqrtMaxPip,
+                xVirtual,
+                sqrtCurrentPrice
+            );
+    }
+&nbsp;
+    function calculateQuoteReal(
+        uint128 sqrtMinPip,
+        uint128 yVirtual,
+        uint128 sqrtCurrentPrice
+    ) public view returns (uint128) {
+        uint128 sqrtMinPip = _calculateSqrtPrice(sqrtMinPip, CURVE_PIP);
+        uint128 sqrtCurrentPrice = _calculateSqrtPrice(
+            sqrtCurrentPrice,
+            CURVE_PIP
+        );
+&nbsp;
+        return
+            LiquidityMath.calculateQuoteReal(
+                sqrtMinPip,
+                yVirtual,
+                sqrtCurrentPrice
+            );
+    }
+&nbsp;
+    function calculateBaseWithPriceWhenSell(
+        uint128 sqrtPriceTarget,
+        uint128 quoteReal,
+        uint128 sqrtCurrentPrice
+    ) public view returns (uint128) {
+        uint128 sqrtPriceTarget = _calculateSqrtPrice(
+            sqrtPriceTarget,
+            CURVE_PIP
+        );
+        uint128 sqrtCurrentPrice = _calculateSqrtPrice(
+            sqrtCurrentPrice,
+            CURVE_PIP
+        );
+&nbsp;
+        return
+            LiquidityMath.calculateBaseWithPriceWhenSell(
+                sqrtPriceTarget,
+                quoteReal,
+                sqrtCurrentPrice
+            ) * basisPoint;
+    }
+&nbsp;
+    function calculateQuoteWithPriceWhenSell(
+        uint128 sqrtPriceTarget,
+        uint128 quoteReal,
+        uint128 sqrtCurrentPrice
+    ) public view returns (uint128) {
+        uint128 sqrtPriceTarget = _calculateSqrtPrice(
+            sqrtPriceTarget,
+            CURVE_PIP
+        );
+        uint128 sqrtCurrentPrice = _calculateSqrtPrice(
+            sqrtCurrentPrice,
+            CURVE_PIP
+        );
+&nbsp;
+        return
+            LiquidityMath.calculateQuoteWithPriceWhenSell(
+                sqrtPriceTarget,
+                quoteReal,
+                sqrtCurrentPrice
+            );
+    }
+&nbsp;
+    function calculateBaseWithPriceWhenBuy(
+        uint128 sqrtPriceTarget,
+        uint128 baseReal,
+        uint128 sqrtCurrentPrice
+    ) public view returns (uint128) {
+        uint128 sqrtPriceTarget = _calculateSqrtPrice(
+            sqrtPriceTarget,
+            CURVE_PIP
+        );
+        uint128 sqrtCurrentPrice = _calculateSqrtPrice(
+            sqrtCurrentPrice,
+            CURVE_PIP
+        );
+&nbsp;
+        return
+            LiquidityMath.calculateBaseWithPriceWhenBuy(
+                sqrtPriceTarget,
+                baseReal,
+                sqrtCurrentPrice
+            );
+    }
+&nbsp;
+    function calculateQuoteWithPriceWhenBuy(
+        uint128 sqrtPriceTarget,
+        uint128 baseReal,
+        uint128 sqrtCurrentPrice
+    ) public view returns (uint256) {
+        uint128 sqrtPriceTarget = _calculateSqrtPrice(
+            sqrtPriceTarget,
+            CURVE_PIP
+        );
+        uint128 sqrtCurrentPrice = _calculateSqrtPrice(
+            sqrtCurrentPrice,
+            CURVE_PIP
+        );
+        return
+            LiquidityMath.calculateQuoteWithPriceWhenBuy(
+                sqrtPriceTarget,
+                baseReal,
+                sqrtCurrentPrice
+            ) / basisPoint;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function calculateLiquidity(</span>
+        uint128 amountReal,
+        uint128 sqrtPrice,
+        bool isBase
+    ) public view returns (uint256) {
+<span class="cstat-no" title="statement not covered" >        uint128 sqrtPrice = _calculateSqrtPrice(sqrtPrice, CURVE_PIP);</span>
+<span class="cstat-no" title="statement not covered" >        return LiquidityMath.calculateLiquidity(amountReal, sqrtPrice, isBase);</span>
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function calculateBaseByLiquidity(</span>
+        uint128 liquidity,
+        uint128 sqrtPriceMax,
+        uint128 sqrtPrice
+    ) public view returns (uint128) {
+<span class="cstat-no" title="statement not covered" >        uint128 sqrtPriceMax = _calculateSqrtPrice(sqrtPriceMax, CURVE_PIP);</span>
+<span class="cstat-no" title="statement not covered" >        uint128 sqrtPrice = _calculateSqrtPrice(sqrtPrice, CURVE_PIP);</span>
+<span class="cstat-no" title="statement not covered" >        return</span>
+            LiquidityMath.calculateBaseByLiquidity(
+                liquidity,
+                sqrtPriceMax,
+                sqrtPrice
+            );
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    function calculateQuoteByLiquidity(</span>
+        uint128 liquidity,
+        uint128 sqrtPriceMin,
+        uint128 sqrtPrice
+    ) public view returns (uint128) {
+<span class="cstat-no" title="statement not covered" >        uint128 sqrtPriceMin = _calculateSqrtPrice(sqrtPriceMin, CURVE_PIP);</span>
+<span class="cstat-no" title="statement not covered" >        uint128 sqrtPrice = _calculateSqrtPrice(sqrtPrice, CURVE_PIP);</span>
+<span class="cstat-no" title="statement not covered" >        return</span>
+            LiquidityMath.calculateQuoteByLiquidity(
+                liquidity,
+                sqrtPriceMin,
+                sqrtPrice
+            );
+    }
+&nbsp;
+    function _calculateSqrtPrice(uint128 pip, uint256 curve)
+        internal
+        view
+        returns (uint128)
+    {
+        return uint128(sqrt(uint256(pip) * curve));
+    }
+&nbsp;
+    /// @notice Calculates the square root of x, rounding down.
+    /// @dev Uses the Babylonian method https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method.
+    /// @param x The uint256 number for which to calculate the square root.
+    /// @return result The result as an uint256.
+    function sqrt(uint256 x) internal pure returns (uint256 result) {
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (x == 0) {
+<span class="cstat-no" title="statement not covered" >            return 0;</span>
+        }
+&nbsp;
+        // Calculate the square root of the perfect square of a power of two that is the closest to x.
+        uint256 xAux = uint256(x);
+        result = 1;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (xAux &gt;= 0x100000000000000000000000000000000) {
+            xAux &gt;&gt;= 128;
+            result &lt;&lt;= 64;
+        }
+        <span class="missing-if-branch" title="else path not taken" >E</span>if (xAux &gt;= 0x10000000000000000) {
+            xAux &gt;&gt;= 64;
+            result &lt;&lt;= 32;
+        }
+        if (xAux &gt;= 0x100000000) {
+            xAux &gt;&gt;= 32;
+            result &lt;&lt;= 16;
+        }
+        if (xAux &gt;= 0x10000) {
+            xAux &gt;&gt;= 16;
+            result &lt;&lt;= 8;
+        }
+        if (xAux &gt;= 0x100) {
+            xAux &gt;&gt;= 8;
+            result &lt;&lt;= 4;
+        }
+        if (xAux &gt;= 0x10) {
+            xAux &gt;&gt;= 4;
+            result &lt;&lt;= 2;
+        }
+        if (xAux &gt;= 0x8) {
+            result &lt;&lt;= 1;
+        }
+&nbsp;
+        // The operations can never overflow because the result is max 2^127 when it enters this block.
+        unchecked {
+            result = (result + x / result) &gt;&gt; 1;
+            result = (result + x / result) &gt;&gt; 1;
+            result = (result + x / result) &gt;&gt; 1;
+            result = (result + x / result) &gt;&gt; 1;
+            result = (result + x / result) &gt;&gt; 1;
+            result = (result + x / result) &gt;&gt; 1;
+            result = (result + x / result) &gt;&gt; 1; // Seven iterations should be enough
+            uint256 roundedDownResult = x / result;
+            return result &gt;= roundedDownResult ? roundedDownResult : result;
+        }
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Dec 04 2022 14:55:24 GMT+0700 (Indochina Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
