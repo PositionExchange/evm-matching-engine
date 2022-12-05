@@ -253,6 +253,7 @@ library LiquidityBitmap {
             _toPip = n;
         }
         (uint128 fromMapIndex, uint8 fromBitPos) = position(_fromPip);
+        // toggle pip % 256 = 255 cause when we do _fromPip++, it moved to another word
         if (fromBitPos == 0) {
             toggleSingleBit(_self, _fromPip - 1, false);
         }
@@ -264,7 +265,8 @@ library LiquidityBitmap {
                 toBitPos
             );
         } else {
-            if (fromBitPos != 0) fromBitPos--;
+            // check overflow
+            if (fromBitPos > 0) fromBitPos--;
             _self[fromMapIndex] &= ~toggleLastMBits(MAX_UINT256, fromBitPos);
             for (uint128 i = fromMapIndex + 1; i < toMapIndex; i++) {
                 _self[i] = 0;
