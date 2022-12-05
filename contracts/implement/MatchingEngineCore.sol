@@ -500,6 +500,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         ) {
                             state.pip = crossPipResult.toPip;
                         }
+                        if (_maxPip != 0) {
+                            state.lastMatchedPip = crossPipResult.toPip;
+                        }
                         state.ammFillAll(
                             crossPipResult.baseCrossPipOut,
                             crossPipResult.quoteCrossPipOut

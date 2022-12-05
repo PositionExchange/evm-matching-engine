@@ -616,4 +616,25 @@ describe("LimitOver01_Case05", async function(){
       FeeGrowthQuote: 0
     `)
     })
+    it ("Case #05", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 16500
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 5
+    Asset: base
+    BaseVirtual: 10
+    QuoteVirtual: 0
+- S3: OpenLimit
+  Action:
+    Id: 3
+    Asset: base
+    Side: 0
+    Quantity: 1
+    Price: 165000
+    `)
+    })
 })
