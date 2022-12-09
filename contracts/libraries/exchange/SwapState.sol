@@ -39,6 +39,7 @@ library SwapState {
         bool isBuy;
         bool isBase;
         uint256 flipSideOut;
+          uint128 pipRange;
         // For AMM
         AmmState ammState;
     }

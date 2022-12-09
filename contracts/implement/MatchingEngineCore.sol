@@ -425,9 +425,20 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             isBuy: _isBuy,
             isBase: _isBase,
             flipSideOut: 0,
+            pipRange : _getPipRange(),
             ammState: SwapState.newAMMState()
         });
         state.beforeExecute();
+
+        CrossPipParams memory crossPipParams = CrossPipParams({
+                pipNext: 0,
+                isBuy: state.isBuy,
+                isBase: _isBase,
+                amount: 0,
+                basisPoint: state.basisPoint,
+                currentPip: 0,
+                pipRange : state.pipRange
+        });
 
         while (state.remainingSize != 0) {
             StepComputations memory step;
@@ -445,6 +456,11 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 ) {
                     step.pipNext = _maxPip;
                 }
+
+                crossPipParams.pipNext = step.pipNext;
+                crossPipParams.amount = uint128(state.remainingSize);
+                crossPipParams.currentPip = state.pip;
+
             }
 
             // updated findHasLiquidityInMultipleWords, save more gas
@@ -454,14 +470,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             }
 
             CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
-                CrossPipParams({
-                    pipNext: step.pipNext,
-                    isBuy: state.isBuy,
-                    isBase: _isBase,
-                    amount: uint128(state.remainingSize),
-                    basisPoint: state.basisPoint,
-                    currentPip: state.pip
-                }),
+                crossPipParams,
                 state.ammState
             );
 
@@ -667,6 +676,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint128 amount;
         uint32 basisPoint;
         uint128 currentPip;
+        uint128 pipRange;
     }
 
     /// @notice hook function call out side thi matching core and inherit contract call to amm contract
@@ -755,4 +765,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     /// @notice hook function require only counter party
     function _onlyCounterParty() internal virtual {}
+
+    function _getPipRange() internal virtual view returns(uint128){}
 }

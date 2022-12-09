@@ -88,7 +88,7 @@ contract MatchingEngineAMM is
         }
 
         int256 indexPip = int256(
-            LiquidityMath.calculateIndexPipRange(params.currentPip, pipRange)
+            LiquidityMath.calculateIndexPipRange(params.currentPip, params.pipRange)
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
             if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
@@ -108,7 +108,8 @@ contract MatchingEngineAMM is
                     params.isBase,
                     params.amount,
                     params.basisPoint,
-                    params.currentPip
+                    params.currentPip,
+                    params.pipRange
                 ),
                 ammState
             )
@@ -119,7 +120,9 @@ contract MatchingEngineAMM is
                     params.isBase,
                     params.amount,
                     params.basisPoint,
-                    params.currentPip
+                    params.currentPip,
+                    params.pipRange
+
                 ),
                 ammState
             );
@@ -301,6 +304,10 @@ contract MatchingEngineAMM is
         returns (uint128)
     {
         return singleSlot.pip;
+    }
+
+    function _getPipRange() internal override(MatchingEngineCore) view returns(uint128){
+        return pipRange;
     }
 
     /// @notice implement emit event swap

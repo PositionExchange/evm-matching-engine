@@ -285,6 +285,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 amount;
         uint32 basisPoint;
         uint128 currentPip;
+        uint128 pipRange;
     }
 
     struct CrossPipState {
@@ -310,7 +311,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             FixedPoint128.BUFFER
         );
         crossPipState.indexedPipRange = int256(
-            LiquidityMath.calculateIndexPipRange(params.pipNext, pipRange)
+            LiquidityMath.calculateIndexPipRange(params.pipNext, params.pipRange)
         );
         params.currentPip = _calculateSqrtPrice(
             params.currentPip,
