@@ -459,7 +459,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 if (
                     (_maxPip != 0 && step.pipNext == 0) &&
                     ((!state.isBuy && state.pip >= _maxPip) ||
-                    (state.isBuy && state.pip <= _maxPip))
+                        (state.isBuy && state.pip <= _maxPip))
                 ) {
                     step.pipNext = _maxPip;
                 }
@@ -475,7 +475,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         !state.isBuy,
                         0
                     );
-
 
             // updated findHasLiquidityInMultipleWords, save more gas
             // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
@@ -670,7 +669,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint128 pip,
         uint128 pipRange,
         bool isBuy
-    ) internal virtual pure returns (uint128 limitPip) {}
+    ) internal pure virtual returns (uint128 limitPip) {}
 
     //*
     // HOOK HERE *
