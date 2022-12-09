@@ -15,8 +15,6 @@ import "../libraries/helper/Errors.sol";
 import "../libraries/helper/Require.sol";
 import "../libraries/helper/LiquidityMath.sol";
 
-import "hardhat/console.sol";
-
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
@@ -428,49 +426,40 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             isBuy: _isBuy,
             isBase: _isBase,
             flipSideOut: 0,
-            pipRange : _getPipRange(),
+            pipRange: _getPipRange(),
             ammState: SwapState.newAMMState()
         });
         state.beforeExecute();
 
         CrossPipParams memory crossPipParams = CrossPipParams({
-                pipNext: 0,
-                isBuy: state.isBuy,
-                isBase: _isBase,
-                amount: 0,
-                basisPoint: state.basisPoint,
-                currentPip: 0,
-                pipRange : state.pipRange
+            pipNext: 0,
+            isBuy: state.isBuy,
+            isBase: _isBase,
+            amount: 0,
+            basisPoint: state.basisPoint,
+            currentPip: 0,
+            pipRange: state.pipRange
         });
 
         while (state.remainingSize != 0) {
-            console.log("state.remainingSize: ", state.remainingSize);
             StepComputations memory step;
             if (_isNeedSetPipNext()) {
-                uint128 limitPip = calculatePipLimitWhenFindPipNext(state.pip, state.pipRange, state.isBuy);
+                (step.pipNext) = liquidityBitmap
+                    .findHasLiquidityInMultipleWordsWithLimitPip(
+                        state.pip,
+                        _maxFindingWordsIndex,
+                        !state.isBuy,
+                        _calculatePipLimitWhenFindPipNext(
+                            state.pip,
+                            state.pipRange,
+                            state.isBuy
+                        )
+                    );
 
-                console.log("limitPip, state.pip, !state.isBuy: ", limitPip, state.pip, !state.isBuy);
-                (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWordsWithLimitPip(
-                    state.pip,
-                    _maxFindingWordsIndex,
-                    !state.isBuy,
-                    calculatePipLimitWhenFindPipNext(state.pip, state.pipRange, state.isBuy)
-                );
-            }else
-                (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
-                    state.pip,
-                    _maxFindingWordsIndex,
-                    !state.isBuy
-                );
-
-            console.log("step.pipNext: ", step.pipNext, state.pip);
-
-
-            if (_isNeedSetPipNext()) {
                 if (
                     (_maxPip != 0 && step.pipNext == 0) &&
                     ((!state.isBuy && state.pip >= _maxPip) ||
-                        (state.isBuy && state.pip <= _maxPip))
+                    (state.isBuy && state.pip <= _maxPip))
                 ) {
                     step.pipNext = _maxPip;
                 }
@@ -478,8 +467,15 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 crossPipParams.pipNext = step.pipNext;
                 crossPipParams.amount = uint128(state.remainingSize);
                 crossPipParams.currentPip = state.pip;
+            } else
+                (step.pipNext) = liquidityBitmap
+                    .findHasLiquidityInMultipleWordsWithLimitPip(
+                        state.pip,
+                        _maxFindingWordsIndex,
+                        !state.isBuy,
+                        0
+                    );
 
-            }
 
             // updated findHasLiquidityInMultipleWords, save more gas
             // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
@@ -491,8 +487,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 crossPipParams,
                 state.ammState
             );
-            console.log(" crossPipResult.toPip, state.pip: " , crossPipResult.toPip, state.pip);
-            console.log(" crossPipResult.baseCrossPipOut: " , crossPipResult.baseCrossPipOut);
 
             if (
                 state.ammState.index >= 4 ||
@@ -552,7 +546,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
                     // get liquidity at a tick index
                     uint128 liquidity = tickPosition[step.pipNext].liquidity;
-                    console.log("liquidity: ", liquidity);
                     if (_maxPip != 0) {
                         state.lastMatchedPip = step.pipNext;
                     }
@@ -660,9 +653,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             feePercent
         );
 
-        console.log("singleSlot.pip: ", singleSlot.pip);
-        console.log("mainSideOut: ", mainSideOut);
-
         if (mainSideOut != 0) {
             emit MarketFilled(
                 state.isBuy,
@@ -676,17 +666,11 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
     }
 
-    function calculatePipLimitWhenFindPipNext(uint128 pip, uint128 pipRange, bool isBuy) internal pure returns(uint128 limitPip) {
-
-        uint256 indexPip = LiquidityMath.calculateIndexPipRange(pip, pipRange);
-
-        indexPip = isBuy ? indexPip + 1 : indexPip == 0 ? 0 :  indexPip - 1;
-        (uint128 pipMin, uint128 pipMax) = LiquidityMath.calculatePipRange(
-            uint32(indexPip),
-            pipRange
-        );
-        limitPip = isBuy ? pipMax : pipMin;
-    }
+    function _calculatePipLimitWhenFindPipNext(
+        uint128 pip,
+        uint128 pipRange,
+        bool isBuy
+    ) internal virtual pure returns (uint128 limitPip) {}
 
     //*
     // HOOK HERE *
@@ -803,5 +787,5 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     /// @notice hook function require only counter party
     function _onlyCounterParty() internal virtual {}
 
-    function _getPipRange() internal virtual view returns(uint128){}
+    function _getPipRange() internal view virtual returns (uint128) {}
 }

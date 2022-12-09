@@ -10,7 +10,6 @@ import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 import "./libraries/helper/Errors.sol";
 import "./libraries/helper/Require.sol";
-import "hardhat/console.sol";
 
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
@@ -83,52 +82,39 @@ contract MatchingEngineAMM is
         view
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
-
     {
         if (params.pipNext == params.currentPip) {
             return crossPipResult;
         }
 
         int256 indexPip = int256(
-            LiquidityMath.calculateIndexPipRange(params.currentPip, params.pipRange)
+            LiquidityMath.calculateIndexPipRange(
+                params.currentPip,
+                params.pipRange
+            )
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
             if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
             ammState.lastPipRangeLiquidityIndex = indexPip;
         }
-        console.log("params.pipNext _onCrossPipHook: ", params.pipNext);
         /// Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
         /// Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
         /// if you change ammStates[0] = 1
         /// then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
         /// because ammStates is passed by an underlying pointer
         /// let's try it in Remix
-        crossPipResult = params.pipNext != 0
-            ? _onCrossPipAMMTargetPrice(
-                OnCrossPipParams(
-                    params.pipNext,
-                    params.isBuy,
-                    params.isBase,
-                    params.amount,
-                    params.basisPoint,
-                    params.currentPip,
-                    params.pipRange
-                ),
-                ammState
-            )
-            : _onCrossPipAMMNoTargetPrice(
-                OnCrossPipParams(
-                    params.pipNext,
-                    params.isBuy,
-                    params.isBase,
-                    params.amount,
-                    params.basisPoint,
-                    params.currentPip,
-                    params.pipRange
-
-                ),
-                ammState
-            );
+        crossPipResult = _onCrossPipAMMTargetPrice(
+            OnCrossPipParams(
+                params.pipNext,
+                params.isBuy,
+                params.isBase,
+                params.amount,
+                params.basisPoint,
+                params.currentPip,
+                params.pipRange
+            ),
+            ammState
+        );
     }
 
     /// @notice implement update amm state
@@ -309,8 +295,28 @@ contract MatchingEngineAMM is
         return singleSlot.pip;
     }
 
-    function _getPipRange() internal override(MatchingEngineCore) view returns(uint128){
+    function _getPipRange()
+        internal
+        view
+        override(MatchingEngineCore)
+        returns (uint128)
+    {
         return pipRange;
+    }
+
+    function _calculatePipLimitWhenFindPipNext(
+        uint128 pip,
+        uint128 pipRange,
+        bool isBuy
+    ) internal pure override(MatchingEngineCore) returns (uint128 limitPip) {
+        uint256 indexPip = LiquidityMath.calculateIndexPipRange(pip, pipRange);
+
+        indexPip = isBuy ? indexPip + 1 : indexPip == 0 ? 0 : indexPip - 1;
+        (uint128 pipMin, uint128 pipMax) = LiquidityMath.calculatePipRange(
+            uint32(indexPip),
+            pipRange
+        );
+        limitPip = isBuy ? pipMax : pipMin;
     }
 
     /// @notice implement emit event swap

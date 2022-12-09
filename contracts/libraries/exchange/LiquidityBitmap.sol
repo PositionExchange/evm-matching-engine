@@ -142,16 +142,17 @@ library LiquidityBitmap {
                         if (next != 0) {
                             return next;
                         }
-                    }else if (self[i] == 0 && 256 * i + 255 < limitPip) return limitPip;
+                    } else if (self[i] == 0 && 256 * i + 255 < limitPip)
+                        return limitPip;
                 }
                 if (i == 0 && self[0] != 0) {
                     next = findHasLiquidityInOneWords(self, 255, true);
                     if (next != 0) {
                         return next;
-                    }else return 1;
-                }else if (i == 0  && self[0] == 0) return 1;
+                    } else return 1;
+                } else if (i == 0 && self[0] == 0) return 1;
             } else {
-                next = 1 ;
+                next = 1;
                 if (self[startWord] != 0) {
                     next = findHasLiquidityInOneWords(self, pip, true);
                     if (next != 0) {
@@ -170,7 +171,7 @@ library LiquidityBitmap {
                     if (next != 0) {
                         return next;
                     }
-                }else if (self[i] == 0 && 256 * i > limitPip) return limitPip;
+                } else if (self[i] == 0 && 256 * i > limitPip) return limitPip;
             }
         }
     }

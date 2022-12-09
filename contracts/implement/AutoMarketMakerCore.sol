@@ -12,7 +12,6 @@ import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Convert.sol";
 import "../libraries/helper/FixedPoint128.sol";
-import "hardhat/console.sol";
 
 abstract contract AutoMarketMakerCore is AMMCoreStorage {
     using Liquidity for Liquidity.Info;
@@ -312,14 +311,16 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             FixedPoint128.BUFFER
         );
         crossPipState.indexedPipRange = int256(
-            LiquidityMath.calculateIndexPipRange(params.pipNext, params.pipRange)
+            LiquidityMath.calculateIndexPipRange(
+                params.pipNext,
+                params.pipRange
+            )
         );
         params.currentPip = _calculateSqrtPrice(
             params.currentPip,
             FixedPoint128.BUFFER
         );
         for (int256 i = ammState.lastPipRangeLiquidityIndex; ; ) {
-            console.log("ammState.index: ", ammState.index);
             SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
                 ammState.index
             ];
@@ -404,115 +405,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             ammState.index = crossPipState.skipIndex
                 ? ammState.index
                 : ammState.index + 1;
-            console.log("ammState.index after: ", ammState.index);
             ammState.lastPipRangeLiquidityIndex = i;
             crossPipState.startIntoIndex = true;
         }
-    }
-
-    /// @notice calculate amount fill amm when have no target pip need reach to
-    /// @param params the struct OnCrossPipParams
-    /// @param ammState the state of amm, alive when market fill
-    /// @return result the  struct result after fill
-    function _onCrossPipAMMNoTargetPrice(
-        OnCrossPipParams memory params,
-        SwapState.AmmState memory ammState
-    ) internal view returns (CrossPipResult.Result memory result) {
-//        CrossPipState memory crossPipState;
-//        uint8 countSkipIndex;
-//        params.currentPip = _calculateSqrtPrice(
-//            params.currentPip,
-//            FixedPoint128.BUFFER
-//        );
-//
-//        while (params.amount != 0) {
-//            SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
-//                ammState.index
-//            ];
-//            // Init amm state
-//            if (
-//                _ammReserves.baseReserve == 0 && _ammReserves.baseReserve == 0
-//            ) {
-//                Liquidity.Info memory _liquidity = liquidityInfo[
-//                    uint256(ammState.lastPipRangeLiquidityIndex)
-//                ];
-//
-//                if (_liquidity.sqrtK != 0) {
-//                    _ammReserves = _initCrossAmmReserves(_liquidity, ammState);
-//                    if (crossPipState.skipIndex) {
-//                        crossPipState.skipIndex = false;
-//                    }
-//                } else {
-//                    crossPipState.skipIndex = true;
-//                    countSkipIndex++;
-//                }
-//            }
-//
-//            uint128 baseOut;
-//            uint128 quoteOut;
-//            if (ammState.ammReserves[ammState.index].sqrtK != 0) {
-//                crossPipState.pipTargetStep = params.isBuy
-//                    ? _ammReserves.sqrtMaxPip
-//                    : _ammReserves.sqrtMinPip;
-//
-//                if (crossPipState.startIntoIndex) {
-//                    params.currentPip = params.isBuy
-//                        ? _ammReserves.sqrtMinPip
-//                        : _ammReserves.sqrtMaxPip;
-//                    crossPipState.startIntoIndex = false;
-//                }
-//
-//                (baseOut, quoteOut) = _calculateAmountOut(
-//                    _ammReserves,
-//                    params.isBuy,
-//                    crossPipState.pipTargetStep,
-//                    params.currentPip,
-//                    params.basisPoint
-//                );
-//
-//                if (
-//                    _notReachPip(
-//                        params,
-//                        _ammReserves,
-//                        ammState,
-//                        baseOut,
-//                        quoteOut,
-//                        result
-//                    )
-//                ) {
-//                    break;
-//                }
-//
-//                params.amount = params.isBase
-//                    ? params.amount - baseOut
-//                    : params.amount - quoteOut;
-//                _updateAmmState(
-//                    params,
-//                    ammState.ammReserves[ammState.index],
-//                    baseOut,
-//                    quoteOut
-//                );
-//                params.currentPip = crossPipState.pipTargetStep;
-//                result.updateAmountResult(baseOut, quoteOut);
-//                result.updatePipResult(crossPipState.pipTargetStep);
-//            }
-//
-//            ammState.lastPipRangeLiquidityIndex = params.isBuy
-//                ? ammState.lastPipRangeLiquidityIndex + 1
-//                : ammState.lastPipRangeLiquidityIndex - 1;
-//
-//            ammState.index = crossPipState.skipIndex
-//                ? ammState.index
-//                : ammState.index + 1;
-//            if (
-//                ammState.lastPipRangeLiquidityIndex < 0 ||
-//                ammState.index + countSkipIndex >= 5
-//            ) {
-//                ammState.lastPipRangeLiquidityIndex = -2;
-//                return result;
-//            }
-//            crossPipState.startIntoIndex = true;
-//        }
     }
 
     /// @notice check amount traded reach the pip or not
