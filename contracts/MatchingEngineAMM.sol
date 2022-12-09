@@ -10,6 +10,7 @@ import "./interfaces/IMatchingEngineAMM.sol";
 import "./libraries/extensions/Fee.sol";
 import "./libraries/helper/Errors.sol";
 import "./libraries/helper/Require.sol";
+import "hardhat/console.sol";
 
 contract MatchingEngineAMM is
     IMatchingEngineAMM,
@@ -82,6 +83,7 @@ contract MatchingEngineAMM is
         view
         override(MatchingEngineCore)
         returns (CrossPipResult.Result memory crossPipResult)
+
     {
         if (params.pipNext == params.currentPip) {
             return crossPipResult;
@@ -94,6 +96,7 @@ contract MatchingEngineAMM is
             if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
             ammState.lastPipRangeLiquidityIndex = indexPip;
         }
+        console.log("params.pipNext _onCrossPipHook: ", params.pipNext);
         /// Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
         /// Eg. given `state.ammState.ammReserves` in MatchingEngineCore is [A, B, C, D, E]
         /// if you change ammStates[0] = 1

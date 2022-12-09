@@ -685,7 +685,7 @@ describe("CaseLiquidityCase11-15", async function(){
     Id: 2
     Asset: base
     Side: 1
-    Quantity: 120.00000000000
+    Quantity: 120.0000001
     Price: 190000
   Expect:
     PendingOrder:
@@ -740,7 +740,7 @@ describe("CaseLiquidityCase11-15", async function(){
     Id: 2
     Asset: base
     Side: 1
-    Quantity: 120.00000000000
+    Quantity: 120.5
     Price: 220000
   Expect:
     PendingOrder:

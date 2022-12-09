@@ -116,6 +116,65 @@ library LiquidityBitmap {
         }
     }
 
+    // find nearest pip has liquidity in multiple word
+    function findHasLiquidityInMultipleWordsWithLimitPip(
+        mapping(uint128 => uint256) storage self,
+        uint128 pip,
+        uint128 maxWords,
+        bool lte,
+        uint128 limitPip
+    ) internal view returns (uint128 next) {
+        uint128 startWord = pip >> 8;
+        if (lte) {
+            if (startWord != 0) {
+                uint128 i = startWord;
+                for (
+                    i;
+                    i > (startWord < maxWords ? 0 : startWord - maxWords);
+                    i--
+                ) {
+                    if (self[i] != 0) {
+                        next = findHasLiquidityInOneWords(
+                            self,
+                            i < startWord ? 256 * i + 255 : pip,
+                            true
+                        );
+                        if (next != 0) {
+                            return next;
+                        }
+                    }else if (self[i] == 0 && 256 * i + 255 < limitPip) return limitPip;
+                }
+                if (i == 0 && self[0] != 0) {
+                    next = findHasLiquidityInOneWords(self, 255, true);
+                    if (next != 0) {
+                        return next;
+                    }else return 1;
+                }else if (i == 0  && self[0] == 0) return 1;
+            } else {
+                next = 1 ;
+                if (self[startWord] != 0) {
+                    next = findHasLiquidityInOneWords(self, pip, true);
+                    if (next != 0) {
+                        return next;
+                    }
+                }
+            }
+        } else {
+            for (uint128 i = startWord; i < startWord + maxWords; i++) {
+                if (self[i] != 0) {
+                    next = findHasLiquidityInOneWords(
+                        self,
+                        i > startWord ? 256 * i : pip,
+                        false
+                    );
+                    if (next != 0) {
+                        return next;
+                    }
+                }else if (self[i] == 0 && 256 * i > limitPip) return limitPip;
+            }
+        }
+    }
+
     // find all pip has liquidity in multiple word
     function findAllLiquidityInMultipleWords(
         mapping(uint128 => uint256) storage self,

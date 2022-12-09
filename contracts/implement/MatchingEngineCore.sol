@@ -13,6 +13,9 @@ import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Errors.sol";
 import "../libraries/helper/Require.sol";
+import "../libraries/helper/LiquidityMath.sol";
+
+import "hardhat/console.sol";
 
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
@@ -441,12 +444,27 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         });
 
         while (state.remainingSize != 0) {
+            console.log("state.remainingSize: ", state.remainingSize);
             StepComputations memory step;
-            (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
-                state.pip,
-                _maxFindingWordsIndex,
-                !state.isBuy
-            );
+            if (_isNeedSetPipNext()) {
+                uint128 limitPip = calculatePipLimitWhenFindPipNext(state.pip, state.pipRange, state.isBuy);
+
+                console.log("limitPip, state.pip, !state.isBuy: ", limitPip, state.pip, !state.isBuy);
+                (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWordsWithLimitPip(
+                    state.pip,
+                    _maxFindingWordsIndex,
+                    !state.isBuy,
+                    calculatePipLimitWhenFindPipNext(state.pip, state.pipRange, state.isBuy)
+                );
+            }else
+                (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
+                    state.pip,
+                    _maxFindingWordsIndex,
+                    !state.isBuy
+                );
+
+            console.log("step.pipNext: ", step.pipNext, state.pip);
+
 
             if (_isNeedSetPipNext()) {
                 if (
@@ -473,10 +491,13 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 crossPipParams,
                 state.ammState
             );
+            console.log(" crossPipResult.toPip, state.pip: " , crossPipResult.toPip, state.pip);
+            console.log(" crossPipResult.baseCrossPipOut: " , crossPipResult.baseCrossPipOut);
 
             if (
-                state.ammState.index >= 5 ||
-                state.ammState.lastPipRangeLiquidityIndex == -2
+                state.ammState.index >= 4 ||
+                state.ammState.lastPipRangeLiquidityIndex == -2 ||
+                state.pip == 0
             ) {
                 break;
             }
@@ -531,6 +552,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
                     // get liquidity at a tick index
                     uint128 liquidity = tickPosition[step.pipNext].liquidity;
+                    console.log("liquidity: ", liquidity);
                     if (_maxPip != 0) {
                         state.lastMatchedPip = step.pipNext;
                     }
@@ -638,6 +660,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             feePercent
         );
 
+        console.log("singleSlot.pip: ", singleSlot.pip);
+        console.log("mainSideOut: ", mainSideOut);
+
         if (mainSideOut != 0) {
             emit MarketFilled(
                 state.isBuy,
@@ -649,6 +674,18 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             );
             emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
         }
+    }
+
+    function calculatePipLimitWhenFindPipNext(uint128 pip, uint128 pipRange, bool isBuy) internal pure returns(uint128 limitPip) {
+
+        uint256 indexPip = LiquidityMath.calculateIndexPipRange(pip, pipRange);
+
+        indexPip = isBuy ? indexPip + 1 : indexPip == 0 ? 0 :  indexPip - 1;
+        (uint128 pipMin, uint128 pipMax) = LiquidityMath.calculatePipRange(
+            uint32(indexPip),
+            pipRange
+        );
+        limitPip = isBuy ? pipMax : pipMin;
     }
 
     //*
