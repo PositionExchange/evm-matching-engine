@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
 
 import "../libraries/types/AMMCoreStorage.sol";
 import "../libraries/helper/Math.sol";
-import "../libraries/helper/LiquidityMath.sol";
+import "../libraries/amm/LiquidityMath.sol";
 import "../interfaces/IAutoMarketMakerCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";

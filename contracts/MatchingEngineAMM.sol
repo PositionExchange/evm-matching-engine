@@ -253,7 +253,6 @@ contract MatchingEngineAMM is
             uint256 baseSize,
             uint256 partialFilled
         ) = getPendingOrderDetail(_pip, _orderId);
-        // TODO calculate fee
         uint256 filledSize = isFilled ? baseSize : partialFilled;
         {
             if (isBuy) {
@@ -306,17 +305,19 @@ contract MatchingEngineAMM is
 
     function _calculatePipLimitWhenFindPipNext(
         uint128 pip,
-        uint128 pipRange,
-        bool isBuy
+        bool isBuy,
+        uint32 basisPoint
     ) internal pure override(MatchingEngineCore) returns (uint128 limitPip) {
-        uint256 indexPip = LiquidityMath.calculateIndexPipRange(pip, pipRange);
+        uint128 rangeWords = 400;
+        if (basisPoint == 100) {
+            rangeWords = 20;
+        } else if (basisPoint == 10_000) {
+            rangeWords = 300;
+        }
 
-        indexPip = isBuy ? indexPip + 1 : indexPip == 0 ? 0 : indexPip - 1;
-        (uint128 pipMin, uint128 pipMax) = LiquidityMath.calculatePipRange(
-            uint32(indexPip),
-            pipRange
-        );
-        limitPip = isBuy ? pipMax : pipMin;
+        limitPip = isBuy ? pip + rangeWords * 256 : pip <= rangeWords * 256
+            ? 1
+            : pip - rangeWords * 256;
     }
 
     /// @notice implement emit event swap
@@ -357,15 +358,4 @@ contract MatchingEngineAMM is
     {
         return TradeConvert.baseToQuote(quantity, pip, basisPoint);
     }
-
-    function getLiquidityInPipRange(
-        uint128 fromPip,
-        uint256 dataLength,
-        bool toHigher
-    )
-        external
-        view
-        override(MatchingEngineCore, IMatchingEngineCore)
-        returns (LiquidityOfEachPip[] memory, uint128)
-    {}
 }

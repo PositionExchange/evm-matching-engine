@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "./FixedPoint128.sol";
+import "../helper/FixedPoint128.sol";
 
 /// @title All formulas used in the AMM
 library LiquidityMath {

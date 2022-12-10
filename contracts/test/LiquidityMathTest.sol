@@ -3,7 +3,7 @@
  */
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
-import "../libraries/helper/LiquidityMath.sol";
+import "../libraries/amm/LiquidityMath.sol";
 
 contract LiquidityMathTest {
     uint256 public CURVE_PIP = 10**24;

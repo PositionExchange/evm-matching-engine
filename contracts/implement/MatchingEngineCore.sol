@@ -13,7 +13,7 @@ import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Errors.sol";
 import "../libraries/helper/Require.sol";
-import "../libraries/helper/LiquidityMath.sol";
+import "../libraries/amm/LiquidityMath.sol";
 
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
@@ -451,8 +451,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         !state.isBuy,
                         _calculatePipLimitWhenFindPipNext(
                             state.pip,
-                            state.pipRange,
-                            state.isBuy
+                            state.isBuy,
+                            state.basisPoint
                         )
                     );
 
@@ -667,8 +667,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     function _calculatePipLimitWhenFindPipNext(
         uint128 pip,
-        uint128 pipRange,
-        bool isBuy
+        bool isBuy,
+        uint32 basisPoint
     ) internal pure virtual returns (uint128 limitPip) {}
 
     //*
@@ -741,12 +741,29 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         address _trader
     ) internal virtual {}
 
-    /// @notice hoook function get liquidity in pip range
+    /// @notice hook function get liquidity in pip range
     function getLiquidityInPipRange(
         uint128 fromPip,
         uint256 dataLength,
         bool toHigher
-    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
+    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {
+        uint128[] memory allInitializedPip = new uint128[](uint128(dataLength));
+        allInitializedPip = liquidityBitmap.findAllLiquidityInMultipleWords(
+            fromPip,
+            dataLength,
+            toHigher
+        );
+        LiquidityOfEachPip[] memory allLiquidity = new LiquidityOfEachPip[](
+            dataLength
+        );
+        for (uint256 i = 0; i < dataLength; i++) {
+            allLiquidity[i] = LiquidityOfEachPip({
+                pip: allInitializedPip[i],
+                liquidity: tickPosition[allInitializedPip[i]].liquidity
+            });
+        }
+        return (allLiquidity, allInitializedPip[dataLength - 1]);
+    }
 
     // TODO Must implement this function
     /// @notice hook function get amount estmate
@@ -756,7 +773,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         bool isBase
     ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
 
-    // TODO Must implement this function
     /// @notice hook function calculate quote amount
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
