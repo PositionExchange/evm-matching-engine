@@ -143,13 +143,13 @@ describe("MatchingCase01-Case05", async function(){
     Id: 4
     Asset: base
     Side: 1
-    Quantity: 15
+    Quantity: 16
     Price: 59999
   Expect:
     PendingOrder: 
       OrderId: 3
       Price: 59999
-      Size : 15
+      Size : 16
       Side: 1
 - S5: OpenMarket
   Action:
