@@ -312,7 +312,7 @@ contract MatchingEngineAMM is
         if (basisPoint == 100) {
             rangeWords = 20;
         } else if (basisPoint == 10_000) {
-            rangeWords = 300;
+            rangeWords = 250;
         }
 
         limitPip = isBuy ? pip + rangeWords * 256 : pip <= rangeWords * 256
