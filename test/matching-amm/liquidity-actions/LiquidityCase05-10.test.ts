@@ -630,7 +630,7 @@ describe("CaseLiquidityCase05-10", async function(){
     id: 3
     asset: base
     Side: 0
-    Quantity: 65
+    Quantity: 64.9
   Expect:
     Pool:
       Liquidity: 6202.2505240158

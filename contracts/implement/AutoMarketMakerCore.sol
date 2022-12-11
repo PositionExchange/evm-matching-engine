@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
 
 import "../libraries/types/AMMCoreStorage.sol";
 import "../libraries/helper/Math.sol";
-import "../libraries/helper/LiquidityMath.sol";
+import "../libraries/amm/LiquidityMath.sol";
 import "../interfaces/IAutoMarketMakerCore.sol";
 import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
@@ -285,6 +285,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint128 amount;
         uint32 basisPoint;
         uint128 currentPip;
+        uint128 pipRange;
     }
 
     struct CrossPipState {
@@ -310,7 +311,10 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             FixedPoint128.BUFFER
         );
         crossPipState.indexedPipRange = int256(
-            LiquidityMath.calculateIndexPipRange(params.pipNext, pipRange)
+            LiquidityMath.calculateIndexPipRange(
+                params.pipNext,
+                params.pipRange
+            )
         );
         params.currentPip = _calculateSqrtPrice(
             params.currentPip,
@@ -402,111 +406,6 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 ? ammState.index
                 : ammState.index + 1;
             ammState.lastPipRangeLiquidityIndex = i;
-            crossPipState.startIntoIndex = true;
-        }
-    }
-
-    /// @notice calculate amount fill amm when have no target pip need reach to
-    /// @param params the struct OnCrossPipParams
-    /// @param ammState the state of amm, alive when market fill
-    /// @return result the  struct result after fill
-    function _onCrossPipAMMNoTargetPrice(
-        OnCrossPipParams memory params,
-        SwapState.AmmState memory ammState
-    ) internal view returns (CrossPipResult.Result memory result) {
-        CrossPipState memory crossPipState;
-        uint8 countSkipIndex;
-        params.currentPip = _calculateSqrtPrice(
-            params.currentPip,
-            FixedPoint128.BUFFER
-        );
-
-        while (params.amount != 0) {
-            SwapState.AmmReserves memory _ammReserves = ammState.ammReserves[
-                ammState.index
-            ];
-            // Init amm state
-            if (
-                _ammReserves.baseReserve == 0 && _ammReserves.baseReserve == 0
-            ) {
-                Liquidity.Info memory _liquidity = liquidityInfo[
-                    uint256(ammState.lastPipRangeLiquidityIndex)
-                ];
-
-                if (_liquidity.sqrtK != 0) {
-                    _ammReserves = _initCrossAmmReserves(_liquidity, ammState);
-                    if (crossPipState.skipIndex) {
-                        crossPipState.skipIndex = false;
-                    }
-                } else {
-                    crossPipState.skipIndex = true;
-                    countSkipIndex++;
-                }
-            }
-
-            uint128 baseOut;
-            uint128 quoteOut;
-            if (ammState.ammReserves[ammState.index].sqrtK != 0) {
-                crossPipState.pipTargetStep = params.isBuy
-                    ? _ammReserves.sqrtMaxPip
-                    : _ammReserves.sqrtMinPip;
-
-                if (crossPipState.startIntoIndex) {
-                    params.currentPip = params.isBuy
-                        ? _ammReserves.sqrtMinPip
-                        : _ammReserves.sqrtMaxPip;
-                    crossPipState.startIntoIndex = false;
-                }
-
-                (baseOut, quoteOut) = _calculateAmountOut(
-                    _ammReserves,
-                    params.isBuy,
-                    crossPipState.pipTargetStep,
-                    params.currentPip,
-                    params.basisPoint
-                );
-
-                if (
-                    _notReachPip(
-                        params,
-                        _ammReserves,
-                        ammState,
-                        baseOut,
-                        quoteOut,
-                        result
-                    )
-                ) {
-                    break;
-                }
-
-                params.amount = params.isBase
-                    ? params.amount - baseOut
-                    : params.amount - quoteOut;
-                _updateAmmState(
-                    params,
-                    ammState.ammReserves[ammState.index],
-                    baseOut,
-                    quoteOut
-                );
-                params.currentPip = crossPipState.pipTargetStep;
-                result.updateAmountResult(baseOut, quoteOut);
-                result.updatePipResult(crossPipState.pipTargetStep);
-            }
-
-            ammState.lastPipRangeLiquidityIndex = params.isBuy
-                ? ammState.lastPipRangeLiquidityIndex + 1
-                : ammState.lastPipRangeLiquidityIndex - 1;
-
-            ammState.index = crossPipState.skipIndex
-                ? ammState.index
-                : ammState.index + 1;
-            if (
-                ammState.lastPipRangeLiquidityIndex < 0 ||
-                ammState.index + countSkipIndex >= 5
-            ) {
-                ammState.lastPipRangeLiquidityIndex = -2;
-                return result;
-            }
             crossPipState.startIntoIndex = true;
         }
     }

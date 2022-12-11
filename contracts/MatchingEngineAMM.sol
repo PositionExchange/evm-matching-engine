@@ -22,6 +22,8 @@ contract MatchingEngineAMM is
     address public counterParty;
     address public positionManagerLiquidity;
 
+    uint128 public rangeFindingWordsAmm = 400;
+
     /// @notice initialize the contract right after deploy
     /// @notice only call once time
     /// @dev initialize the sub contract, approve contract
@@ -43,6 +45,12 @@ contract MatchingEngineAMM is
             params.initialPip
         );
         _initFee(params.quoteAsset, params.baseAsset);
+
+        if (params.basisPoint == 100) {
+            rangeFindingWordsAmm = 20;
+        } else if (params.basisPoint == 10_000) {
+            rangeFindingWordsAmm = 250;
+        }
 
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);
         _approveCounterParty(params.baseAsset, params.positionLiquidity);
@@ -88,7 +96,10 @@ contract MatchingEngineAMM is
         }
 
         int256 indexPip = int256(
-            LiquidityMath.calculateIndexPipRange(params.currentPip, pipRange)
+            LiquidityMath.calculateIndexPipRange(
+                params.currentPip,
+                params.pipRange
+            )
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
             if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
@@ -100,29 +111,18 @@ contract MatchingEngineAMM is
         /// then the `state.ammState.ammReserves` in MatchingEngineCore will be [1, B, C, D, E]
         /// because ammStates is passed by an underlying pointer
         /// let's try it in Remix
-        crossPipResult = params.pipNext != 0
-            ? _onCrossPipAMMTargetPrice(
-                OnCrossPipParams(
-                    params.pipNext,
-                    params.isBuy,
-                    params.isBase,
-                    params.amount,
-                    params.basisPoint,
-                    params.currentPip
-                ),
-                ammState
-            )
-            : _onCrossPipAMMNoTargetPrice(
-                OnCrossPipParams(
-                    params.pipNext,
-                    params.isBuy,
-                    params.isBase,
-                    params.amount,
-                    params.basisPoint,
-                    params.currentPip
-                ),
-                ammState
-            );
+        crossPipResult = _onCrossPipAMMTargetPrice(
+            OnCrossPipParams(
+                params.pipNext,
+                params.isBuy,
+                params.isBase,
+                params.amount,
+                params.basisPoint,
+                params.currentPip,
+                params.pipRange
+            ),
+            ammState
+        );
     }
 
     /// @notice implement update amm state
@@ -261,7 +261,6 @@ contract MatchingEngineAMM is
             uint256 baseSize,
             uint256 partialFilled
         ) = getPendingOrderDetail(_pip, _orderId);
-        // TODO calculate fee
         uint256 filledSize = isFilled ? baseSize : partialFilled;
         {
             if (isBuy) {
@@ -279,11 +278,13 @@ contract MatchingEngineAMM is
         return exData;
     }
 
+    /// @notice get the address of context transactions
     function _msgSender() internal view returns (address) {
         return msg.sender;
     }
 
     /// @notice get basis point
+    /// @return basis point of pair
     function _basisPoint()
         internal
         view
@@ -294,6 +295,7 @@ contract MatchingEngineAMM is
     }
 
     /// @notice get current pip
+    /// @return The current pip of pair
     function getCurrentPip()
         public
         view
@@ -301,6 +303,47 @@ contract MatchingEngineAMM is
         returns (uint128)
     {
         return singleSlot.pip;
+    }
+
+    /// @notice get pip range of pair
+    /// @return the start of pip range
+    function _getPipRange()
+        internal
+        view
+        override(MatchingEngineCore)
+        returns (uint128)
+    {
+        return pipRange;
+    }
+
+    /// @notice get range finding word of pair
+    /// @return the storage of funding words amm
+    function _getRangeFindingWordsAmm()
+        internal
+        view
+        override(MatchingEngineCore)
+        returns (uint128)
+    {
+        return rangeFindingWordsAmm;
+    }
+
+    /// @notice calculate the pip limit with range finding words when use amm
+    /// @param pip the current pip step in market
+    /// @param isBuy the side of the order
+    /// @param rangeWords the range words amm of pair
+    function _calculatePipLimitWhenFindPipNext(
+        uint128 pip,
+        bool isBuy,
+        uint128 rangeWords
+    ) internal pure override(MatchingEngineCore) returns (uint128 limitPip) {
+        if (!isBuy) {
+            if (pip <= rangeWords * 256) {
+                return 1;
+            }
+            return pip - rangeWords * 256;
+        }
+
+        return pip + rangeWords * 256;
     }
 
     /// @notice implement emit event swap
@@ -333,6 +376,8 @@ contract MatchingEngineAMM is
     }
 
     /// @notice implement calculate quote amount
+    /// @param quantity the size of base amount
+    /// @param pip the pip want to calculate
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
         view
@@ -341,15 +386,4 @@ contract MatchingEngineAMM is
     {
         return TradeConvert.baseToQuote(quantity, pip, basisPoint);
     }
-
-    function getLiquidityInPipRange(
-        uint128 fromPip,
-        uint256 dataLength,
-        bool toHigher
-    )
-        external
-        view
-        override(MatchingEngineCore, IMatchingEngineCore)
-        returns (LiquidityOfEachPip[] memory, uint128)
-    {}
 }

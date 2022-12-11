@@ -13,6 +13,7 @@ import "../libraries/exchange/SwapState.sol";
 import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Errors.sol";
 import "../libraries/helper/Require.sol";
+import "../libraries/amm/LiquidityMath.sol";
 
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
@@ -22,6 +23,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     using Convert for int256;
     using SwapState for SwapState.State;
 
+    // Init storage of pai
+    // called only once time
     function _initializeCore(
         uint256 _basisPoint,
         uint128 _maxFindingWordsIndex,
@@ -35,7 +38,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     }
 
     //*
-    //*** Virtual functions
+    //*** Virtual functions called from counter party
     //*
 
     /// @inheritdoc IMatchingEngineCore
@@ -193,6 +196,30 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             liquidityBitmap.hasLiquidity(singleSlot.pip)
                 ? tickPosition[singleSlot.pip].liquidity
                 : 0;
+    }
+
+    /// @notice hook function get liquidity in pip range
+    function getLiquidityInPipRange(
+        uint128 fromPip,
+        uint256 dataLength,
+        bool toHigher
+    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {
+        uint128[] memory allInitializedPip = new uint128[](uint128(dataLength));
+        allInitializedPip = liquidityBitmap.findAllLiquidityInMultipleWords(
+            fromPip,
+            dataLength,
+            toHigher
+        );
+        LiquidityOfEachPip[] memory allLiquidity = new LiquidityOfEachPip[](
+            dataLength
+        );
+        for (uint256 i = 0; i < dataLength; i++) {
+            allLiquidity[i] = LiquidityOfEachPip({
+                pip: allInitializedPip[i],
+                liquidity: tickPosition[allInitializedPip[i]].liquidity
+            });
+        }
+        return (allLiquidity, allInitializedPip[dataLength - 1]);
     }
 
     //*
@@ -425,19 +452,37 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             isBuy: _isBuy,
             isBase: _isBase,
             flipSideOut: 0,
+            pipRange: _getPipRange(),
+            rangeFindingWordsAmm: _getRangeFindingWordsAmm(),
             ammState: SwapState.newAMMState()
         });
         state.beforeExecute();
 
+        CrossPipParams memory crossPipParams = CrossPipParams({
+            pipNext: 0,
+            isBuy: state.isBuy,
+            isBase: _isBase,
+            amount: 0,
+            basisPoint: state.basisPoint,
+            currentPip: 0,
+            pipRange: state.pipRange
+        });
+
         while (state.remainingSize != 0) {
             StepComputations memory step;
-            (step.pipNext) = liquidityBitmap.findHasLiquidityInMultipleWords(
-                state.pip,
-                _maxFindingWordsIndex,
-                !state.isBuy
-            );
-
             if (_isNeedSetPipNext()) {
+                (step.pipNext) = liquidityBitmap
+                    .findHasLiquidityInMultipleWordsWithLimitPip(
+                        state.pip,
+                        _maxFindingWordsIndex,
+                        !state.isBuy,
+                        _calculatePipLimitWhenFindPipNext(
+                            state.pip,
+                            state.isBuy,
+                            state.rangeFindingWordsAmm
+                        )
+                    );
+
                 if (
                     (_maxPip != 0 && step.pipNext == 0) &&
                     ((!state.isBuy && state.pip >= _maxPip) ||
@@ -445,7 +490,18 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 ) {
                     step.pipNext = _maxPip;
                 }
-            }
+
+                crossPipParams.pipNext = step.pipNext;
+                crossPipParams.amount = uint128(state.remainingSize);
+                crossPipParams.currentPip = state.pip;
+            } else
+                (step.pipNext) = liquidityBitmap
+                    .findHasLiquidityInMultipleWordsWithLimitPip(
+                        state.pip,
+                        _maxFindingWordsIndex,
+                        !state.isBuy,
+                        0
+                    );
 
             // updated findHasLiquidityInMultipleWords, save more gas
             // if order is buy and step.pipNext (pip has liquidity) > maxPip then break cause this is limited to maxPip and vice versa
@@ -454,20 +510,14 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             }
 
             CrossPipResult.Result memory crossPipResult = _onCrossPipHook(
-                CrossPipParams({
-                    pipNext: step.pipNext,
-                    isBuy: state.isBuy,
-                    isBase: _isBase,
-                    amount: uint128(state.remainingSize),
-                    basisPoint: state.basisPoint,
-                    currentPip: state.pip
-                }),
+                crossPipParams,
                 state.ammState
             );
 
             if (
-                state.ammState.index >= 5 ||
-                state.ammState.lastPipRangeLiquidityIndex == -2
+                state.ammState.index >= 4 ||
+                state.ammState.lastPipRangeLiquidityIndex == -2 ||
+                state.pip == 0
             ) {
                 break;
             }
@@ -568,6 +618,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
 
         {
+            /// put code in new block memory avoid stack to deep
             if (
                 _initialSingleSlot.pip != state.pip &&
                 state.remainingSize != _size
@@ -642,6 +693,12 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
     }
 
+    function _calculatePipLimitWhenFindPipNext(
+        uint128 pip,
+        bool isBuy,
+        uint128 rangeWords
+    ) internal pure virtual returns (uint128 limitPip) {}
+
     //*
     // HOOK HERE *
     //*
@@ -667,6 +724,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint128 amount;
         uint32 basisPoint;
         uint128 currentPip;
+        uint128 pipRange;
     }
 
     /// @notice hook function call out side thi matching core and inherit contract call to amm contract
@@ -711,13 +769,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         address _trader
     ) internal virtual {}
 
-    /// @notice hoook function get liquidity in pip range
-    function getLiquidityInPipRange(
-        uint128 fromPip,
-        uint256 dataLength,
-        bool toHigher
-    ) external view virtual returns (LiquidityOfEachPip[] memory, uint128) {}
-
     // TODO Must implement this function
     /// @notice hook function get amount estmate
     function getAmountEstimate(
@@ -726,7 +777,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         bool isBase
     ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
 
-    // TODO Must implement this function
     /// @notice hook function calculate quote amount
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
@@ -755,4 +805,15 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     /// @notice hook function require only counter party
     function _onlyCounterParty() internal virtual {}
+
+    function _getPipRange() internal view virtual returns (uint128) {}
+
+    function _getRangeFindingWordsAmm()
+        internal
+        view
+        virtual
+        returns (uint128)
+    {
+        return 0;
+    }
 }
