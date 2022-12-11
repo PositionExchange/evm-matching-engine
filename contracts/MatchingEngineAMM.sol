@@ -22,6 +22,8 @@ contract MatchingEngineAMM is
     address public counterParty;
     address public positionManagerLiquidity;
 
+    uint128 public rangeFindingWordsAmm = 400;
+
     /// @notice initialize the contract right after deploy
     /// @notice only call once time
     /// @dev initialize the sub contract, approve contract
@@ -43,6 +45,12 @@ contract MatchingEngineAMM is
             params.initialPip
         );
         _initFee(params.quoteAsset, params.baseAsset);
+
+        if (params.basisPoint == 100) {
+            rangeFindingWordsAmm = 20;
+        } else if (params.basisPoint == 10_000) {
+            rangeFindingWordsAmm = 250;
+        }
 
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);
         _approveCounterParty(params.baseAsset, params.positionLiquidity);
@@ -270,11 +278,13 @@ contract MatchingEngineAMM is
         return exData;
     }
 
+    /// @notice get the address of context transactions
     function _msgSender() internal view returns (address) {
         return msg.sender;
     }
 
     /// @notice get basis point
+    /// @return basis point of pair
     function _basisPoint()
         internal
         view
@@ -285,6 +295,7 @@ contract MatchingEngineAMM is
     }
 
     /// @notice get current pip
+    /// @return The current pip of pair
     function getCurrentPip()
         public
         view
@@ -294,6 +305,8 @@ contract MatchingEngineAMM is
         return singleSlot.pip;
     }
 
+    /// @notice get pip range of pair
+    /// @return the start of pip range
     function _getPipRange()
         internal
         view
@@ -303,21 +316,34 @@ contract MatchingEngineAMM is
         return pipRange;
     }
 
+    /// @notice get range finding word of pair
+    /// @return the storage of funding words amm
+    function _getRangeFindingWordsAmm()
+        internal
+        view
+        override(MatchingEngineCore)
+        returns (uint128)
+    {
+        return rangeFindingWordsAmm;
+    }
+
+    /// @notice calculate the pip limit with range finding words when use amm
+    /// @param pip the current pip step in market
+    /// @param isBuy the side of the order
+    /// @param rangeWords the range words amm of pair
     function _calculatePipLimitWhenFindPipNext(
         uint128 pip,
         bool isBuy,
-        uint32 basisPoint
+        uint128 rangeWords
     ) internal pure override(MatchingEngineCore) returns (uint128 limitPip) {
-        uint128 rangeWords = 400;
-        if (basisPoint == 100) {
-            rangeWords = 20;
-        } else if (basisPoint == 10_000) {
-            rangeWords = 250;
+        if (!isBuy) {
+            if (pip <= rangeWords * 256) {
+                return 1;
+            }
+            return pip - rangeWords * 256;
         }
 
-        limitPip = isBuy ? pip + rangeWords * 256 : pip <= rangeWords * 256
-            ? 1
-            : pip - rangeWords * 256;
+        return pip + rangeWords * 256;
     }
 
     /// @notice implement emit event swap
@@ -350,6 +376,8 @@ contract MatchingEngineAMM is
     }
 
     /// @notice implement calculate quote amount
+    /// @param quantity the size of base amount
+    /// @param pip the pip want to calculate
     function calculatingQuoteAmount(uint256 quantity, uint128 pip)
         external
         view

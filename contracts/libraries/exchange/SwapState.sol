@@ -40,6 +40,7 @@ library SwapState {
         bool isBase;
         uint256 flipSideOut;
         uint128 pipRange;
+        uint128 rangeFindingWordsAmm;
         // For AMM
         AmmState ammState;
     }
