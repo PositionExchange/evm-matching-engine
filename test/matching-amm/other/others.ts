@@ -72,3 +72,26 @@ describe("OtherCases", async function(){
     `)
     })
 })
+
+
+describe("ReproduceManualCHZ", async function(){
+    let testHelper: TestMatchingAmm
+
+    beforeEach(async () => {
+        testHelper = await deployAndCreateRouterHelper()
+    })
+    it ("Add CHZ", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 33757
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 2
+    Asset: base
+    BaseVirtual: 1000000
+    QuoteVirtual: 0
+`)
+    })
+})

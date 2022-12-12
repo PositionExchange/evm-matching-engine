@@ -13,6 +13,8 @@ import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Convert.sol";
 import "../libraries/helper/FixedPoint128.sol";
 
+import "hardhat/console.sol";
+
 abstract contract AutoMarketMakerCore is AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;

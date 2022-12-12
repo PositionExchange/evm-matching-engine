@@ -195,8 +195,8 @@ library LiquidityMath {
         returns (uint256)
     {
         return
-            (uint256(quoteReal)**2 * FixedPoint128.BUFFER) /
-            uint256(sqrtPriceMax)**2;
+            (uint256(quoteReal)**2 / uint256(sqrtPriceMax)) *
+            (FixedPoint128.BUFFER / uint256(sqrtPriceMax));
     }
 
     /// @notice calculate K ( liquidity) with base real
@@ -208,8 +208,8 @@ library LiquidityMath {
         returns (uint256)
     {
         return
-            (uint256(baseReal)**2 * uint256(sqrtPriceMin)**2) /
-            FixedPoint128.BUFFER;
+            (uint256(baseReal)**2 / FixedPoint128.HALF_BUFFER) *
+            (uint256(sqrtPriceMin)**2 / FixedPoint128.HALF_BUFFER);
     }
 
     /// @notice calculate K ( liquidity) with base real and quote ral
