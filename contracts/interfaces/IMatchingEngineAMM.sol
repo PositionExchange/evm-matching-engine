@@ -26,6 +26,7 @@ interface IMatchingEngineAMM is
         address owner;
         address positionLiquidity;
         address spotHouse;
+        address router;
         uint32 feeShareAmm;
     }
 
