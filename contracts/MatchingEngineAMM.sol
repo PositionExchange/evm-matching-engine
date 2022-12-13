@@ -19,9 +19,7 @@ contract MatchingEngineAMM is
 {
     using Math for uint128;
     bool isInitialized;
-    address public counterParty;
-    address public positionManagerLiquidity;
-
+    mapping(address => bool) public counterParties;
     uint128 public rangeFindingWordsAmm = 400;
 
     /// @notice initialize the contract right after deploy
@@ -30,8 +28,10 @@ contract MatchingEngineAMM is
     function initialize(InitParams memory params) external {
         Require._require(!isInitialized, Errors.ME_INITIALIZED);
         isInitialized = true;
-        positionManagerLiquidity = params.positionLiquidity;
-        counterParty = params.spotHouse;
+
+        counterParties[params.positionLiquidity] = true;
+        counterParties[params.spotHouse] = true;
+        counterParties[params.router] = true;
 
         _initializeAMM(
             params.pipRange,
@@ -67,8 +67,7 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore, AutoMarketMakerCore)
     {
         Require._require(
-            counterParty == _msgSender() ||
-                positionManagerLiquidity == _msgSender(),
+            counterParties[msg.sender],
             Errors.ME_ONLY_COUNTERPARTY
         );
     }

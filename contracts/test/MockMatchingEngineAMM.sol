@@ -16,6 +16,6 @@ contract MockMatchingEngineAMM is MatchingEngineAMM {
     }
 
     function setCounterParty() public {
-        counterParty = msg.sender;
+        counterParties[msg.sender] = true;
     }
 }
