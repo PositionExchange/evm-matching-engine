@@ -57,6 +57,9 @@ contract MatchingEngineAMM is
 
         _approveCounterParty(params.quoteAsset, params.spotHouse);
         _approveCounterParty(params.baseAsset, params.spotHouse);
+
+        _approveCounterParty(params.baseAsset, params.router);
+        _approveCounterParty(params.baseAsset, params.router);
     }
 
     /// @notice implement hook function
