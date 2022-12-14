@@ -513,7 +513,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 crossPipParams,
                 state.ammState
             );
-
             if (
                 state.ammState.index >= 4 ||
                 state.ammState.lastPipRangeLiquidityIndex == -2 ||

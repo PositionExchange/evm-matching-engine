@@ -88,7 +88,7 @@ function roundNumber(n, decimal = 6) {
 }
 
 // useWBNB: 0 is not use, 1 is WBNB Quote, 2 is WBNB Base
-export async function deployAndCreateRouterHelper() {
+export async function deployAndCreateRouterHelper(pipRange = 30_000) {
     let matching: MockMatchingEngineAMM
     let testHelper: TestMatchingAmm;
 
@@ -109,7 +109,7 @@ export async function deployAndCreateRouterHelper() {
             basisPoint: BASIS_POINT,
             maxFindingWordsIndex: 1000,
             initialPip: 100000,
-            pipRange: 30_000,
+            pipRange: pipRange,
             tickSpace: 1,
             owner: deployer.address,
             positionLiquidity: deployer.address,
