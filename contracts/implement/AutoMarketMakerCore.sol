@@ -404,11 +404,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 break;
             }
 
-            ammState.index = crossPipState.skipIndex
-                ? ammState.index
-                : ammState.index + 1;
             ammState.lastPipRangeLiquidityIndex = i;
             crossPipState.startIntoIndex = true;
+            ammState.index++;
         }
     }
 
@@ -603,27 +601,28 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         uint256 indexedPipRange;
         SwapState.AmmReserves memory ammReserves;
         for (uint8 i = 0; i <= ammState.index; i++) {
-            indexedPipRange = ammState.pipRangesIndex[uint256(i)];
-            ammReserves = ammState.ammReserves[uint256(i)];
-            if (ammReserves.sqrtK == 0) break;
-            totalFilledAmm += ammReserves.amountFilled;
+            if (ammState.ammReserves[uint256(i)].sqrtK != 0) {
+                indexedPipRange = ammState.pipRangesIndex[uint256(i)];
+                ammReserves = ammState.ammReserves[uint256(i)];
+                totalFilledAmm += ammReserves.amountFilled;
 
-            feeEachIndex =
-                (ammReserves.amountFilled * feePercent) /
-                FixedPoint128.BASIC_POINT_FEE;
-            totalFeeAmm += feeEachIndex;
+                feeEachIndex =
+                    (ammReserves.amountFilled * feePercent) /
+                    FixedPoint128.BASIC_POINT_FEE;
+                totalFeeAmm += feeEachIndex;
 
-            liquidityInfo[indexedPipRange].updateAMMReserve(
-                ammReserves.quoteReserve,
-                ammReserves.baseReserve,
-                Math.mulDiv(
-                    ((feeEachIndex * _feeShareAmm) /
-                        FixedPoint128.BASIC_POINT_FEE),
-                    FixedPoint128.Q_POW18,
-                    ammReserves.sqrtK
-                ),
-                isBuy
-            );
+                liquidityInfo[indexedPipRange].updateAMMReserve(
+                    ammReserves.quoteReserve,
+                    ammReserves.baseReserve,
+                    Math.mulDiv(
+                        ((feeEachIndex * _feeShareAmm) /
+                            FixedPoint128.BASIC_POINT_FEE),
+                        FixedPoint128.Q_POW18,
+                        ammReserves.sqrtK
+                    ),
+                    isBuy
+                );
+            }
         }
 
         feeProtocolAmm =

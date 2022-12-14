@@ -95,3 +95,23 @@ describe("ReproduceManualCHZ", async function(){
 `)
     })
 })
+describe("ReproduceManualNoLiquidity", async function(){
+    let testHelper: TestMatchingAmm
+
+    beforeEach(async () => {
+        testHelper = await deployAndCreateRouterHelper()
+    })
+    it ("Open with base", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 50000
+- S1: OpenMarket
+  Action:
+    id: 2
+    asset: base
+    Side: 0
+    Quantity: 10
+`)
+    })
+})

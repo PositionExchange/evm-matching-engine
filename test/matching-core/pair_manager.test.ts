@@ -37,7 +37,8 @@ describe("MockMatchingEngineCore", async function () {
                 owner: deployer.address,
                 positionLiquidity: deployer.address,
                 spotHouse: deployer.address,
-                feeShareAmm: 0
+                feeShareAmm: 0,
+                router : deployer.address
             });
 
         // await matchingEngineCore.initializeFactory(
