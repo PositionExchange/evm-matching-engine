@@ -436,6 +436,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
+        Require._require(_size != 0, Errors.ME_INVALID_SIZE);
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
 
