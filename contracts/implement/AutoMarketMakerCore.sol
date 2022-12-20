@@ -13,8 +13,6 @@ import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Convert.sol";
 import "../libraries/helper/FixedPoint128.sol";
 
-import "hardhat/console.sol";
-
 abstract contract AutoMarketMakerCore is AMMCoreStorage {
     using Liquidity for Liquidity.Info;
     using Math for uint128;
@@ -398,7 +396,8 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             i = params.isBuy ? i + 1 : i - 1;
             if (
                 (params.isBuy && i > crossPipState.indexedPipRange) ||
-                (!params.isBuy && i < crossPipState.indexedPipRange)
+                (!params.isBuy && i < crossPipState.indexedPipRange) ||
+                ammState.index == 4
             ) {
                 result.updatePipResult(params.pipNext);
                 break;
