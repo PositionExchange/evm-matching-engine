@@ -105,7 +105,7 @@ describe("ReproduceManualNoLiquidity", async function(){
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 
-    Price: 50000
+    Price: 10000
 - S1: OpenMarket
   Action:
     id: 2
