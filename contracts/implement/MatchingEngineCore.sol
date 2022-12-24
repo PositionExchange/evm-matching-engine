@@ -436,6 +436,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             uint256 fee
         )
     {
+        Require._require(_size != 0, Errors.ME_INVALID_SIZE);
         // get current tick liquidity
         SingleSlot memory _initialSingleSlot = singleSlot;
 
@@ -484,9 +485,16 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     );
 
                 if (
-                    (_maxPip != 0 && step.pipNext == 0) &&
-                    ((!state.isBuy && state.pip >= _maxPip) ||
-                        (state.isBuy && state.pip <= _maxPip))
+                    ((_maxPip != 0 && step.pipNext == 0) &&
+                        ((!state.isBuy && state.pip >= _maxPip) ||
+                            (state.isBuy && state.pip <= _maxPip))) ||
+                    ((_maxPip != 0 && step.pipNext > 0) &&
+                        ((!state.isBuy &&
+                            step.pipNext <= _maxPip &&
+                            state.pip >= _maxPip) ||
+                            (state.isBuy &&
+                                step.pipNext >= _maxPip &&
+                                state.pip <= _maxPip)))
                 ) {
                     step.pipNext = _maxPip;
                 }
