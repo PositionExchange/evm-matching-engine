@@ -20,7 +20,7 @@ contract MatchingEngineAMM is
     using Math for uint128;
     bool isInitialized;
     mapping(address => bool) public counterParties;
-    uint128 public rangeFindingWordsAmm = 300;
+    uint128 public rangeFindingWordsAmm = 200;
 
     /// @notice initialize the contract right after deploy
     /// @notice only call once time
@@ -47,9 +47,9 @@ contract MatchingEngineAMM is
         _initFee(params.quoteAsset, params.baseAsset);
 
         if (params.basisPoint == 100) {
-            rangeFindingWordsAmm = 20;
+            rangeFindingWordsAmm = 10;
         } else if (params.basisPoint == 10_000) {
-            rangeFindingWordsAmm = 200;
+            rangeFindingWordsAmm = 100;
         }
 
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);
@@ -104,7 +104,7 @@ contract MatchingEngineAMM is
             )
         );
         if (ammState.lastPipRangeLiquidityIndex != indexPip) {
-            if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
+            //                        if (ammState.lastPipRangeLiquidityIndex != -1) ammState.index++;
             ammState.lastPipRangeLiquidityIndex = indexPip;
         }
         /// Modify ammState.ammReserves here will update to `state.ammState.ammReserves` in MatchingEngineCore
