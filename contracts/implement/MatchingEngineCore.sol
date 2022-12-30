@@ -32,7 +32,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     ) internal {
         singleSlot.pip = _initialPip;
         basisPoint = _basisPoint;
-        maxFindingWordsIndex = _maxFindingWordsIndex;
+//        maxFindingWordsIndex = _maxFindingWordsIndex;
         maxWordRangeForLimitOrder = _maxFindingWordsIndex;
         maxWordRangeForMarketOrder = _maxFindingWordsIndex;
     }
@@ -147,6 +147,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         )
     {
         _onlyCounterParty();
+        require(isBuy, "");
         (mainSideOut, flipSideOut, fee) = _internalOpenMarketOrder(
             quoteAmount,
             isBuy,

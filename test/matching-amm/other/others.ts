@@ -67,7 +67,7 @@ describe("OtherCases", async function(){
   Action:
     id: 2
     asset: quote
-    Side: 0
+    Side: 1
     Quantity: 10
     `)
     })
@@ -112,6 +112,40 @@ describe("ReproduceManualNoLiquidity", async function(){
     asset: base
     Side: 0
     Quantity: 10
+`)
+    })
+})
+
+describe("OpenMarketWithQuote", async function(){
+    let testHelper: TestMatchingAmm
+
+    beforeEach(async () => {
+        testHelper = await deployAndCreateRouterHelper()
+    })
+    it ("Open with base", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 50000
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 1
+    BaseVirtual: 15
+    QuoteVirtual: 194.0423075233
+  Expect:
+    Pool:
+      K: 148218.4264216180
+      BaseVirtual: 15
+      QuoteVirtual: 194.0423075233
+      BaseReal: 172.1734163114
+      QuoteReal: 860.8670815568
+      IndexPipRange: 1 
+      MaxPip: 59999  
+      MinPip: 30000 
+      FeeGrowthBase: 0  
+      FeeGrowthQuote: 0
+- S2: OpenMarket
 `)
     })
 })
