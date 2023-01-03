@@ -15,6 +15,8 @@ import "../libraries/helper/Errors.sol";
 import "../libraries/helper/Require.sol";
 import "../libraries/amm/LiquidityMath.sol";
 
+import "hardhat/console.sol";
+
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
@@ -147,7 +149,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         )
     {
         _onlyCounterParty();
-        require(isBuy, "");
         (mainSideOut, flipSideOut, fee) = _internalOpenMarketOrder(
             quoteAmount,
             isBuy,
@@ -470,6 +471,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             pipRange: state.pipRange
         });
 
+        console.log("state.isBase: ", state.isBase);
+
         while (state.remainingSize != 0) {
             StepComputations memory step;
             if (_isNeedSetPipNext()) {
@@ -574,6 +577,14 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         state.isSkipFirstPip = false;
                     }
                 }
+                console.log(
+                    "crossPipResult.baseCrossPipOut: ",
+                    crossPipResult.baseCrossPipOut
+                );
+                console.log(
+                    "crossPipResult.quoteCrossPipOut: ",
+                    crossPipResult.quoteCrossPipOut
+                );
 
                 if (!state.isSkipFirstPip) {
                     if (state.startPip == 0) state.startPip = step.pipNext;
@@ -590,6 +601,11 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                             step.pipNext,
                             state.basisPoint
                         );
+                    console.log(
+                        "remainingQuantity, liquidity: ",
+                        remainingQuantity,
+                        liquidity
+                    );
                     if (liquidity > remainingQuantity) {
                         // pip position will partially filled and stop here
                         tickPosition[step.pipNext].partiallyFill(
@@ -687,6 +703,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             flipSideOut,
             feePercent
         );
+        console.log("mainSideOut: ", mainSideOut);
+        console.log("flipSideOut: ", flipSideOut);
 
         if (mainSideOut != 0) {
             emit MarketFilled(
