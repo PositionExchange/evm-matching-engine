@@ -6,7 +6,7 @@ describe("OtherCases", async function(){
     beforeEach(async () => {
         testHelper = await deployAndCreateRouterHelper()
     })
-    it ("OpenMarketWithQuote", async () => {
+    it ("OpenMarketWithQuote-buy", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 
@@ -32,7 +32,7 @@ describe("OtherCases", async function(){
     Quantity: 1
     `)
     })
-    it ("OpenMarketWithQuote-2", async () => {
+    it ("OpenMarketWithQuote-buy-2", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action:
@@ -71,6 +71,60 @@ describe("OtherCases", async function(){
     Quantity: 10
     `)
     })
+    it ("OpenMarketWithQuote-sell-3", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 20000
+- S1: OpenLimit
+  Action:
+    Id: 1
+    Asset: base
+    Side: 0
+    Quantity: 10
+    Price: 19000
+  Expect:
+    PendingOrder: 
+      OrderId: 1
+      Price: 19000
+      Size : 10
+      Side: 0
+- S3: OpenMarket
+  Action:
+    id: 2
+    asset: quote
+    Side: 1
+    Quantity: 1
+    `)
+    })
+    it ("OpenMarketWithQuote-sell-4", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action:
+    Price: 170000
+- S1: AddLiquidity
+  Action:
+    Id: 3
+    IndexPipRange: 5
+    BaseVirtual: 0.2704430339572
+    QuoteVirtual: 9.9
+- S2: OpenLimit
+  Action:
+    Id: 1
+    Asset: quote
+    Side: 0
+    Quantity: 50
+    Price: 150000
+- S3: OpenMarket
+  Action:
+    id: 2
+    asset: quote
+    Side: 1
+    Quantity: 100
+    `)
+    })
+
+
 })
 
 
@@ -145,7 +199,6 @@ describe("OpenMarketWithQuote", async function(){
       MinPip: 30000 
       FeeGrowthBase: 0  
       FeeGrowthQuote: 0
-- S2: OpenMarket
 `)
     })
 })
