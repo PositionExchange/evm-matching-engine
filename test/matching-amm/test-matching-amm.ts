@@ -66,13 +66,10 @@ export interface ExpectAddLiquidityResult extends ExpectedPoolData {
 export const BASIS_POINT = 10000;
 
 
-function pipToPrice(currentPip: StringOrNumber) {
-    return Number(currentPip) / BASIS_POINT;
-}
+// function pipToPrice(currentPip: StringOrNumber) {
+//     return Number(currentPip) / BASIS_POINT;
+// }
 
-function price2Pip(currentPrice: number | string) {
-    return new Decimal(currentPrice).mul(BASIS_POINT).toNumber();
-}
 
 function fromWeiAndFormat(n, decimal = 6): number {
     return new Decimal(fromWei(n).toString()).toDP(decimal).toNumber()
@@ -88,7 +85,7 @@ function roundNumber(n, decimal = 6) {
 }
 
 // useWBNB: 0 is not use, 1 is WBNB Quote, 2 is WBNB Base
-export async function deployAndCreateRouterHelper(pipRange = 30_000) {
+export async function deployAndCreateRouterHelper(pipRange = 30_000, basisPoint = 10_000) {
     let matching: MockMatchingEngineAMM
     let testHelper: TestMatchingAmm;
 
@@ -106,7 +103,7 @@ export async function deployAndCreateRouterHelper(pipRange = 30_000) {
         {
             quoteAsset: mockToken.address,
             baseAsset: mockToken.address,
-            basisPoint: BASIS_POINT,
+            basisPoint: basisPoint,
             maxFindingWordsIndex: 1000,
             initialPip: 100000,
             pipRange: pipRange,
@@ -117,6 +114,8 @@ export async function deployAndCreateRouterHelper(pipRange = 30_000) {
             feeShareAmm: 0,
             router : deployer.address
         })
+
+    console.log("basisPoint :", (await matching.basisPoint()).toString())
 
     testHelper = new TestMatchingAmm(matching, deployer, {
         users
@@ -363,9 +362,9 @@ export class TestMatchingAmm {
         return {ask: ask.filter(obj => Number(obj.pip) != 0), bid: bid.filter(obj => Number(obj.pip) != 0)};
     }
 
-    async getCurrentPrice() {
-        return pipToPrice((await this.ins.getCurrentPip()).toString());
-    }
+    // async getCurrentPrice() {
+    //     return pipToPrice((await this.ins.getCurrentPip()).toString());
+    // }
 
     async getPoolData(pId?): Promise<PoolLiquidityInfo> {
         return undefined;

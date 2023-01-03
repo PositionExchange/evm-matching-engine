@@ -145,11 +145,7 @@ library SwapState {
                 pipNext,
                 state.basisPoint
             )
-            : TradeConvert.quoteToBase(
-                tradedQuantity,
-                pipNext,
-                state.basisPoint
-            );
+            : tradedQuantity;
     }
 
     /// @notice update the state with flag buy or sell

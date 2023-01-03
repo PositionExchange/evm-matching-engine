@@ -26,7 +26,7 @@ const config: HardhatUserConfig = {
       accounts: [],
     },
     bsc_testnet: {
-      url: "https://data-seed-prebsc-1-s3.binance.org:8545/",
+      url: "https://rpc.ankr.com/bsc_testnet_chapel",
       chainId: 97,
       accounts: []
     },
@@ -86,11 +86,11 @@ const config: HardhatUserConfig = {
   mocha: {
     timeout: 100000,
   },
-  docgen: {
-    path: './docs',
-    clear: true,
-    runOnCompile: true,
-  }
+  // docgen: {
+  //   path: './docs',
+  //   clear: true,
+  //   runOnCompile: true,
+  // }
 };
 
 export default config;
