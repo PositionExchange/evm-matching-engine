@@ -699,4 +699,67 @@ describe("LimitOver01_Case05", async function(){
     MinPip: 210000
     `)
     })
+    it ("Case #07", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action:
+    Price: 3000
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 0
+    BaseVirtual: 0.1000621543
+    QuoteVirtual: 0.0431
+  Expect:
+    Pool:
+      Liquidity: 0.0801528584
+      BaseVirtual: 0.1000621543
+      QuoteVirtual: 0.0431
+      BaseReal: 0.1463384286
+      QuoteReal: 0.0439015286
+      IndexPipRange: 0
+      MaxPip: 30000
+      MinPip: 1
+- S2: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 0
+    BaseVirtual: 0.2500393042
+    QuoteVirtual: 0.1077
+  Expect:
+    Pool:
+      Liquidity: 0.2804420196
+      BaseVirtual: 0.3501014585
+      QuoteVirtual: 0.1508
+      BaseReal: 0.5120147340
+      QuoteReal: 0.1536044202
+      IndexPipRange: 0
+      MaxPip: 30000
+      MinPip: 1
+- S3: OpenLimit
+  Action:
+    Id: 2
+    Asset: base
+    Side: 1
+    Quantity: 1
+    Price: 5000
+- S4: OpenLimit
+  Action:
+    Id: 2
+    Asset: quote
+    Side: 0
+    Quantity: 0.8
+    Price: 5000
+  Expect:
+    Pool:
+      Liquidity: 0.2804420196
+      BaseVirtual: 0.2346916321
+      QuoteVirtual: 0.1954980336
+      BaseReal: 0.3966049075
+      QuoteReal: 0.1983024538
+      IndexPipRange: 0
+      MaxPip: 30000
+      MinPip: 1
+    `)
+    })
 })
