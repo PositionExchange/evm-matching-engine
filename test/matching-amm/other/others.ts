@@ -484,3 +484,58 @@ describe("BaisiPoint8", async function(){
 
 
 })
+describe("Reach pip 1", async function(){
+    let testHelper: TestMatchingAmm
+
+    beforeEach(async () => {
+        testHelper = await deployAndCreateRouterHelper(30000, 10_000)
+    })
+    it ("sell reach pip 1", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 20000
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 0
+    Asset: base
+    BaseVirtual: 10
+    QuoteVirtual: 108.22714675241
+  Expect:
+    Pool:
+      K: 5940.26871952122
+      Liquidity: 77.07313876780
+      BaseVirtual: 10
+      QuoteVirtual: 180.3765750184
+      BaseReal: 54.498939070046
+      QuoteReal: 108.99787814009
+      IndexPipRange: 0
+      MaxPip: 29999
+      MinPip: 1
+      FeeGrowthBase: 0  
+      FeeGrowthQuote: 0
+- S2: OpenMarket
+  Action:
+    id: 2
+    asset: base
+    Side: 1
+    Quantity: 7652.81493771039
+  Expect:
+    Pool:
+      K: 5940.26871952122
+      Liquidity: 77.07313876780
+      BaseVirtual: 7662.81493771039
+      QuoteVirtual: 0
+      BaseReal: 7707.313876780430
+      QuoteReal: 0.77073138768
+      IndexPipRange: 0
+      MaxPip: 29999
+      MinPip: 1
+      FeeGrowthBase: 0  
+      FeeGrowthQuote: 0
+`)
+    })
+
+
+})

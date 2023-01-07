@@ -14,7 +14,6 @@ import "../libraries/amm/CrossPipResult.sol";
 import "../libraries/helper/Errors.sol";
 import "../libraries/helper/Require.sol";
 import "../libraries/amm/LiquidityMath.sol";
-
 abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     // Define using library
     using TickPosition for TickPosition.Data;
@@ -622,6 +621,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     state.moveForward1Pip(step.pipNext);
                 }
             }
+
+            if (state.pip ==0) break;
         }
 
         {
