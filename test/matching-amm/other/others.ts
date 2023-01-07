@@ -455,3 +455,32 @@ describe("OpenMarketWithQuote", async function(){
     })
 
 })
+
+describe("BaisiPoint8", async function(){
+    let testHelper: TestMatchingAmm
+
+    beforeEach(async () => {
+        testHelper = await deployAndCreateRouterHelper(300, 100_000_000)
+    })
+    it ("Open market pip 200", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 200
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 0
+    BaseVirtual: 5
+    QuoteVirtual: 0.000050641484465704
+- S2: OpenMarket
+  Action:
+    id: 2
+    asset: base
+    Side: 0
+    Quantity: 0.1
+`)
+    })
+
+
+})
