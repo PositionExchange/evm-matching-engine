@@ -35,7 +35,6 @@ abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
 
     SingleSlot public singleSlot;
     mapping(uint128 => TickPosition.Data) public tickPosition;
-    mapping(uint128 => uint256) public tickStore;
     // a packed array of bit, where liquidity is filled or not
     mapping(uint128 => uint256) public liquidityBitmap;
 }
