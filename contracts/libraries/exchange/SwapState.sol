@@ -124,19 +124,20 @@ library SwapState {
     /// @param pipNext the next pip reach to
     function updateTradedSize(
         State memory state,
-        uint256 tradedQuantity,
-        uint128 pipNext
+        uint256 tradedQuantity, // base
+        uint128 pipNext,
+        bool isFullFill
     ) internal pure {
-        if (state.remainingSize == tradedQuantity) {
+        if (isFullFill) {
             state.remainingSize = 0;
-        } else {
+        }else {
             state.remainingSize -= state.isBase
-                ? tradedQuantity
-                : TradeConvert.baseToQuote(
-                    tradedQuantity,
-                    pipNext,
-                    state.basisPoint
-                );
+            ? tradedQuantity
+            : TradeConvert.baseToQuote(
+                tradedQuantity,
+                pipNext,
+                state.basisPoint
+            );
         }
 
         state.flipSideOut += state.isBase
