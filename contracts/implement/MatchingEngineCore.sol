@@ -606,8 +606,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                             remainingQuantity.Uint256ToUint128()
                         );
                         state.updateTradedSize(
-                            state.remainingSize,
-                            step.pipNext
+                            remainingQuantity,
+                            step.pipNext,
+                            true
                         );
                         // remaining liquidity at current pip
                         state.remainingLiquidity =
@@ -617,13 +618,13 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                         state.reverseIsFullBuy();
                     } else if (remainingQuantity > liquidity) {
                         // order in that pip will be fulfilled
-                        state.updateTradedSize(liquidity, step.pipNext);
+                        state.updateTradedSize(liquidity, step.pipNext, false);
                         state.moveForward1Pip(step.pipNext);
                     } else {
                         // remaining size = liquidity
                         // only 1 pip should be toggled, so we call it directly here
                         liquidityBitmap.toggleSingleBit(step.pipNext, false);
-                        state.updateTradedSize(liquidity, step.pipNext);
+                        state.updateTradedSize(liquidity, step.pipNext, true);
                         state.pip = step.pipNext;
                         state.isFullBuy = 0;
                         tickPosition[step.pipNext].fullFillLiquidity();

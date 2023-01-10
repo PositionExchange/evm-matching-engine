@@ -24,7 +24,7 @@ describe("OtherCases", async function(){
       Price: 70000
       Size : 10
       Side: 1
-- S3: OpenMarket
+- S2: OpenMarket
   Action:
     id: 2
     asset: quote
