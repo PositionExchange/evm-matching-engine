@@ -322,10 +322,11 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     quoteAmountFilled,
                     fee
                 ) = _openMarketWithMaxPip(
-                    _params.size,
+                    _params.quoteDeposited > 0 ? _params.quoteDeposited : _params.size ,
                     _params.isBuy,
                     _params.pip,
                     _params.trader,
+                    _params.quoteDeposited > 0 ? false : true,
                     _params.feePercent
                 );
                 _hasLiquidity = liquidityBitmap.hasLiquidity(_params.pip);
@@ -335,16 +336,15 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         }
         {
             if (
-                (_params.size > baseAmountFilled) ||
-                (_params.size == baseAmountFilled &&
-                    _params.quoteDeposited > quoteAmountFilled &&
+                (_params.size > baseAmountFilled &&
+                    _params.quoteDeposited == 0) ||
+                (_params.quoteDeposited > quoteAmountFilled &&
                     _params.quoteDeposited > 0)
             ) {
                 uint128 remainingSize;
 
                 if (
                     _params.quoteDeposited > 0 &&
-                    _params.isBuy &&
                     _params.quoteDeposited > quoteAmountFilled
                 ) {
                     remainingSize = uint128(
@@ -391,6 +391,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         bool isBuy,
         uint128 maxPip,
         address _trader,
+        bool _isBase,
         uint16 feePercent
     )
         internal
@@ -404,16 +405,26 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint128 _maxFindingWordsIndex = ((
             isBuy ? maxPip - singleSlot.pip : singleSlot.pip - maxPip
         ) / 250) + 1;
-        return
-            _internalOpenMarketOrder(
+
+        (
+            uint256 mainSideOut,
+            uint256 flipSideOut,
+            uint256 fee
+        ) = _internalOpenMarketOrder(
                 size,
                 isBuy,
                 maxPip,
                 address(0),
-                true,
+                _isBase,
                 _maxFindingWordsIndex,
                 feePercent
             );
+
+        if (_isBase) {
+            return (mainSideOut, flipSideOut, fee);
+        } else {
+            return (flipSideOut, mainSideOut, fee);
+        }
     }
 
     /// @notice open market order
