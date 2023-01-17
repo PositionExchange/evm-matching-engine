@@ -710,7 +710,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 state.remainingLiquidity,
                 0
             );
-            emitEventSwap(state.isBuy, mainSideOut, flipSideOut, _trader);
+            emitEventSwap(_isBase, state.isBuy, mainSideOut, flipSideOut, _trader);
         }
     }
 
@@ -784,7 +784,8 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     /// @notice hook function emit event swap
     function emitEventSwap(
-        bool isBuy,
+        bool _isBase,
+        bool _isBuy,
         uint256 _baseAmount,
         uint256 _quoteAmount,
         address _trader

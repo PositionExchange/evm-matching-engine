@@ -350,9 +350,10 @@ contract MatchingEngineAMM is
 
     /// @notice implement emit event swap
     function emitEventSwap(
-        bool isBuy,
-        uint256 _baseAmount,
-        uint256 _quoteAmount,
+        bool _isBase,
+        bool _isBuy,
+        uint256 _mainSideOut,
+        uint256 _flipSideOut,
         address _trader
     ) internal override(MatchingEngineCore) {
         uint256 amount0In;
@@ -360,12 +361,22 @@ contract MatchingEngineAMM is
         uint256 amount0Out;
         uint256 amount1Out;
 
-        if (isBuy) {
-            amount1In = _quoteAmount;
-            amount0Out = _baseAmount;
-        } else {
-            amount0In = _baseAmount;
-            amount1Out = _quoteAmount;
+        if (_isBase){
+            if (_isBuy) {
+                amount1In = _flipSideOut;
+                amount0Out = _mainSideOut;
+            } else {
+                amount0In = _mainSideOut;
+                amount1Out = _flipSideOut;
+            }
+        }else {
+            if (_isBuy) {
+                amount1In = _mainSideOut;
+                amount0Out = _flipSideOut;
+            } else {
+                amount0In = _flipSideOut;
+                amount1Out = _mainSideOut;
+            }
         }
         emit Swap(
             msg.sender,
