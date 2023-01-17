@@ -361,7 +361,7 @@ contract MatchingEngineAMM is
         uint256 amount0Out;
         uint256 amount1Out;
 
-        if (_isBase){
+        if (_isBase) {
             if (_isBuy) {
                 amount1In = _flipSideOut;
                 amount0Out = _mainSideOut;
@@ -369,7 +369,7 @@ contract MatchingEngineAMM is
                 amount0In = _mainSideOut;
                 amount1Out = _flipSideOut;
             }
-        }else {
+        } else {
             if (_isBuy) {
                 amount1In = _mainSideOut;
                 amount0Out = _flipSideOut;

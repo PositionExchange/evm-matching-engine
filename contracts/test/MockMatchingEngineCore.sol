@@ -36,7 +36,7 @@ contract MockMatchingEngineCore is MatchingEngineCore {
         uint256 amount0Out;
         uint256 amount1Out;
 
-        if (_isBase){
+        if (_isBase) {
             if (_isBuy) {
                 amount1In = _flipSideOut;
                 amount0Out = _mainSideOut;
@@ -44,7 +44,7 @@ contract MockMatchingEngineCore is MatchingEngineCore {
                 amount0In = _mainSideOut;
                 amount1Out = _flipSideOut;
             }
-        }else {
+        } else {
             if (_isBuy) {
                 amount1In = _mainSideOut;
                 amount0Out = _flipSideOut;

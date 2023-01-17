@@ -322,7 +322,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     quoteAmountFilled,
                     fee
                 ) = _openMarketWithMaxPip(
-                    _params.quoteDeposited > 0 ? _params.quoteDeposited : _params.size ,
+                    _params.quoteDeposited > 0
+                        ? _params.quoteDeposited
+                        : _params.size,
                     _params.isBuy,
                     _params.pip,
                     _params.trader,
@@ -710,7 +712,13 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 state.remainingLiquidity,
                 0
             );
-            emitEventSwap(_isBase, state.isBuy, mainSideOut, flipSideOut, _trader);
+            emitEventSwap(
+                _isBase,
+                state.isBuy,
+                mainSideOut,
+                flipSideOut,
+                _trader
+            );
         }
     }
 

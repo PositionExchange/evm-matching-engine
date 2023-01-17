@@ -130,14 +130,14 @@ library SwapState {
     ) internal pure {
         if (isFullFill) {
             state.remainingSize = 0;
-        }else {
+        } else {
             state.remainingSize -= state.isBase
-            ? tradedQuantity
-            : TradeConvert.baseToQuote(
-                tradedQuantity,
-                pipNext,
-                state.basisPoint
-            );
+                ? tradedQuantity
+                : TradeConvert.baseToQuote(
+                    tradedQuantity,
+                    pipNext,
+                    state.basisPoint
+                );
         }
 
         state.flipSideOut += state.isBase
