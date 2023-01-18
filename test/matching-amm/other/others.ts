@@ -539,3 +539,40 @@ describe("Reach pip 1", async function(){
 
 
 })
+describe("POSI/BNB", async function(){
+    let testHelper: TestMatchingAmm
+
+    beforeEach(async () => {
+        testHelper = await deployAndCreateRouterHelper(2000, 1_000_000)
+    })
+    it ("sell reach pip 1", async () => {
+        return testHelper.process(`
+- S0: SetCurrentPrice
+  Action: 
+    Price: 3000
+- S1: AddLiquidity
+  Action:
+    Id: 1
+    IndexPipRange: 1
+    BaseVirtual: 24.073632
+    QuoteVirtual: 0.099000111653359784
+  Expect:
+    Pool:
+      Liquidity: 9.849879189561687774
+      BaseVirtual: 24.073632
+      QuoteVirtual: 0.099000111653359784
+      IndexPipRange: 1
+      MaxPip: 3999
+      MinPip: 2000
+- S2: OpenMarket
+  Action:
+    id: 3
+    asset: base
+    Side: 0
+    Quantity: 0.001 
+
+`)
+    })
+
+
+})
