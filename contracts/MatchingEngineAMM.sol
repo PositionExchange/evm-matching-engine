@@ -48,7 +48,7 @@ contract MatchingEngineAMM is
 
         if (params.basisPoint == 100) {
             rangeFindingWordsAmm = 10;
-        } else  {
+        } else {
             rangeFindingWordsAmm = 150;
         }
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);
