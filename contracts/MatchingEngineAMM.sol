@@ -48,12 +48,9 @@ contract MatchingEngineAMM is
 
         if (params.basisPoint == 100) {
             rangeFindingWordsAmm = 10;
-        } else if (params.basisPoint == 10_000) {
-            rangeFindingWordsAmm = 100;
-        } else {
-            rangeFindingWordsAmm = 200;
+        } else  {
+            rangeFindingWordsAmm = 150;
         }
-
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);
         _approveCounterParty(params.baseAsset, params.positionLiquidity);
 
