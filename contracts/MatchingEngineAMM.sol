@@ -20,7 +20,7 @@ contract MatchingEngineAMM is
     using Math for uint128;
     bool isInitialized;
     mapping(address => bool) public counterParties;
-    uint128 public rangeFindingWordsAmm = 200;
+    uint128 public rangeFindingWordsAmm;
 
     /// @notice initialize the contract right after deploy
     /// @notice only call once time
@@ -50,6 +50,8 @@ contract MatchingEngineAMM is
             rangeFindingWordsAmm = 10;
         } else if (params.basisPoint == 10_000) {
             rangeFindingWordsAmm = 100;
+        } else {
+            rangeFindingWordsAmm = 200;
         }
 
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);

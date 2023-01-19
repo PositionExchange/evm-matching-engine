@@ -545,7 +545,7 @@ describe("POSI/BNB", async function(){
     beforeEach(async () => {
         testHelper = await deployAndCreateRouterHelper(2000, 1_000_000)
     })
-    it ("sell reach pip 1", async () => {
+    it ("should sell ok", async () => {
         return testHelper.process(`
 - S0: SetCurrentPrice
   Action: 
@@ -569,7 +569,7 @@ describe("POSI/BNB", async function(){
     id: 3
     asset: base
     Side: 0
-    Quantity: 0.001 
+    Quantity: 0.01
 
 `)
     })
