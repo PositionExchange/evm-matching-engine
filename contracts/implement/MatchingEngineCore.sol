@@ -431,7 +431,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
 
     /// @notice open market order
     /// @notice this function fill market with limit order and amm
-
     function _internalOpenMarketOrder(
         uint256 _size,
         bool _isBuy,
