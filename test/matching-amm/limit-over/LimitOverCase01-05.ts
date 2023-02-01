@@ -635,6 +635,7 @@ describe("LimitOver01_Case05", async function(){
     Side: 0
     Quantity: 1
     Price: 165000
+    Revert: ME_13
     `)
     })
     it ("Case #06", async () => {

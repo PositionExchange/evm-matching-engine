@@ -48,7 +48,7 @@ contract MatchingEngineAMM is
 
         if (params.basisPoint == 100) {
             rangeFindingWordsAmm = 10;
-        } else  {
+        } else {
             rangeFindingWordsAmm = 150;
         }
         _approveCounterParty(params.quoteAsset, params.positionLiquidity);
@@ -69,7 +69,7 @@ contract MatchingEngineAMM is
         override(MatchingEngineCore, AutoMarketMakerCore)
     {
         Require._require(
-            counterParties[msg.sender],
+            counterParties[_msgSender()],
             Errors.ME_ONLY_COUNTERPARTY
         );
     }
@@ -378,7 +378,7 @@ contract MatchingEngineAMM is
             }
         }
         emit Swap(
-            msg.sender,
+            _msgSender(),
             amount0In,
             amount1In,
             amount0Out,

@@ -14,11 +14,11 @@ abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
     uint256 public override basisPoint;
 
     // Max finding word can be 3500
-    //    uint128 public maxFindingWordsIndex;
+    uint128 public maxFindingWordsIndex;
 
-    uint128 public maxWordRangeForLimitOrder;
+    //    uint128 public maxWordRangeForLimitOrder;
 
-    uint128 public maxWordRangeForMarketOrder;
+    //    uint128 public maxWordRangeForMarketOrder;
 
     // The unit of measurement to express the change in value between two currencies
     struct SingleSlot {

@@ -32,9 +32,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     ) internal {
         singleSlot.pip = _initialPip;
         basisPoint = _basisPoint;
+        maxFindingWordsIndex = _maxFindingWordsIndex;
         //        maxFindingWordsIndex = _maxFindingWordsIndex;
-        maxWordRangeForLimitOrder = _maxFindingWordsIndex;
-        maxWordRangeForMarketOrder = _maxFindingWordsIndex;
+        //        maxFindingWordsIndex = _maxFindingWordsIndex;
     }
 
     //*
@@ -126,7 +126,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 0,
                 trader,
                 true,
-                maxWordRangeForLimitOrder,
+                maxFindingWordsIndex,
                 feePercent
             );
     }
@@ -153,7 +153,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
             0,
             trader,
             false,
-            maxWordRangeForLimitOrder,
+            maxFindingWordsIndex,
             feePercent
         );
     }
@@ -272,7 +272,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         {
             if (_params.isBuy && _singleSlot.pip != 0) {
                 int256 maxPip = int256(underlyingPip) -
-                    int128(maxWordRangeForLimitOrder * 250);
+                    int128(maxFindingWordsIndex * 250);
 
                 if (maxPip > 0) {
                     Require._require(
@@ -287,8 +287,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 }
             } else {
                 Require._require(
-                    _params.pip <=
-                        (underlyingPip + maxWordRangeForLimitOrder * 250),
+                    _params.pip <= (underlyingPip + maxFindingWordsIndex * 250),
                     Errors.ME_MUST_CLOSE_TO_INDEX_PRICE_BUY
                 );
             }
@@ -305,7 +304,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     // higher pip when long must lower than max word range for market order short
                     Require._require(
                         _params.pip <=
-                            underlyingPip + maxWordRangeForMarketOrder * 250,
+                            underlyingPip + maxFindingWordsIndex * 250,
                         Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 } else {
@@ -313,7 +312,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                     Require._require(
                         int128(_params.pip) >=
                             (int256(underlyingPip) -
-                                int128(maxWordRangeForMarketOrder * 250)),
+                                int128(maxFindingWordsIndex * 250)),
                         Errors.ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE
                     );
                 }
@@ -533,13 +532,17 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 crossPipParams,
                 state.ammState
             );
-            if (
-                state.ammState.index >= 4 ||
-                state.ammState.lastPipRangeLiquidityIndex == -2 ||
-                state.pip == 0
-            ) {
-                break;
-            }
+            //            if (
+            //                state.ammState.index >= 4 ||
+            //                state.ammState.lastPipRangeLiquidityIndex == -2 ||
+            //                state.pip == 0
+            //            ) {
+            //                Require._require(
+            //                    !(_maxPip != 0 && state.remainingSize != 0),
+            //                    Errors.ME_LIMIT_OVER_PRICE_NOT_ENOUGH_LIQUIDITY
+            //                );
+            //                break;
+            //            }
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
@@ -636,7 +639,17 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 }
             }
 
-            if (state.pip == 0) break;
+            if (
+                state.ammState.index >= FixedPoint128.MAX_FIND_INDEX_RANGE ||
+                state.ammState.lastPipRangeLiquidityIndex == -2 ||
+                state.pip == 0
+            ) {
+                Require._require(
+                    !(_maxPip != 0 && state.remainingSize != 0),
+                    Errors.ME_LIMIT_OVER_PRICE_NOT_ENOUGH_LIQUIDITY
+                );
+                break;
+            }
         }
 
         {
