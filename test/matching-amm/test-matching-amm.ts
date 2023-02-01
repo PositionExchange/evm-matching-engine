@@ -276,11 +276,16 @@ export class TestMatchingAmm {
         const isBuy = side == 0;
         const orderQuantity = toWei(size);
 
-        console.log("pip", pip);
-        console.log("isBuy", isBuy);
-        console.log("orderQuantity", orderQuantity);
+        console.log("pip, isBuy, orderQuantity: ", pip, isBuy, orderQuantity);
 
-        await this.ins.openLimit(pip, orderQuantity, isBuy, this.users[id].address, 0, 0);
+        if ( opts.revert  !== undefined) {
+
+            await expectRevert(this.ins.openLimit(pip, orderQuantity, isBuy, this.users[id].address, 0, 0), opts.revert.toString());
+
+        }else {
+            await this.ins.openLimit(pip, orderQuantity, isBuy, this.users[id].address, 0, 0);
+
+        }
 
     }
 

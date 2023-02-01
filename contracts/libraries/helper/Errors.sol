@@ -15,4 +15,5 @@ library Errors {
     string public constant ME_MARKET_ORDER_MUST_CLOSE_TO_INDEX_PRICE = "ME_10";
     string public constant ME_SETTLE_FUNDING_TOO_EARLY = "ME_11";
     string public constant ME_INVALID_LEVERAGE = "ME_12";
+    string public constant ME_LIMIT_OVER_PRICE_NOT_ENOUGH_LIQUIDITY = "ME_13";
 }

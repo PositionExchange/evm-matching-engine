@@ -397,7 +397,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             if (
                 (params.isBuy && i > crossPipState.indexedPipRange) ||
                 (!params.isBuy && i < crossPipState.indexedPipRange) ||
-                ammState.index == 4
+                ammState.index == FixedPoint128.MAX_FIND_INDEX_RANGE
             ) {
                 result.updatePipResult(params.pipNext);
                 break;
