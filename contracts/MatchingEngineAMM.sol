@@ -212,37 +212,33 @@ contract MatchingEngineAMM is
     }
 
     /// @inheritdoc IFee
-    function increaseQuoteFeeFunding(uint256 quoteFee)
-        public
-        override(Fee, IFee)
-    {
+    function increaseQuoteFeeFunding(
+        uint256 quoteFee
+    ) public override(Fee, IFee) {
         _onlyCounterParty();
         super.increaseQuoteFeeFunding(quoteFee);
     }
 
     /// @inheritdoc IFee
-    function increaseBaseFeeFunding(uint256 baseFee)
-        public
-        override(Fee, IFee)
-    {
+    function increaseBaseFeeFunding(
+        uint256 baseFee
+    ) public override(Fee, IFee) {
         _onlyCounterParty();
         super.increaseBaseFeeFunding(baseFee);
     }
 
     /// @inheritdoc IFee
-    function decreaseBaseFeeFunding(uint256 quoteFee)
-        public
-        override(Fee, IFee)
-    {
+    function decreaseBaseFeeFunding(
+        uint256 quoteFee
+    ) public override(Fee, IFee) {
         _onlyCounterParty();
         super.decreaseBaseFeeFunding(quoteFee);
     }
 
     /// @inheritdoc IFee
-    function decreaseQuoteFeeFunding(uint256 baseFee)
-        public
-        override(Fee, IFee)
-    {
+    function decreaseQuoteFeeFunding(
+        uint256 baseFee
+    ) public override(Fee, IFee) {
         _onlyCounterParty();
         super.decreaseQuoteFeeFunding(baseFee);
     }
@@ -390,7 +386,10 @@ contract MatchingEngineAMM is
     /// @notice implement calculate quote amount
     /// @param quantity the size of base amount
     /// @param pip the pip want to calculate
-    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
+    function calculatingQuoteAmount(
+        uint256 quantity,
+        uint128 pip
+    )
         external
         view
         override(MatchingEngineCore, IMatchingEngineCore)

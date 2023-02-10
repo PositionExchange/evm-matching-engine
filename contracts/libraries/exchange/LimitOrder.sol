@@ -14,15 +14,9 @@ library LimitOrder {
     /// @return isBuy the side of order
     /// @return size the size of order
     /// @return partialFilled the partial filled of order
-    function getData(LimitOrder.Data storage self)
-        internal
-        view
-        returns (
-            bool isBuy,
-            uint256 size,
-            uint256 partialFilled
-        )
-    {
+    function getData(
+        LimitOrder.Data storage self
+    ) internal view returns (bool isBuy, uint256 size, uint256 partialFilled) {
         isBuy = self.isBuy == 1;
         size = uint256(self.size);
         partialFilled = uint256(self.partialFilled);
@@ -52,10 +46,9 @@ library LimitOrder {
 
     /// @notice reset the order to empty when cancel order
     /// @return the remain size of order
-    function updateWhenClose(LimitOrder.Data storage self)
-        internal
-        returns (uint256)
-    {
+    function updateWhenClose(
+        LimitOrder.Data storage self
+    ) internal returns (uint256) {
         self.size -= self.partialFilled;
         self.partialFilled = 0;
         return (uint256(self.size));

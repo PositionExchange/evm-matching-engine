@@ -111,9 +111,10 @@ interface IMatchingEngineCore {
     /// @notice Cancel the limit order
     /// @param pip the price of order
     /// @param orderId id of order in pip
-    function cancelLimitOrder(uint128 pip, uint64 orderId)
-        external
-        returns (uint256 remainingSize, uint256 partialFilled);
+    function cancelLimitOrder(
+        uint128 pip,
+        uint64 orderId
+    ) external returns (uint256 remainingSize, uint256 partialFilled);
 
     /// @notice Open limit order with size and price
     /// @param pip the price of order
@@ -157,13 +158,7 @@ interface IMatchingEngineCore {
         bool isBuy,
         address trader,
         uint16 feePercent
-    )
-        external
-        returns (
-            uint256 mainSideOut,
-            uint256 flipSideOut,
-            uint256 fee
-        );
+    ) external returns (uint256 mainSideOut, uint256 flipSideOut, uint256 fee);
 
     /// @notice Open market order with size is base and price
     /// @param quoteAmount the quote amount want to open market order
@@ -179,13 +174,7 @@ interface IMatchingEngineCore {
         bool isBuy,
         address trader,
         uint16 feePercent
-    )
-        external
-        returns (
-            uint256 mainSideOut,
-            uint256 flipSideOut,
-            uint256 fee
-        );
+    ) external returns (uint256 mainSideOut, uint256 flipSideOut, uint256 fee);
 
     /// @notice check at this pip has liquidity
     /// @param pip the price of order
@@ -201,7 +190,10 @@ interface IMatchingEngineCore {
     /// @return isBuy the side of the order
     /// @return size the size of order
     /// @return partialFilled the amount partial order is filled
-    function getPendingOrderDetail(uint128 pip, uint64 orderId)
+    function getPendingOrderDetail(
+        uint128 pip,
+        uint64 orderId
+    )
         external
         view
         returns (
@@ -227,10 +219,10 @@ interface IMatchingEngineCore {
         bool isBase
     ) external view returns (uint256 mainSideOut, uint256 flipSideOut);
 
-    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
-        external
-        view
-        returns (uint256);
+    function calculatingQuoteAmount(
+        uint256 quantity,
+        uint128 pip
+    ) external view returns (uint256);
 
     /// @notice Get basis point of pair
     /// @return the basis point of pair
@@ -244,8 +236,8 @@ interface IMatchingEngineCore {
     /// @param quoteAmount the quote amount
     /// @param pip the price
     /// @return the base converted
-    function quoteToBase(uint256 quoteAmount, uint128 pip)
-        external
-        view
-        returns (uint256);
+    function quoteToBase(
+        uint256 quoteAmount,
+        uint128 pip
+    ) external view returns (uint256);
 }

@@ -24,11 +24,10 @@ contract LiquidityBitmapTest {
         liquidityBitmap.toggleSingleBit(bit, isSet);
     }
 
-    function findNextInitializedLiquidity(uint128 pip, bool lte)
-        public
-        view
-        returns (uint128 next)
-    {
+    function findNextInitializedLiquidity(
+        uint128 pip,
+        bool lte
+    ) public view returns (uint128 next) {
         next = liquidityBitmap.findHasLiquidityInOneWords(pip, lte);
     }
 

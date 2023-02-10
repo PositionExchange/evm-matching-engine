@@ -32,7 +32,7 @@
     "hardhat-log-remover": "^2.0.2",
     "husky": "^8.0.1",
     "prettier": "^2.7.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.24",
+    "prettier-plugin-solidity": "^1.1.2",
     "solidity-coverage": "^0.8.2",
     "ts-node": "^10.9.1",
     "typechain": "^8.1.0",

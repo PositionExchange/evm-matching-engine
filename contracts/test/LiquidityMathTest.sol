@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
 import "../libraries/amm/LiquidityMath.sol";
 
 contract LiquidityMathTest {
-    uint256 public CURVE_PIP = 10**24;
+    uint256 public CURVE_PIP = 10 ** 24;
     uint128 public basisPoint = 10000;
 
     function calculateBaseReal(
@@ -170,11 +170,10 @@ contract LiquidityMathTest {
             );
     }
 
-    function _calculateSqrtPrice(uint128 pip, uint256 curve)
-        internal
-        view
-        returns (uint128)
-    {
+    function _calculateSqrtPrice(
+        uint128 pip,
+        uint256 curve
+    ) internal view returns (uint128) {
         return uint128(sqrt(uint256(pip) * curve));
     }
 

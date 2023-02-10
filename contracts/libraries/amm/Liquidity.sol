@@ -35,7 +35,7 @@ library Liquidity {
     /// @notice update the liquidity info when add liquidity
     /// @param self the liquidity info
     /// @param updater of struct Liquidity.Info, this is new value of liquidity info
-    function updateAddLiquidity(
+    function updateRangeLiquidity(
         Liquidity.Info storage self,
         Liquidity.Info memory updater
     ) internal {

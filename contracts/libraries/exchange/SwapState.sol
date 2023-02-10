@@ -107,10 +107,10 @@ library SwapState {
     /// @notice increase or decrease pip foward 1 pip depends on buy or sell
     /// @param state the state of market fill
     /// @param pipNext the next pip
-    function moveForward1Pip(State memory state, uint128 pipNext)
-        internal
-        pure
-    {
+    function moveForward1Pip(
+        State memory state,
+        uint128 pipNext
+    ) internal pure {
         if (state.isBuy) {
             state.pip = pipNext + 1;
         } else {
