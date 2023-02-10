@@ -22,7 +22,9 @@ interface IAutoMarketMakerCore {
     /// @return liquidity calculate from quote and base amount
     /// @return feeGrowthBase tracking growth base
     /// @return feeGrowthQuote tracking growth quote
-    function addLiquidity(AddLiquidity calldata params)
+    function addLiquidity(
+        AddLiquidity calldata params
+    )
         external
         returns (
             uint128 baseAmountAdded,
@@ -45,9 +47,9 @@ interface IAutoMarketMakerCore {
     /// @dev remove liquidity at index pip and decrease the data of liquidity info
     /// @return baseAmount base amount receive
     /// @return quoteAmount quote amount receive
-    function removeLiquidity(RemoveLiquidity calldata params)
-        external
-        returns (uint128 baseAmount, uint128 quoteAmount);
+    function removeLiquidity(
+        RemoveLiquidity calldata params
+    ) external returns (uint128 baseAmount, uint128 quoteAmount);
 
     /// @notice estimate amount receive when remove liquidity in index pip
     /// @param params struct Remove liquidity
@@ -55,7 +57,9 @@ interface IAutoMarketMakerCore {
     /// @return baseAmount base amount receive
     /// @return quoteAmount quote amount receive
     /// @return liquidityInfo newest of liquidity info
-    function estimateRemoveLiquidity(RemoveLiquidity calldata params)
+    function estimateRemoveLiquidity(
+        RemoveLiquidity calldata params
+    )
         external
         view
         returns (
@@ -75,7 +79,9 @@ interface IAutoMarketMakerCore {
     /// @return feeGrowthBase the growth of base
     /// @return feeGrowthQuote the growth of base
     /// @return sqrtK sqrt of k=quoteReal*baseReal,
-    function liquidityInfo(uint256 index)
+    function liquidityInfo(
+        uint256 index
+    )
         external
         view
         returns (

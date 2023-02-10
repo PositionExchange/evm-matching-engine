@@ -11,11 +11,9 @@ library LiquidityBitmap {
     /// @param pip The bip index for computing the position
     /// @return mapIndex the index in the map
     /// @return bitPos the position in the bitmap
-    function position(uint128 pip)
-        private
-        pure
-        returns (uint128 mapIndex, uint8 bitPos)
-    {
+    function position(
+        uint128 pip
+    ) private pure returns (uint128 mapIndex, uint8 bitPos) {
         mapIndex = pip >> 8;
         bitPos = uint8((pip) & 0xff);
         // % 256
@@ -256,11 +254,10 @@ library LiquidityBitmap {
 
     /// @notice check at this pip has liquidity
     /// @param pip The current pip index
-    function hasLiquidity(mapping(uint128 => uint256) storage self, uint128 pip)
-        internal
-        view
-        returns (bool)
-    {
+    function hasLiquidity(
+        mapping(uint128 => uint256) storage self,
+        uint128 pip
+    ) internal view returns (bool) {
         (uint128 mapIndex, uint8 bitPos) = position(pip);
         return (self[mapIndex] & (1 << bitPos)) != 0;
     }
@@ -382,11 +379,10 @@ library LiquidityBitmap {
     /// @notice Function to toggle the last m bits
     /// @param n the number to toggle bits
     /// @param m the number of bits to toggle
-    function toggleLastMBits(uint256 n, uint8 m)
-        private
-        pure
-        returns (uint256)
-    {
+    function toggleLastMBits(
+        uint256 n,
+        uint8 m
+    ) private pure returns (uint256) {
         // Calculating a number 'num' having
         // 'm' bits and all are set
         uint256 num = (1 << m) - 1;

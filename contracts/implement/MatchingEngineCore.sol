@@ -42,21 +42,20 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     //*
 
     /// @inheritdoc IMatchingEngineCore
-    function updatePartialFilledOrder(uint128 _pip, uint64 _orderId)
-        public
-        virtual
-    {
+    function updatePartialFilledOrder(
+        uint128 _pip,
+        uint64 _orderId
+    ) public virtual {
         _onlyCounterParty();
         uint256 newSize = tickPosition[_pip].updateOrderWhenClose(_orderId);
         _emitLimitOrderUpdatedHook(address(this), _orderId, _pip, newSize);
     }
 
     /// @inheritdoc IMatchingEngineCore
-    function cancelLimitOrder(uint128 _pip, uint64 _orderId)
-        public
-        virtual
-        returns (uint256 remainingSize, uint256 partialFilled)
-    {
+    function cancelLimitOrder(
+        uint128 _pip,
+        uint64 _orderId
+    ) public virtual returns (uint256 remainingSize, uint256 partialFilled) {
         _onlyCounterParty();
         TickPosition.Data storage _tickPosition = tickPosition[_pip];
 
@@ -112,11 +111,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     )
         public
         virtual
-        returns (
-            uint256 mainSideOut,
-            uint256 flipSideOut,
-            uint256 fee
-        )
+        returns (uint256 mainSideOut, uint256 flipSideOut, uint256 fee)
     {
         _onlyCounterParty();
         return
@@ -140,11 +135,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     )
         public
         virtual
-        returns (
-            uint256 mainSideOut,
-            uint256 flipSideOut,
-            uint256 fee
-        )
+        returns (uint256 mainSideOut, uint256 flipSideOut, uint256 fee)
     {
         _onlyCounterParty();
         (mainSideOut, flipSideOut, fee) = _internalOpenMarketOrder(
@@ -168,16 +159,14 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     }
 
     /// @inheritdoc IMatchingEngineCore
-    function getPendingOrderDetail(uint128 pip, uint64 orderId)
+    function getPendingOrderDetail(
+        uint128 pip,
+        uint64 orderId
+    )
         public
         view
         virtual
-        returns (
-            bool isFilled,
-            bool isBuy,
-            uint256 size,
-            uint256 partialFilled
-        )
+        returns (bool isFilled, bool isBuy, uint256 size, uint256 partialFilled)
     {
         (isFilled, isBuy, size, partialFilled) = tickPosition[pip]
             .getQueueOrder(orderId);
@@ -257,7 +246,9 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     }
 
     /// @notice open limit order
-    function _internalOpenLimit(ParamsInternalOpenLimit memory _params)
+    function _internalOpenLimit(
+        ParamsInternalOpenLimit memory _params
+    )
         private
         returns (
             uint64 orderId,
@@ -394,14 +385,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         address _trader,
         bool _isBase,
         uint16 feePercent
-    )
-        internal
-        returns (
-            uint256 baseOut,
-            uint256 quoteOut,
-            uint256 fee
-        )
-    {
+    ) internal returns (uint256 baseOut, uint256 quoteOut, uint256 fee) {
         // plus 1 avoid  (singleSlot.pip - maxPip)/250 = 0
         uint128 _maxFindingWordsIndex = ((
             isBuy ? maxPip - singleSlot.pip : singleSlot.pip - maxPip
@@ -441,11 +425,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     )
         internal
         virtual
-        returns (
-            uint256 mainSideOut,
-            uint256 flipSideOut,
-            uint256 fee
-        )
+        returns (uint256 mainSideOut, uint256 flipSideOut, uint256 fee)
     {
         Require._require(_size != 0, Errors.ME_INVALID_SIZE);
         // get current tick liquidity
@@ -820,22 +800,19 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
     ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
 
     /// @notice hook function calculate quote amount
-    function calculatingQuoteAmount(uint256 quantity, uint128 pip)
-        external
-        view
-        virtual
-        returns (uint256)
-    {}
+    function calculatingQuoteAmount(
+        uint256 quantity,
+        uint128 pip
+    ) external view virtual returns (uint256) {}
 
     /// @notice hook function get currnet pip
     function getCurrentPip() external view virtual returns (uint128) {}
 
     // @notice hook function calculate quote to base
-    function quoteToBase(uint256 quoteAmount, uint128 pip)
-        external
-        view
-        returns (uint256)
-    {}
+    function quoteToBase(
+        uint256 quoteAmount,
+        uint128 pip
+    ) external view returns (uint256) {}
 
     /// @notice hook function get pip
     function getUnderlyingPriceInPip() internal view virtual returns (uint256) {

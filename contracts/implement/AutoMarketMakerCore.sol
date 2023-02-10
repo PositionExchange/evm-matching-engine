@@ -47,7 +47,9 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     }
 
     /// @inheritdoc IAutoMarketMakerCore
-    function addLiquidity(AddLiquidity calldata params)
+    function addLiquidity(
+        AddLiquidity calldata params
+    )
         public
         virtual
         returns (
@@ -117,7 +119,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 state.currentPrice
             ) * _basisPoint()).sqrt().Uint256ToUint128();
             _liquidityInfo.baseReal = uint128(
-                (uint256(_liquidityInfo.sqrtK)**2) /
+                (uint256(_liquidityInfo.sqrtK) ** 2) /
                     uint256(_liquidityInfo.quoteReal)
             );
         } else if (
@@ -130,7 +132,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 state.currentPrice
             ) / _basisPoint()).sqrt().Uint256ToUint128();
             _liquidityInfo.quoteReal = uint128(
-                (uint256(_liquidityInfo.sqrtK)**2) /
+                (uint256(_liquidityInfo.sqrtK) ** 2) /
                     uint256(_liquidityInfo.baseReal)
             );
         } else if (params.indexedPipRange == currentIndexedPipRange) {
@@ -142,7 +144,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 .sqrt()
                 .Uint256ToUint128();
         }
-        liquidityInfo[params.indexedPipRange].updateAddLiquidity(
+        liquidityInfo[params.indexedPipRange].updateRangeLiquidity(
             _liquidityInfo
         );
         return (
@@ -155,24 +157,24 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     }
 
     /// @inheritdoc IAutoMarketMakerCore
-    function removeLiquidity(RemoveLiquidity calldata params)
-        public
-        virtual
-        returns (uint128 baseAmount, uint128 quoteAmount)
-    {
+    function removeLiquidity(
+        RemoveLiquidity calldata params
+    ) public virtual returns (uint128 baseAmount, uint128 quoteAmount) {
         _onlyCounterParty();
         Liquidity.Info memory _liquidityInfo;
 
         (baseAmount, quoteAmount, _liquidityInfo) = estimateRemoveLiquidity(
             params
         );
-        liquidityInfo[params.indexedPipRange].updateAddLiquidity(
+        liquidityInfo[params.indexedPipRange].updateRangeLiquidity(
             _liquidityInfo
         );
     }
 
     /// @inheritdoc IAutoMarketMakerCore
-    function estimateRemoveLiquidity(RemoveLiquidity calldata params)
+    function estimateRemoveLiquidity(
+        RemoveLiquidity calldata params
+    )
         public
         view
         returns (
@@ -556,13 +558,13 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         if (params.isBuy) {
             ammReserves.baseReserve -= baseAmount;
             ammReserves.quoteReserve = uint128(
-                (uint256(ammReserves.sqrtK)**2) /
+                (uint256(ammReserves.sqrtK) ** 2) /
                     uint256(ammReserves.baseReserve)
             );
         } else {
             ammReserves.baseReserve += baseAmount;
             ammReserves.quoteReserve = uint128(
-                (uint256(ammReserves.sqrtK)**2) /
+                (uint256(ammReserves.sqrtK) ** 2) /
                     uint256(ammReserves.baseReserve)
             );
         }
@@ -655,11 +657,10 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     /// @notice calculate the sqrt of price
     /// @param pip the pip need to sqrt
     /// @param curve the buffer to sqrt
-    function _calculateSqrtPrice(uint128 pip, uint256 curve)
-        internal
-        pure
-        returns (uint128)
-    {
+    function _calculateSqrtPrice(
+        uint128 pip,
+        uint256 curve
+    ) internal pure returns (uint128) {
         return (uint256(pip) * curve).sqrt().Uint256ToUint128();
     }
 

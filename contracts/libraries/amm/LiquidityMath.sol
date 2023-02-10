@@ -66,7 +66,7 @@ library LiquidityMath {
                     (uint256(quoteReal) *
                         (uint256(sqrtCurrentPrice) -
                             uint256(sqrtPriceTarget)))) /
-                    (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice)**2)
+                    (uint256(sqrtPriceTarget) * uint256(sqrtCurrentPrice) ** 2)
             );
     }
 
@@ -129,11 +129,10 @@ library LiquidityMath {
     /// @param pip the pip want to calculate
     /// @param pipRange the range of pair
     /// @return the index pip range
-    function calculateIndexPipRange(uint128 pip, uint128 pipRange)
-        internal
-        pure
-        returns (uint256)
-    {
+    function calculateIndexPipRange(
+        uint128 pip,
+        uint128 pipRange
+    ) internal pure returns (uint256) {
         return uint256(pip / pipRange);
     }
 
@@ -142,11 +141,10 @@ library LiquidityMath {
     /// @param pipRange the range of pair
     /// @return pipMin the min pip in index
     /// @return pipMax the max pip in index
-    function calculatePipRange(uint32 indexedPipRange, uint128 pipRange)
-        internal
-        pure
-        returns (uint128 pipMin, uint128 pipMax)
-    {
+    function calculatePipRange(
+        uint32 indexedPipRange,
+        uint128 pipRange
+    ) internal pure returns (uint128 pipMin, uint128 pipMax) {
         pipMin = indexedPipRange == 0 ? 1 : indexedPipRange * pipRange;
         pipMax = pipMin + pipRange - 1;
     }
@@ -163,8 +161,8 @@ library LiquidityMath {
     ) internal pure returns (uint128) {
         return
             uint128(
-                (uint256(amount) * uint256(amountReal)**2) /
-                    (uint256(sqrtK)**2 + amount * uint256(amountReal))
+                (uint256(amount) * uint256(amountReal) ** 2) /
+                    (uint256(sqrtK) ** 2 + amount * uint256(amountReal))
             );
     }
 
@@ -180,7 +178,7 @@ library LiquidityMath {
     ) internal pure returns (uint128) {
         return
             uint128(
-                (uint256(amount) * uint256(sqrtK)**2) /
+                (uint256(amount) * uint256(sqrtK) ** 2) /
                     (uint256(amountReal) *
                         (uint256(amountReal) - uint256(amount)))
             );
@@ -189,37 +187,34 @@ library LiquidityMath {
     /// @notice calculate K ( liquidity) with quote real
     /// @param quoteReal the quote real
     /// @param sqrtPriceMax sqrt of price max
-    function calculateKWithQuote(uint128 quoteReal, uint128 sqrtPriceMax)
-        internal
-        pure
-        returns (uint256)
-    {
+    function calculateKWithQuote(
+        uint128 quoteReal,
+        uint128 sqrtPriceMax
+    ) internal pure returns (uint256) {
         return
-            (uint256(quoteReal)**2 / uint256(sqrtPriceMax)) *
+            (uint256(quoteReal) ** 2 / uint256(sqrtPriceMax)) *
             (FixedPoint128.BUFFER / uint256(sqrtPriceMax));
     }
 
     /// @notice calculate K ( liquidity) with base real
     /// @param baseReal the quote real
     /// @param sqrtPriceMin sqrt of price max
-    function calculateKWithBase(uint128 baseReal, uint128 sqrtPriceMin)
-        internal
-        pure
-        returns (uint256)
-    {
+    function calculateKWithBase(
+        uint128 baseReal,
+        uint128 sqrtPriceMin
+    ) internal pure returns (uint256) {
         return
-            (uint256(baseReal)**2 / FixedPoint128.HALF_BUFFER) *
-            (uint256(sqrtPriceMin)**2 / FixedPoint128.HALF_BUFFER);
+            (uint256(baseReal) ** 2 / FixedPoint128.HALF_BUFFER) *
+            (uint256(sqrtPriceMin) ** 2 / FixedPoint128.HALF_BUFFER);
     }
 
     /// @notice calculate K ( liquidity) with base real and quote ral
     /// @param baseReal the quote real
     /// @param baseReal the base real
-    function calculateKWithBaseAndQuote(uint128 quoteReal, uint128 baseReal)
-        internal
-        pure
-        returns (uint256)
-    {
+    function calculateKWithBaseAndQuote(
+        uint128 quoteReal,
+        uint128 baseReal
+    ) internal pure returns (uint256) {
         return uint256(quoteReal) * uint256(baseReal);
     }
 

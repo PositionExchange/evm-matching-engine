@@ -65,7 +65,10 @@ library TickPosition {
     /// @return _isBuy the side of order
     /// @return _size the _size of order
     /// @return _partialFilled the _size of order filled
-    function getQueueOrder(TickPosition.Data storage _self, uint64 _orderId)
+    function getQueueOrder(
+        TickPosition.Data storage _self,
+        uint64 _orderId
+    )
         internal
         view
         returns (
@@ -87,9 +90,10 @@ library TickPosition {
 
     /// @notice update the order to partial fill when market trade
     /// @param _amount the amount fill
-    function partiallyFill(TickPosition.Data storage _self, uint128 _amount)
-        internal
-    {
+    function partiallyFill(
+        TickPosition.Data storage _self,
+        uint128 _amount
+    ) internal {
         _self.liquidity -= _amount;
         unchecked {
             uint64 index = _self.filledIndex;
@@ -129,14 +133,10 @@ library TickPosition {
 
     /// @notice update the order when cancel limit order
     /// @param _orderId the id of order
-    function cancelLimitOrder(TickPosition.Data storage _self, uint64 _orderId)
-        internal
-        returns (
-            uint256,
-            uint256,
-            bool
-        )
-    {
+    function cancelLimitOrder(
+        TickPosition.Data storage _self,
+        uint64 _orderId
+    ) internal returns (uint256, uint256, bool) {
         (bool _isBuy, uint256 _size, uint256 _partialFilled) = _self
             .orderQueue[_orderId]
             .getData();
