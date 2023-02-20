@@ -33,12 +33,7 @@ contract MatchingEngineAMM is
         counterParties[params.spotHouse] = true;
         counterParties[params.router] = true;
 
-        _initializeAMM(
-            params.pipRange,
-            params.tickSpace,
-            params.initialPip,
-            params.feeShareAmm
-        );
+        _initializeAMM(params.pipRange, params.tickSpace, params.initialPip);
         _initializeCore(
             params.basisPoint,
             params.maxFindingWordsIndex,

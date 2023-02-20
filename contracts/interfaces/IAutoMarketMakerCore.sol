@@ -5,6 +5,7 @@
 pragma solidity ^0.8.9;
 
 import "../libraries/amm/Liquidity.sol";
+import "./ISpotFactory.sol";
 
 interface IAutoMarketMakerCore {
     struct AddLiquidity {
@@ -114,4 +115,8 @@ interface IAutoMarketMakerCore {
     /// @dev load config fee from storage
     /// @return the config fee
     function feeShareAmm() external view returns (uint32);
+
+    /// @notice get spot factory
+    /// @return the config fee
+    function spotFactory() external view returns (ISpotFactory);
 }
