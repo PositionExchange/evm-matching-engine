@@ -23,11 +23,9 @@ interface IMatchingEngineAMM is
         uint128 initialPip;
         uint128 pipRange;
         uint32 tickSpace;
-        address owner;
         address positionLiquidity;
         address spotHouse;
         address router;
-        uint32 feeShareAmm;
     }
 
     struct ExchangedData {

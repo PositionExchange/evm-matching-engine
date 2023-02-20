@@ -18,4 +18,8 @@ contract MockMatchingEngineAMM is MatchingEngineAMM {
     function setCounterParty() public {
         counterParties[msg.sender] = true;
     }
+
+    function feeShareAmm() public view override returns (uint32) {
+        return 0;
+    }
 }

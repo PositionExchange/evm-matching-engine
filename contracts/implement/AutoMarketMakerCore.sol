@@ -25,12 +25,12 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
     function _initializeAMM(
         uint128 _pipRange,
         uint32 _tickSpace,
-        uint128 _initPip,
-        uint32 _feeShareAmm
+        uint128 _initPip
     ) internal {
         pipRange = _pipRange;
         tickSpace = _tickSpace;
-        feeShareAmm = _feeShareAmm;
+
+        spotFactory = IGetFeeShareAMM(msg.sender);
 
         currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
             _initPip,
@@ -278,6 +278,11 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
                 .sqrt()
                 .Uint256ToUint128();
         }
+    }
+
+    /// @inheritdoc IAutoMarketMakerCore
+    function feeShareAmm() public view virtual override returns (uint32) {
+        return spotFactory.feeShareAmm();
     }
 
     struct OnCrossPipParams {
@@ -597,7 +602,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
             uint128 totalFilledAmm
         )
     {
-        uint32 _feeShareAmm = feeShareAmm;
+        uint32 _feeShareAmm = feeShareAmm();
         uint128 feeEachIndex;
         uint256 indexedPipRange;
         SwapState.AmmReserves memory ammReserves;

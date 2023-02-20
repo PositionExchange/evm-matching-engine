@@ -33,8 +33,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         singleSlot.pip = _initialPip;
         basisPoint = _basisPoint;
         maxFindingWordsIndex = _maxFindingWordsIndex;
-        //        maxFindingWordsIndex = _maxFindingWordsIndex;
-        //        maxFindingWordsIndex = _maxFindingWordsIndex;
     }
 
     //*
@@ -512,17 +510,7 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
                 crossPipParams,
                 state.ammState
             );
-            //            if (
-            //                state.ammState.index >= 4 ||
-            //                state.ammState.lastPipRangeLiquidityIndex == -2 ||
-            //                state.pip == 0
-            //            ) {
-            //                Require._require(
-            //                    !(_maxPip != 0 && state.remainingSize != 0),
-            //                    Errors.ME_LIMIT_OVER_PRICE_NOT_ENOUGH_LIQUIDITY
-            //                );
-            //                break;
-            //            }
+
             if (crossPipResult.baseCrossPipOut > 0 && step.pipNext == 0) {
                 step.pipNext = crossPipResult.toPip;
             }
@@ -790,14 +778,6 @@ abstract contract MatchingEngineCore is MatchingEngineCoreStorage {
         uint256 _quoteAmount,
         address _trader
     ) internal virtual {}
-
-    // TODO Must implement this function
-    /// @notice hook function get amount estmate
-    function getAmountEstimate(
-        uint256 size,
-        bool isBuy,
-        bool isBase
-    ) external view returns (uint256 mainSideOut, uint256 flipSideOut) {}
 
     /// @notice hook function calculate quote amount
     function calculatingQuoteAmount(

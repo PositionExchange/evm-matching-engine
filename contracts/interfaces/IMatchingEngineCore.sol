@@ -213,12 +213,6 @@ interface IMatchingEngineCore {
         bool toHigher
     ) external view returns (LiquidityOfEachPip[] memory, uint128);
 
-    function getAmountEstimate(
-        uint256 size,
-        bool isBuy,
-        bool isBase
-    ) external view returns (uint256 mainSideOut, uint256 flipSideOut);
-
     function calculatingQuoteAmount(
         uint256 quantity,
         uint128 pip

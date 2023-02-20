@@ -108,10 +108,8 @@ export async function deployAndCreateRouterHelper(pipRange = 30_000, basisPoint 
             initialPip: 100000,
             pipRange: pipRange,
             tickSpace: 1,
-            owner: deployer.address,
             positionLiquidity: deployer.address,
             spotHouse: deployer.address,
-            feeShareAmm: 0,
             router : deployer.address
         })
 

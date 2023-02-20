@@ -21,6 +21,5 @@ abstract contract AMMCoreStorage is IAutoMarketMakerCore {
     mapping(uint256 => Liquidity.Info) public override liquidityInfo;
 
     /// @inheritdoc IAutoMarketMakerCore
-    /// @notice the percent fee share when fill amm
-    uint32 public override feeShareAmm;
+    IGetFeeShareAMM public override spotFactory;
 }
