@@ -30,7 +30,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
         pipRange = _pipRange;
         tickSpace = _tickSpace;
 
-        spotFactory = ISpotFactory(msg.sender);
+        spotFactory = IGetFeeShareAMM(msg.sender);
 
         currentIndexedPipRange = LiquidityMath.calculateIndexPipRange(
             _initPip,
