@@ -9,3 +9,4 @@ cache
 artifacts
 .idea
 matching-template-contract-version
+coverage
