@@ -25,7 +25,7 @@ contract MatchingEngineAMM is
     /// @notice initialize the contract right after deploy
     /// @notice only call once time
     /// @dev initialize the sub contract, approve contract
-    function initialize(InitParams memory params) external {
+    function initialize(InitParams memory params) external virtual {
         Require._require(!isInitialized, Errors.ME_INITIALIZED);
         isInitialized = true;
 
