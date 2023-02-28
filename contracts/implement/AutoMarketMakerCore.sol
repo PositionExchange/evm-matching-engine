@@ -282,7 +282,7 @@ abstract contract AutoMarketMakerCore is AMMCoreStorage {
 
     /// @inheritdoc IAutoMarketMakerCore
     function feeShareAmm() public view virtual override returns (uint32) {
-        return spotFactory.feeShareAmm();
+        return spotFactory.feeShareAmmWithPair(address(this));
     }
 
     struct OnCrossPipParams {
