@@ -33,7 +33,7 @@ abstract contract MatchingEngineCoreStorage is IMatchingEngineCore {
         uint128 pipNext;
     }
 
-    SingleSlot public singleSlot;
+    SingleSlot public override singleSlot;
     mapping(uint128 => TickPosition.Data) public tickPosition;
     // a packed array of bit, where liquidity is filled or not
     mapping(uint128 => uint256) public liquidityBitmap;

@@ -1,6 +1,6 @@
 {
   "name": "@positionex/matching-engine",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "description": "Position matching engine fully on-chain.",
   "main": "index.js",
   "scripts": {
