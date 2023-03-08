@@ -234,4 +234,6 @@ interface IMatchingEngineCore {
         uint256 quoteAmount,
         uint128 pip
     ) external view returns (uint256);
+
+    function singleSlot() external view returns (uint128 pip, uint8 isFullBuy);
 }
