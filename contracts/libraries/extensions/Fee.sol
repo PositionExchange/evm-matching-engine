@@ -4,15 +4,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../interfaces/IFee.sol";
 
 abstract contract Fee is IFee {
     // quote asset token address
-    IERC20 public quoteAsset;
+    IERC20 public override quoteAsset;
 
     // base asset token address
-    IERC20 public baseAsset;
+    IERC20 public override baseAsset;
 
     // base fee for base asset
     uint256 internal baseFeeFunding;
