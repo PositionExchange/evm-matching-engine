@@ -4,7 +4,7 @@
   "description": "Position matching engine fully on-chain.",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test",
+    "test": "npx hardhat test; node .github/setup.js",
     "coverage": "npx hardhat coverage --solcoverjs ./.solcover.js"
   },
   "keywords": [
